@@ -12,6 +12,7 @@ Phase numbers in the sources do not match. This architecture does not pick a cal
 
 Companion documents:
 
+- [luminary.md](luminary.md) — the first build, Luminary Hotel & Co.
 - [modules.md](modules.md) — aggregates, ports, and which venture enables which module
 - [security.md](security.md) — authentication, row-level security, ledger, secrets, logging, CI
 - [dashboard.md](dashboard.md) — the four zones, filter rules, and Phase 1 data sources
@@ -19,18 +20,28 @@ Companion documents:
 
 ## System
 
-One tenant in production at the start: Diaz Ventures LLC, `plan_tier = internal`. Four ventures, stored as `subsidiaries`. A venture and a subsidiary are the same row. The dashboard's word and the schema's word are not two concepts.
+The first tenant in production is Luminary Hotel & Co., the operating Autograph Collection hotel at 2200 Edwards Drive, Fort Myers. The property contract is [luminary.md](luminary.md). Diaz Ventures LLC owns the software and remains a separate tenant for its own ventures. Luminary's groups, flashes, and planner contacts are not rows in the Diaz tenant. `plan_tier` for the pilot is `internal`. A venture and a subsidiary are the same row.
+
+Luminary's three ventures:
 
 | Venture | `type` | Prefix | Day-one posture |
 | --- | --- | --- | --- |
-| Jade Flowers | `product_brand` | `JF` | Active. Product operations and Candle Atelier. |
-| Jade Experiences | `event_production` | `JE` | Active as a series (Voices & Visions). Module contract only until Event Production is built. |
-| Jade Haven | `wellness_hospitality` | `JH` | Pre-revenue, development. Hospitality contract only. |
-| Stemworks | `software` | `SW` | Pre-revenue, validation. The product's own pipeline, not the platform kernel. |
+| Luminary Rooms | `boutique_hotel` | `LHR` | 243 keys. Flashes and the room slice of group deals. |
+| Luminary Dining | `boutique_hotel` | `LHD` | The hotel's outlets, from Silver King through in-room dining. |
+| Luminary Gatherings | `boutique_hotel` | `LHG` | Meetings, The Workshop, the convention center, the amphitheater. |
 
-`DV` stays the parent prefix. It is not a venture prefix. The Stemworks venture is not a place to store another tenant's data, and it is not the code that runs the API.
+Diaz Ventures ventures, specified and not seeded into the Luminary tenant:
 
-The technical spec's subsidiary enum is `product_brand | wellness_hospitality | software`. `event_production` is the required extension so Jade Experiences can exist as its own venture. Recorded in [spec-gaps.md](spec-gaps.md).
+| Venture | `type` | Prefix | Posture |
+| --- | --- | --- | --- |
+| Jade Flowers | `product_brand` | `JF` | Product operations and Candle Atelier, when that module is built. |
+| Jade Experiences | `event_production` | `JE` | Cultural series. Event Production contract only. |
+| Jade Haven | `wellness_hospitality` | `JH` | Pre-open wellness property. Hospitality pipeline contract only. |
+| Stemworks | `software` | `SW` | The product's own pipeline, not the platform kernel. |
+
+`DV` stays the Diaz parent prefix. It is not a Luminary prefix and not a venture prefix. The Stemworks venture is not a place to store another tenant's data, and it is not the code that runs the API.
+
+The technical spec's subsidiary enum is `product_brand | wellness_hospitality | software`. `event_production` and `boutique_hotel` are the required extensions. Recorded in [spec-gaps.md](spec-gaps.md).
 
 ## Boundaries that stay intact
 
@@ -38,7 +49,9 @@ These are the mistakes that would force a rewrite later. Each one is a separate 
 
 **Candle Atelier and Event Production are different products that both use the word event.** Atelier is a session hosted by a product brand: capacity, deposit, attendance, no-show, cost buckets (hospitality, materials, overhead), net profit, and whether an attendee bought product afterward. Event Production is a recurring cultural series: a talent roster and contract terms that carry from one volume to the next, a run-of-show template that accumulates notes, ticket tiers (early bird, general admission, door) against capacity, an edition P&L closed within a day, and a content archive. Jade Flowers enables Atelier. Jade Experiences enables Event Production. Neither module reads the other's tables.
 
-**Hospitality Pipeline is the operating record of a first wellness property.** Lease, capital partners, corporate wellness accounts, rent-to-revenue density, and a mode of `pre_open` or `operational`. Opening archives the capital and development pipeline. Hospitality does not store batches, orders, or talent.
+**Hospitality Pipeline is the operating record of a first wellness property, and Luminary is not that property.** Lease, capital partners, corporate wellness accounts, rent-to-revenue density, and a mode of `pre_open` or `operational` belong to Jade Haven. Luminary is already open, already branded Autograph Collection, and already on Marriott's systems. Its first-build module is `hotel`: rooms flash, outlet flash, and gatherings. It does not store batches, talent, lease negotiations, or guest folios.
+
+**Stemworks does not replace the hotel's property management system.** Reservations, rates, Bonvoy, mobile keys, folios, and cards stay in Marriott's systems. The rooms integration, when it exists, projects counts and cents only.
 
 **Confirmed and Potential are projections of money already in the system.** Confirmed is revenue committed, converted, or contracted. Potential is the full value of active deals in motion. The gap is the execution target. Phase 1 shows those two numbers and nothing predicted. The `intelligence` module may later add Predicted from that founder's own history, each figure labeled with confidence. Industry averages are not a source.
 
@@ -54,6 +67,7 @@ flowchart LR
   api[ExpressApi]
   kernel[Kernel]
   dash[DashboardReadModel]
+  hotel[HotelLuminary]
   product[ProductOps]
   atelier[AtelierEvents]
   series[EventProduction]
@@ -65,18 +79,21 @@ flowchart LR
   web --> api
   api --> kernel
   api --> dash
+  dash --> hotel
   dash --> product
   dash --> atelier
   dash --> series
   dash --> haven
   dash --> connect
   intel --> dash
+  hotel --> kernel
   product --> kernel
   atelier --> kernel
   series --> kernel
   haven --> kernel
   connect --> kernel
   kernel --> db
+  hotel --> db
   product --> db
   atelier --> db
   series --> db
@@ -89,7 +106,7 @@ Layout when implementation starts:
 - `apps/web` — Next.js 14, TypeScript, Tailwind. No database client. Talks only to `/api/v1`.
 - `apps/api` — Express. Routes are thin: authenticate, open one transaction, set tenant context, authorize, validate, call one module service.
 - `packages/kernel` — identity, tenancy, authorization, money, audit, ventures, milestones, attention.
-- `packages/modules/product`, `atelier`, `event-production`, `hospitality`, `intelligence`, `connect` — each has `domain/`, a `ports.ts` of what the dashboard may call, and an `internal/` that is not exported.
+- `packages/modules/hotel`, `product`, `atelier`, `event-production`, `hospitality`, `intelligence`, `connect` — each has `domain/`, a `ports.ts` of what the dashboard may call, and an `internal/` that is not exported. `hotel` is the first module that gets a full implementation.
 - `packages/db` — Prisma schema, plus raw SQL migrations for row-level security. Prisma cannot express those policies. They are reviewed beside the schema.
 
 Hosting, when a build is deployed: web on Vercel, API and PostgreSQL on Railway or Render (Supabase is an acceptable managed Postgres). Email via Resend when a message is actually sent. Stripe arrives with licensing, not before. The GitHub repository is private and owned by a Diaz Ventures LLC account.
@@ -122,20 +139,21 @@ Full aggregates and the enablement table are in [modules.md](modules.md).
 
 | Module | First build | Enabled on | Holds |
 | --- | --- | --- | --- |
-| `product` | Yes | Jade Flowers | Materials, purchases, batches, SKUs, lineage, customers, orders, COGS, subsidiary P&L |
-| `atelier` | Yes | Jade Flowers | Candle Atelier sessions, registrations, deposits, attendance, session P&L |
+| `hotel` | Yes | Luminary Rooms, Dining, and Gatherings | Property, outlets, daily flash, group deals, venues, Workshop and other sessions. See [luminary.md](luminary.md). |
+| `product` | Later | Jade Flowers | Materials, purchases, batches, SKUs, lineage, customers, orders, COGS, subsidiary P&L |
+| `atelier` | Later | Jade Flowers | Candle Atelier sessions, registrations, deposits, attendance, session P&L |
 | `event-production` | Contract only | Jade Experiences | Series, editions, talent carry-forward, run-of-show, ticket tiers, edition P&L, content archive |
 | `hospitality` | Contract only | Jade Haven | Property and lease, capital partners, corporate accounts, rent-to-revenue, pre-open mode |
-| `intelligence` | Dormant | None until a founder has enough of their own history | Predicted, deal health, event velocity, reorder timing, each with confidence |
-| `connect` | Port and status rows | Per venture, as adapters are added | Branch connector, secret store, sync inbox. No adapter in the first build |
+| `intelligence` | Dormant | None until that tenant has enough of its own history | Predicted, deal health, event velocity, reorder timing, each with confidence |
+| `connect` | Status rows | Per venture, as adapters are added | Branch connector, secret store, sync inbox. No adapter in the first build |
 
 A route whose module is not enabled for the caller's venture returns 404.
 
 ## Connect
 
-`branches` are per venture. Kind is `native` or `integration`. A native branch is always `active` and live: Product, Atelier, Event Production, Hospitality, and the pipeline read surface (the dashboard's "Pipeline CRM" row). An integration branch starts `not_connected`. Credentials live in `branch_secrets`, encrypted with AES-GCM under a key from the environment, never returned by the status API, and never logged. Sync writes normalized facts to an inbox. A projector inside the owning module turns facts into ledger movements or pipeline values. Adapters do not write domain tables. A failed sync files a `branch_sync_error` attention item. Stemworks does not repeat Craftybase, Square, or Shopify notification streams. Alerts are for founder action and for patterns that cross ventures.
+`branches` are per venture. Kind is `native` or `integration`. A native branch is always `active` and live. On Luminary those are Rooms, Dining, Gatherings, and the pipeline read surface (the dashboard's "Pipeline CRM" row). Product, Atelier, Event Production, and Hospitality are the native branches of the later modules. An integration branch starts `not_connected`. Credentials live in `branch_secrets`, encrypted with AES-GCM under a key from the environment, never returned by the status API, and never logged. Sync writes normalized facts to an inbox. A projector inside the owning module turns facts into ledger movements or pipeline values. Adapters do not write domain tables. A failed sync files a `branch_sync_error` attention item. Alerts are for founder action and for patterns that cross ventures. Stemworks does not repeat another system's notification stream.
 
-Named adapters, none of them in the first core build: Craftybase, Square, Shopify, Eventbrite (ticket counts into Event Production, not a second box office), HoneyBook, HubSpot, Salesforce.
+Named adapters, none of them in the first core build. For Luminary the rows are a read-only rooms projection and a per-outlet sales projection, specified in [luminary.md](luminary.md). Guest names, Bonvoy identifiers, folios, and cards are rejected at the inbox. Craftybase, Square, Shopify, Eventbrite, HoneyBook, HubSpot, and Salesforce stay on the list for the Diaz Ventures modules. Square is not assumed to be Luminary's point of sale.
 
 ## Dashboard
 
@@ -143,13 +161,13 @@ One screen, four zones, specified in [dashboard.md](dashboard.md). Mobile stacks
 
 The header shows Confirmed and Potential in cents, rendered as money, plus the next milestone and a single top alert. Cards sort by activity. A pin overrides sort. Cards collapse when a venture is quiet and are never removed. The timeline is forward-looking, 90 days by default, expandable to 12 months. Closed work stays in the venture detail.
 
-In the first build, Jade Flowers pipeline figures come from orders, atelier deposits, and open commitments, plus milestones and alerts entered by hand. The other three ventures show their status label, last activity, and any hand-entered milestones or alerts. They do not show invented pipeline numbers.
+In the first build, the header sums Luminary Rooms, Luminary Dining, and Luminary Gatherings. The figures come from daily flashes, group deals, and ticketed sessions, as defined in [luminary.md](luminary.md). Unsold keys and empty seats are not potential. No sample revenue is seeded.
 
 ## API
 
-Base path `/api/v1`. JSON. Money in cents. Timestamps in ISO 8601 UTC. Cursor pagination. Every body and query is validated. An idempotency key is required on batch create, purchase receipt, and event registration, so a retry cannot deduct inventory twice. Auth routes and money routes are rate limited. Error bodies do not contain SQL or token contents.
+Base path `/api/v1`. JSON. Money in cents. Timestamps in ISO 8601 UTC. A hotel business date is a calendar date in `America/New_York`, not a UTC instant truncated to a day. Cursor pagination. Every body and query is validated. An idempotency key is required on every create that posts money: a flash, a deal, a session registration, and, when those modules are built, a batch, a purchase receipt, and an atelier registration. Auth routes and money routes are rate limited. Error bodies do not contain SQL or token contents.
 
-First-build routes are the spec's auth, batches, materials, inventory alerts, SKUs, financials, and atelier events, plus the dashboard and branch-status reads. Consolidated P&L (`GET /financials/pl/consolidated`) is owner-only and sums subsidiaries inside the one tenant. It never sums across tenants.
+First-build routes are auth, the hotel routes in [luminary.md](luminary.md), and the dashboard and branch-status reads. Consolidated P&L is owner-only and sums subsidiaries inside the one tenant. For the pilot, that is the three Luminary ventures. It never sums across tenants, and it never adds Jade Flowers to Luminary.
 
 ## Security bar
 
@@ -166,9 +184,9 @@ The kernel ships with all of the following. [security.md](security.md) is the im
 
 ## Phase gates
 
-**Build first.** Kernel, row-level security, owner authentication, `product`, `atelier`, and the dashboard read model fed by those two modules and by hand-entered milestones and alerts. Branch status rows exist for native modules. Integration rows may exist as `not_connected`.
+**Build first.** Kernel, row-level security, owner authentication, the `hotel` module for Luminary's three ventures, and the dashboard read model fed by flashes, deals, and sessions. Branch status rows exist for the native hotel branches. The rooms and outlet integration rows exist as `not_connected`. The property contract is [luminary.md](luminary.md).
 
-**Specified here, not built yet.** `event-production`, `hospitality`, Connect adapters, invites for anyone but the owner, the commission engine, wholesale depth beyond the order channel, `intelligence`, Haven operations and the client portal, membership billing, Stripe billing, tenant self-serve provisioning, the platform admin UI, a native mobile app.
+**Specified here, not built yet.** `product`, `atelier`, `event-production`, `hospitality` (Jade Haven), Connect adapters including the rooms and point-of-sale projectors, invites for anyone but the owner, the commission engine, wholesale depth beyond the order channel, `intelligence`, Haven operations and the client portal, a Luminary guest portal, membership billing, gift-card issuance, Stripe billing, tenant self-serve provisioning, the platform admin UI, a native mobile app. A property-management replacement is not on this list, because it is not a Stemworks module.
 
 **Decisions recorded from the spec, not invented here.**
 

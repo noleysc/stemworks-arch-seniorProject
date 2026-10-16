@@ -198,7 +198,9 @@ A migration fails the build when any of these are true:
 
 Tests that must exist before a second role is handed to a person, and that the first build already runs against the owner:
 
-- A request with tenant A's token cannot read or write tenant B's batch, material, order, or event. Asserted at the database, with the app role, not only through the HTTP filter.
+- A request with the Luminary token cannot read or write a Diaz Ventures row, and the reverse. Asserted at the database, with the app role, not only through the HTTP filter. The same test covers a batch, a material, an order, and an atelier event once those modules exist.
+- A dining manager token receives 404 for a Luminary Rooms flash and for a Gatherings deal.
+- A hotel inbox fact that carries a guest name, a Bonvoy identifier, a folio line, or a payment card is rejected and is not stored.
 - A manager token for subsidiary 1 receives 404 for subsidiary 2.
 - An associate token receives 403 on `GET /financials/pl`, `GET /batches/:id/financials`, and `PATCH /batches/:id`.
 - A deactivated user with a still-unexpired access token receives 401.

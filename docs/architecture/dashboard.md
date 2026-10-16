@@ -47,15 +47,13 @@ Phase 1 renders Confirmed and Potential only. Predicted is not reserved as a bla
 
 The composer asks each enabled module for `confirmedCents` and `potentialCents` on the ventures in view, and sums the cents. It does not average them and it does not convert through floating point.
 
-In the first build the only contributors are `product` and `atelier` on Jade Flowers:
+In the first build the only contributors are the three Luminary ventures, all from the `hotel` module. The formulas are in [luminary.md](luminary.md).
 
-- Product confirmed is the net of orders in `processing`, `shipped`, or `delivered`.
-- Product potential adds pending orders.
-- Atelier confirmed is deposits collected, including forfeited no-show deposits.
-- Atelier potential adds the ticket price of registrations that exist and have not yet paid.
-- Unsold seats, unlisted catalog, and rent are not part of either number.
+- Rooms confirmed is flashed room revenue for business dates already reached, plus definite group room revenue not yet recognized on a flash. Potential adds room revenue on inquiry and tentative deals. Unsold keys at rack rate are not potential.
+- Dining confirmed is posted outlet net sales. Potential adds food-and-beverage minimums on open deals that a flash has not yet recognized. A minimum and a flash for the same banquet are not both added.
+- Gatherings confirmed is signed rental, collected tuition, and deposits. Potential adds unsigned deals and unpaid session registrations. Empty seats in The Workshop are capacity, not potential.
 
-The other ventures contribute zero until their module is enabled. A hand-entered milestone still appears in the header's "next milestone" slot, because milestones live in the kernel and do not require a module.
+Product and atelier numbers, when those modules are built, join this same sum inside their own tenant. They are not added to Luminary. A hand-entered milestone still appears in the header, because milestones live in the kernel.
 
 ## Zone 2 — venture cards
 
@@ -65,14 +63,15 @@ Expanded when `hasCurrentActivity` is true: name, color token, confirmed, potent
 
 Sort is by activity, most recent first. A pin (`pinned_at`) overrides sort and does not change whether the card is expanded. The founder can expand a collapsed card without pinning it.
 
-Day-one seed, which is data, not a hardcoded layout:
+Day-one seed for the Luminary tenant, which is data, not a hardcoded layout:
 
 | Venture | Why the card looks this way on day one |
 | --- | --- |
-| Jade Flowers | Expanded once product or atelier activity exists. Status label "Active revenue". |
-| Jade Experiences | Expanded because a hand-entered Voices & Visions Vol. 3 milestone counts as current activity. Pipeline items are an empty list until Event Production is on. Status label "Event production active". |
-| Jade Haven | Collapsed. Status label "Pre-revenue · Development phase". |
-| Stemworks | Collapsed. Status label "Pre-revenue · Validation phase". |
+| Luminary Rooms | Expands once a rooms flash or a group with room revenue exists. Status label "243 keys · operational". Empty until then, including an empty pipeline stated as empty. |
+| Luminary Dining | Expands once an outlet flash or a banquet minimum exists. The outlet catalog is real. The sales figures are not seeded. |
+| Luminary Gatherings | Expands once a deal or a Workshop session exists. Venues are seeded. Sample weddings are not. |
+
+The Diaz Ventures cards (Jade Flowers, Jade Experiences, Jade Haven, Stemworks) belong to the other tenant and do not appear on the Luminary screen.
 
 An expanded card with an empty pipeline shows the empty state in words ("No deals in motion") and still shows milestones and branch status. It does not show a sample deal.
 
@@ -93,7 +92,7 @@ Open `attention_items` for the ventures in view, newest first. Types and the kin
 
 Dismiss archives the row and records who archived it. The log view lists archived items. There is no delete.
 
-In the first build, inventory alerts are published by `product` when a balance crosses its reorder point. The other types are created by hand, or by a module once that module exists. Sync-error alerts appear when an adapter exists and a sync fails. Until then the rail does not invent a stale-sync message.
+In the first build, `hotel` publishes `pipeline_stalled` when a tentative deal goes quiet, `contract_unsigned` when a contract that should be signed is not, and `event_milestone_due` for a cutoff, a group arrival, or a session. Inventory alerts begin when `product` exists. Sync-error alerts appear when an adapter exists and a sync fails. Until then the rail does not invent a stale Marriott or point-of-sale message.
 
 ## Zone 4 — milestone timeline
 
@@ -126,7 +125,7 @@ Reached from a card and from a global branches view. Columns: branch, type, stat
 
 Native branches report `active` and no sync time, and the UI reads that as live. Integration branches the venture does not have connected report `not_connected`. A connect action for an adapter that is not in this build returns 404 with a clear message, not a half-built OAuth redirect.
 
-First-build native rows on Jade Flowers: Product operations, Atelier, and Pipeline CRM. Pipeline CRM is the pipeline port. It is not a second CRM and it is not Salesforce. Salesforce, HoneyBook, HubSpot, Craftybase, Square, Shopify, and Eventbrite appear only as integration rows, and only as `not_connected` until that adapter is built.
+First-build native rows: Rooms, Dining, Gatherings, and Pipeline CRM. Pipeline CRM is the pipeline port. It is not a second CRM, not Delphi, and not Salesforce. The rooms system and the outlet point of sale appear as `not_connected` until those projectors are built. Craftybase, Square, and Shopify are Jade Flowers adapters and are not Luminary's outlets.
 
 ## Reads the dashboard adds
 
@@ -142,10 +141,10 @@ Dismiss of an alert outside the caller's set is 404.
 
 ## What the first build shows in the first glance
 
-1. Confirmed and Potential for Jade Flowers, summed from orders and atelier deposits, plus zeros from the other ventures.
-2. The next milestone, which may be the seeded Voices & Visions milestone or a Jade Flowers date, whichever is sooner.
-3. The top open alert, if the founder or the inventory rule has created one.
-4. Jade Flowers and Jade Experiences present as active cards. Jade Haven and Stemworks present as quiet cards. Empty pipelines say they are empty.
+1. Confirmed and Potential summed across Luminary Rooms, Dining, and Gatherings, from flashes, deals, and sessions. Zeros until those rows exist.
+2. The next group arrival, cutoff, or Workshop session.
+3. The top open alert, when a quiet tentative, an unsigned contract, or a due date has been published.
+4. Three venture cards. A card with no money yet says so. The outlet and venue names are the hotel's real ones, from [luminary.md](luminary.md).
 
 ## What the screen refuses to show
 

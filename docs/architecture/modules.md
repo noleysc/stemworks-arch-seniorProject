@@ -38,14 +38,14 @@ The kernel owns identity, tenancy, shared timeline primitives, and the pipeline 
 
 `subsidiaries` (ventures)
 
-- `id`, `tenant_id`, `name`, `type` (`product_brand | event_production | wellness_hospitality | software`), `prefix_code`, `color_token`, `status_label`, `pinned_at`, `created_at`
+- `id`, `tenant_id`, `name`, `type` (`product_brand | event_production | wellness_hospitality | boutique_hotel | software`), `prefix_code`, `color_token`, `status_label`, `pinned_at`, `created_at`
 - Sort for the dashboard is by latest activity, with pinned ventures first. Activity is the most recent domain write or manual milestone for that venture, exposed through the activity port. Pin overrides sort only. It does not force a card open.
 - A card is expanded when the venture has current activity and collapsed when it does not. The founder can expand a collapsed card. The card is never hidden.
 
 `subsidiary_modules`
 
 - `subsidiary_id`, `tenant_id`, `module_key`, `enabled_at`
-- `module_key`: `product | atelier | event-production | hospitality | intelligence | connect`
+- `module_key`: `hotel | product | atelier | event-production | hospitality | intelligence | connect`
 - Unique on (`subsidiary_id`, `module_key`)
 
 `users`
@@ -85,7 +85,7 @@ The kernel owns identity, tenancy, shared timeline primitives, and the pipeline 
 - `tenant_id`, `key`, `request_hash`, `response_status`, `response_body`, `created_at`
 - Unique (`tenant_id`, `key`)
 - Same key and same hash returns the stored response. Same key and a different hash returns 409.
-- Required on `POST /batches`, `POST /materials/:id/purchases`, and `POST /events/:id/registrations`.
+- Required on the first-build money creates: flash upsert, `POST /deals`, and `POST /sessions/:id/registrations`. When `product` and `atelier` are built, the same rule covers `POST /batches`, `POST /materials/:id/purchases`, and `POST /events/:id/registrations`.
 
 ## Ports
 
@@ -137,25 +137,42 @@ Confirmed and Potential mean the same thing on every port. Confirmed is money th
 
 ## Enablement
 
-| Venture | Type | Modules on in the first build | Modules specified, not built |
-| --- | --- | --- | --- |
-| Jade Flowers | `product_brand` | `product`, `atelier` | Connect adapters when that track starts |
-| Jade Experiences | `event_production` | none | `event-production` |
-| Jade Haven | `wellness_hospitality` | none | `hospitality` |
-| Stemworks | `software` | none | Its own commercial pipeline uses manual milestones and alerts until a module is justified |
+The first tenant is Luminary Hotel & Co. The Diaz Ventures ventures are a different tenant and are not seeded beside the hotel.
 
-Seed data that makes the day-one dashboard honest:
+| Venture | Tenant | Type | Modules on in the first build | Later |
+| --- | --- | --- | --- | --- |
+| Luminary Rooms | Luminary | `boutique_hotel` | `hotel` | Rooms projection, read-only, counts and cents |
+| Luminary Dining | Luminary | `boutique_hotel` | `hotel` | Outlet sales projection, net sales and covers |
+| Luminary Gatherings | Luminary | `boutique_hotel` | `hotel` | Public-show talent carry-forward only if `event-production` is later enabled |
+| Jade Flowers | Diaz Ventures | `product_brand` | none | `product`, `atelier` |
+| Jade Experiences | Diaz Ventures | `event_production` | none | `event-production` |
+| Jade Haven | Diaz Ventures | `wellness_hospitality` | none | `hospitality` |
+| Stemworks | Diaz Ventures | `software` | none | Its own commercial pipeline, manual milestones until a module is justified |
 
-- Jade Flowers — prefix `JF`, status label "Active revenue", modules `product` and `atelier` enabled. Activity comes from real rows once they exist.
-- Jade Experiences — prefix `JE`, status label "Event production active". A hand-entered milestone for Voices & Visions Vol. 3 keeps the card expanded under the activity rule. Pipeline figures stay empty until `event-production` is enabled. No fabricated talent rows.
-- Jade Haven — prefix `JH`, status label "Pre-revenue · Development phase", collapsed because there is no current activity.
-- Stemworks — prefix `SW`, status label "Pre-revenue · Validation phase", collapsed for the same reason.
+Luminary day-one seed, with no sample money:
 
-`DV` is reserved for parent-level identifiers (consolidated documents, the tenant itself). It is not stamped on venture rows.
+- Luminary Rooms — prefix `LHR`, status label "243 keys · operational".
+- Luminary Dining — prefix `LHD`, status label "Outlets operational". The outlet catalog is seeded from [luminary.md](luminary.md). Flashes are not.
+- Luminary Gatherings — prefix `LHG`, status label "Meetings, Workshop, convention center, amphitheater". Venues are seeded. Deals and sessions are not.
+
+Diaz Ventures seed, used only when that tenant is created:
+
+- Jade Flowers — prefix `JF`, status label "Active revenue".
+- Jade Experiences — prefix `JE`, status label "Event production active".
+- Jade Haven — prefix `JH`, status label "Pre-revenue · Development phase".
+- Stemworks — prefix `SW`, status label "Pre-revenue · Validation phase".
+
+`DV` is reserved for Diaz parent identifiers. It is not stamped on Luminary rows.
+
+## `hotel`
+
+First build. Luminary Hotel & Co. only, on that tenant's three ventures. The property, the outlets, the venues, the flash, the deals, and the sessions are specified in [luminary.md](luminary.md). This module does not import `atelier`, `product`, or `hospitality`. Workshop sessions use the session-and-cost-bucket shape, and the tables are `hotel`'s.
+
+Routes, confirmed and potential, and the Marriott boundary are in that document. The idempotent writes for this module are the daily flash, deal create, and session registration.
 
 ## `product`
 
-First build. Jade Flowers only. Small-batch production, inventory, orders, and the money that falls out of them.
+Specified for Jade Flowers. Not the first build. Small-batch production, inventory, orders, and the money that falls out of them. The behavior below is what this module implements when it is built. It is not part of the Luminary pilot.
 
 ### Aggregates and tables
 
@@ -183,14 +200,14 @@ FIFO on material receipts. Consuming a batch draws the oldest `material_purchase
 - Potential: confirmed, plus `net_amount_cents` of `pending` orders. There is no quote object in this module. Unsold catalog is not potential.
 - Top three items: the open orders or wholesale commitments with the nearest deadline or the largest value, returned through the pipeline port. The module decides the ordering; the dashboard does not query `orders`.
 
-### Behavior the first build has to implement
+### Behavior this module implements when it is built
 
 - Creating a batch generates the code, writes the lines, posts consumption movements, and lowers `quantity_remaining` and `quantity_on_hand`, in one transaction. Insufficient stock rolls the transaction back.
 - QC writes units passed, units rejected, and `defect_reason`, and moves status. Release posts finished-goods movements and lineage, and raises `units_on_hand` on the SKU.
 - A purchase receipt posts a receipt movement, increases on-hand, and stores the cost snapshot.
-- Reorder alerts: a material at or below `reorder_point` publishes `inventory_low` through the kernel. Clearing back above the point does not delete the alert; the founder archives it, or a later rule archives it when stock recovers. The first build may leave recovery archival to the founder.
+- Reorder alerts: a material at or below `reorder_point` publishes `inventory_low` through the kernel. Clearing back above the point does not delete the alert; the founder archives it, or a later rule archives it when stock recovers. Recovery archival can wait until this module is built.
 - Batches remaining for a material is computed from on-hand and average consumption per batch. It is not stored.
-- Margin reads: per SKU, at retail, wholesale, and event price, using the current lineage COGS. Rolling subsidiary P&L by month, quarter, or year. Channel breakdown of revenue and margin. Consolidated P&L is owner-only and stays in this module's financial handler because the first build has no other module contributing money. The handler rejects any subsidiary outside the tenant, and rejects non-owners.
+- Margin reads: per SKU, at retail, wholesale, and event price, using the current lineage COGS. Rolling subsidiary P&L by month, quarter, or year. Channel breakdown of revenue and margin. Consolidated P&L is owner-only and sums subsidiaries inside the caller's tenant. It does not sum Luminary into Jade Flowers. The handler rejects any subsidiary outside the tenant, and rejects non-owners.
 - Associates may `POST` a batch and may not `PATCH` it. They do not receive cost or margin fields. See [security.md](security.md).
 
 ### Routes
@@ -209,11 +226,11 @@ Order routes are required by the order tables and by sales attribution, and the 
 
 ## `atelier`
 
-First build. Attached to a product-brand venture. This is the Candle Atelier, not a cultural series.
+Specified for a product-brand venture. Not the first build, and not used by Luminary. The Workshop at the hotel is a `hotel` session. This module is the Candle Atelier.
 
 ### Aggregates
 
-- `events` — code `{prefix}-EVT-{year}-{seq}`. Type `candle_atelier | wellness_retreat | vendor_spotlight | creative_platform | other`. The first build uses `candle_atelier`. A `creative_platform` value is still an atelier session: one date, one capacity, one deposit. It does not become a series, and it does not grow talent, tiers, or a run-of-show. Those belong to `event-production`. Capacity, `ticket_price_cents`, `deposit_amount_cents`, schedule, location, status `draft | open | full | completed | cancelled`. Cost buckets: `hospitality_cost_cents`, `materials_cost_cents`, `overhead_cost_cents`. `net_profit_cents` is revenue minus those costs, computed and stored when the event is completed. It is not a number someone types in.
+- `events` — code `{prefix}-EVT-{year}-{seq}`. Type `candle_atelier | wellness_retreat | vendor_spotlight | creative_platform | other`. When this module is built it uses `candle_atelier`. A `creative_platform` value is still an atelier session: one date, one capacity, one deposit. It does not become a series, and it does not grow talent, tiers, or a run-of-show. Those belong to `event-production`. Capacity, `ticket_price_cents`, `deposit_amount_cents`, schedule, location, status `draft | open | full | completed | cancelled`. Cost buckets: `hospitality_cost_cents`, `materials_cost_cents`, `overhead_cost_cents`. `net_profit_cents` is revenue minus those costs, computed and stored when the event is completed. It is not a number someone types in.
 - `event_registrations` — status `registered | deposit_paid | confirmed | attended | no_show | cancelled`. Deposit amount and `deposit_paid_at`. `checked_in_at`. `post_event_purchase` and `post_event_purchase_amount_cents` exist because the spec defines the columns. The conversion report that reads them is later (user story 24).
 
 Atelier does not store a talent roster, a run-of-show, ticket tiers, or a content archive.
@@ -260,7 +277,7 @@ Carry-forward copies roster, run-of-show, notes, and venue. It does not copy las
 
 ## `hospitality`
 
-Contract. Not built until the Haven schedule says so. Enabled on Jade Haven. It does not reuse `orders`, `batches`, or talent tables.
+Contract for Jade Haven. Not the Luminary build. Luminary is an operating Autograph hotel and uses `hotel`. This module is the pre-open wellness pipeline. It does not reuse `orders`, `batches`, talent tables, or the Luminary flash.
 
 ### Aggregates
 
@@ -321,9 +338,12 @@ Always `active`, `last_synced_at` null, displayed as live:
 
 | Key | Label | Present from |
 | --- | --- | --- |
-| `native:product` | Product operations | First build, on Jade Flowers |
-| `native:atelier` | Atelier | First build, on Jade Flowers |
+| `native:hotel-rooms` | Rooms | First build, Luminary Rooms |
+| `native:hotel-dining` | Dining | First build, Luminary Dining |
+| `native:hotel-gatherings` | Gatherings | First build, Luminary Gatherings |
 | `native:pipeline` | Pipeline CRM | First build, every venture. This is the pipeline port, not a CRM database. |
+| `native:product` | Product operations | When `product` is enabled |
+| `native:atelier` | Atelier | When `atelier` is enabled |
 | `native:event-production` | Event Production | When that module is enabled |
 | `native:hospitality` | Hospitality Pipeline | When that module is enabled |
 
@@ -331,9 +351,11 @@ Always `active`, `last_synced_at` null, displayed as live:
 
 Created as `not_connected` when a venture is allowed to use them. No secrets until connect succeeds.
 
-`integration:craftybase`, `integration:square`, `integration:shopify`, `integration:eventbrite`, `integration:honeybook`, `integration:hubspot`, `integration:salesforce`.
+Luminary, created as `not_connected` in the first build: `integration:rooms-pms`, `integration:outlet-pos`. What they are allowed to project is in [luminary.md](luminary.md). A payload with a guest name, a Bonvoy identifier, a folio line, or a card is rejected and not stored.
 
-Craftybase and Square are the first adapters the dashboard track asks for: stock levels into the product ledger, and transactions into confirmed revenue. Shopify follows the same projector pattern. Eventbrite feeds ticket counts into `event-production` or `atelier`, chosen by which module owns the event, and does not replace the P&L. HoneyBook, HubSpot, and Salesforce feed hospitality or product pipeline items. None of them are queried by the dashboard directly.
+Later Diaz Ventures adapters: `integration:craftybase`, `integration:square`, `integration:shopify`, `integration:eventbrite`, `integration:honeybook`, `integration:hubspot`, `integration:salesforce`.
+
+Craftybase and Square are the product-module adapters: stock levels into the product ledger, and transactions into confirmed revenue. They are not Luminary's point of sale. Shopify follows the same projector pattern. Eventbrite feeds ticket counts into `event-production` or `atelier`, chosen by which module owns the event, and does not replace the P&L. HoneyBook, HubSpot, and Salesforce feed hospitality or product pipeline items. None of them are queried by the dashboard directly.
 
 ### Connector
 
