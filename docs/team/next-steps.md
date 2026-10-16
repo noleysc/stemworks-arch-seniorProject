@@ -159,10 +159,9 @@ Nav gains a Dashboard link. Frontend owns `desk-nav.tsx`, so the dashboard perso
 
 Keep collection reliable while the other two build the screen.
 
-- Rooms board: filter by Luminary website, Airbnb, or all. The channel is already on each booking.
-- Collect: when a file imports with skipped rows, keep the row errors on screen after refresh. Today a refresh clears them because they live only in component state. Persist is unnecessary. Surviving a `router.refresh()` is enough, which means do not refresh in a way that unmounts the result, or lift the result above the refresh.
-- Forms: show a loading state that disables the submit button, which already exists, and keep the field error next to the form, which already exists. Add an error state if the network fails before a JSON body comes back.
-- Point every `fetch` at `/api/v1/bookings` once backend says the versioned routes are up. The request bodies stay the same.
+- Rooms board: filter by Luminary website, Airbnb, or all. The channel is already on each booking. Restaurant board: filter by outlet the same way.
+- Forms and import: if the request fails before a JSON body comes back, say the desk could not be reached. The submit button already disables while a save is in flight. Keep that.
+- Point every `fetch` at `/api/v1/bookings` once backend says the versioned routes are up. The request bodies stay the same. The import result already stays on the Collect form after a refresh of the server data. Leave that as it is.
 - Do not add Confirmed or Potential to the Rooms or Restaurant pages. Those figures live on `/dashboard`.
 
 ## Done when
