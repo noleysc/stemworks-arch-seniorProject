@@ -2,7 +2,7 @@
 
 Architecture for the Stemworks operating system. Stemworks is owned by Diaz Ventures LLC. The first build is the operating record for Luminary Hotel & Co., the Autograph Collection hotel in downtown Fort Myers: rooms, dining outlets, and gatherings, beside Marriott's systems rather than in place of them. The same kernel is what later tenants run, including Diaz Ventures' own ventures, under row-level isolation from the first migration.
 
-This repository is the architecture. It does not yet contain the web app, the API, or the database.
+The running booking desk is in `apps/web`. The architecture documents below still govern what gets built next.
 
 ## Read this
 
@@ -16,6 +16,7 @@ Start with [docs/architecture/README.md](docs/architecture/README.md). It is the
 | [docs/architecture/security.md](docs/architecture/security.md) | Authentication, row-level security, ledger, secrets, CI |
 | [docs/architecture/dashboard.md](docs/architecture/dashboard.md) | The four zones and where Phase 1 numbers come from |
 | [docs/architecture/spec-gaps.md](docs/architecture/spec-gaps.md) | Spec omissions and the decision recorded for each |
+| [docs/team/next-steps.md](docs/team/next-steps.md) | Next slice for frontend, backend, and dashboard |
 
 The sources reconciled here are the Technical Specification v1.0 (April 2026), the Dashboard Specification, and the Native Module Client Definitions. Where those documents disagree on calendar phase, the architecture isolates the module and does not invent a schedule.
 
