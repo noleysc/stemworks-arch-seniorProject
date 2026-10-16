@@ -1,0 +1,9 @@
+{
+  "name": "stemworks",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix apps/web",
+    "test": "npm test --prefix apps/web",
+    "lint": "npm run lint --prefix apps/web"
+  }
+}

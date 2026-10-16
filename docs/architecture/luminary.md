@@ -79,6 +79,18 @@ Venues are rows on the Gatherings venture. Square feet are stored on the row wit
 
 The fact sheet's combined claim is more than 149,000 square feet across the hotel, the convention center, and the amphitheater. That sentence is marketing. The rows above are what the system stores. The convention center and the amphitheater are managed with the hotel and sit in the same tenant. They are not a second hotel and not a second tenant. The Workshop is a gatherings venue even though it is a kitchen. Its P&L is a class or a private function, not a dining-outlet flash.
 
+## Booking collection
+
+The hotel's reservation book is not on the public Luminary website or on Marriott's shopping pages. Marriott's robots.txt disallows `/reservation/availabilitySearch.mi`. Airbnb reservations sit behind the host login. Restaurant books sit in the outlet's own system (Silver King publishes OpenTable and a phone line). Scraping those sites does not produce the hotel's bookings, and this build does not try.
+
+The running desk in `apps/web` collects three streams the team already has:
+
+- Room stays whose channel is the Luminary website, typed or imported from a reservation export.
+- Room stays whose channel is Airbnb, typed or imported from the host reservation export. The same confirmation code updates the existing stay.
+- Restaurant reservations by outlet, typed or imported from the outlet's list.
+
+Guest names in that desk are names the hotel typed or exported from its own tools. They are not a download of Marriott's guest file.
+
 ## What the first build writes
 
 Native, entered in Stemworks, and the system of record for these objects:

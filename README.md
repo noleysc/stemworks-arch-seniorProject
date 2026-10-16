@@ -19,8 +19,17 @@ Start with [docs/architecture/README.md](docs/architecture/README.md). It is the
 
 The sources reconciled here are the Technical Specification v1.0 (April 2026), the Dashboard Specification, and the Native Module Client Definitions. Where those documents disagree on calendar phase, the architecture isolates the module and does not invent a schedule.
 
-## Run
+## Run the booking desk
 
-There is no server to start. Implementation follows the phase gates in the architecture overview: kernel and row-level security, owner authentication, the Luminary hotel module, and the dashboard read model. Jade Flowers, Candle Atelier, Event Production, the Jade Haven pipeline, integration adapters, and the predictive layer are specified and are not part of that first build. Stemworks does not replace the hotel's property management system.
+The first running slice is Luminary Desk, in `apps/web`. It organizes room bookings from the Luminary website and from Airbnb, and restaurant reservations for the hotel's outlets. Collection is by typing a booking or by importing a CSV the hotel exports. The public Luminary and Marriott sites do not publish the reservation book, and this app does not scrape them.
+
+```bash
+cd apps/web
+npm install
+npx prisma db push
+npm run dev
+```
+
+The desk listens on port 43123. Jade Flowers, Candle Atelier, Event Production, the Jade Haven pipeline, and live Marriott or Airbnb connections are not part of this slice. Stemworks does not replace the hotel's property management system.
 
 Copyright Diaz Ventures LLC. All rights reserved. See [LICENSE](LICENSE).
