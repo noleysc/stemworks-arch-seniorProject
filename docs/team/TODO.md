@@ -1,71 +1,59 @@
-# Luminary Desk — team to-do list
+# Luminary Desk to-dos
 
-Owners
+Ryan leads the dashboard files. Henry leads the collection files. They review each other. Esmir owns the API. Nolan owns the fixture, the expected numbers, and acceptance.
 
-- **Nolan** — team lead. Holds the rules in [next-steps.md](next-steps.md). Accepts the slice.
-- **Esmir** — backend. Owns `apps/web/lib`, `apps/web/prisma`, and `apps/web/app/api`.
-- **Ryan and Henry** — dashboard and frontend. For this slice, Ryan leads `apps/web/app/dashboard` and `apps/web/components/dashboard`. Henry leads the collection pages, filters, and `desk-nav.tsx`. They review each other's work. Swap the lead if that fits the day. Do not both edit the same file.
+Confirmed and Potential are computed only in the API. Do not scrape Luminary, Marriott, or Airbnb.
 
-The screen reads bookings the desk already collects. It does not scrape Luminary, Marriott, or Airbnb. Confirmed and Potential are computed only in the API.
+## Nolan — team lead
 
-## Nolan
-
-- [ ] Keep [next-steps.md](next-steps.md) as the only place the cents rules change. A wrong number is fixed in the API, then the screen picks it up.
-- [ ] Confirm Ryan leads the dashboard files and Henry leads the collection files before they start, or swap that and tell them.
-- [ ] When Esmir says `/api/v1/bookings` is ready, tell Henry to switch the forms.
-- [ ] Accept the slice only when every item under "Done when" is true.
-- [ ] After acceptance, unlock the later list. Do not start Postgres, login, or the daily flash during this slice.
+- Write the acceptance CSVs: one Luminary-website stay, one Airbnb stay, one inquiry, one cancelled stay, one Silver King table, one arrival in 2 days, one arrival in 10 days
+- Hand-calculate Confirmed and Potential from those files and give Esmir the cents
+- Load that fixture into the running desk and keep it there while the screen is built
+- Check Esmir's API against the hand-calculated cents before Ryan builds on it
+- Check Ryan's screen against the four questions: money, what's next, what needs a person, how the three ventures look
+- Run the done-when list yourself and send each miss to the person who owns that file
+- Keep the cents rules in next-steps.md. A wrong number is fixed in the API, then the screen
+- Unlock Postgres, login, and the daily flash only after this slice passes
 
 ## Esmir — backend
 
-- [ ] Add `lib/dashboard.ts` that builds the `GET /api/v1/dashboard` payload from current SQLite bookings.
-- [ ] Confirmed cents: open `confirmed` and `arrived` stays and tables. A room amount is the stay total. Do not multiply by nights.
-- [ ] Potential cents: confirmed, plus open `inquiry` amounts. Cancelled, completed, and no-show add nothing.
-- [ ] Gatherings returns zeros, `expanded: false`, status label "No gatherings collected yet".
-- [ ] Top items are the three open bookings with the largest amount in that venture.
-- [ ] Attention is only `event_milestone_due`: a confirmed or arrived room arriving today or within three business days, and a table seated today. Do not mark inquiries as stalled.
-- [ ] Milestones are open arrivals and seatings for 90 days. `horizon=12m` uses 365 days.
-- [ ] `venture` omitted means all three. `rooms`, `dining`, and `gatherings` filter. Any other value, including `jade`, returns 404.
-- [ ] Tests insert a fixed set of bookings and assert cents, the three-day alert, the empty gatherings card, and the 404. Do not log guest names.
-- [ ] Move booking handlers to `/api/v1/bookings`, `/api/v1/bookings/:id`, `/api/v1/bookings/import`, and `/api/v1/bookings/template`.
-- [ ] Keep `/api/bookings` as aliases that call the same functions. Tell Nolan and Henry when the versioned paths are ready.
-- [ ] After Henry switches the forms, delete the `/api/bookings` aliases.
-- [ ] Do not add Postgres, login, a scraper, or a Marriott or Airbnb client in this slice.
+- Add GET /api/v1/dashboard from the current bookings
+- Confirmed = open confirmed and arrived stay totals. Potential = confirmed plus inquiries. Cancelled, completed, and no-show add nothing
+- Gatherings returns zeros and stays collapsed
+- Alerts only for confirmed arrivals inside 3 days, and tables seated today
+- Timeline is open arrivals and seatings for 90 days, or 365 when horizon=12m
+- Unknown venture returns 404
+- Tests assert Nolan's cents, the 3-day alert, empty gatherings, and the 404
+- Move booking routes to /api/v1/bookings and keep the old paths until Henry switches
+- Tell Nolan when the versioned routes are ready
+- No Postgres, login, or scraper in this slice
 
 ## Ryan — dashboard
 
-- [ ] Add `/dashboard`. Leave `/` as the collection home.
-- [ ] Render only `GET /api/v1/dashboard`. Do not import Prisma and do not recompute cents.
-- [ ] Command header stays pinned on desktop: Confirmed, Potential, the gap, the next milestone and countdown, and one alert when `topAlert` is present. No third number.
-- [ ] Attention rail lists the `attention` array. Empty copy: nothing is due in the next three days.
-- [ ] Three venture cards. Gatherings stays visible and quiet. A card with stays and zero cents says the amount is missing.
-- [ ] Timeline is horizontal, colored by `colorToken`, 90 days by default. Choosing 12 months refetches with `horizon=12m`.
-- [ ] Venture switcher refetches `?venture=`. "All ventures" clears it. Same page.
-- [ ] Phone stacks header, attention, cards, timeline. Desktop shows all four. The header does not scroll away on desktop.
-- [ ] Loading is a quiet waiting state. A failed fetch says the board could not be loaded and offers a retry. No sample guests and no sample dollars.
-- [ ] Ask Henry for the Dashboard link in `desk-nav.tsx`. Until it lands, `/dashboard` still works as a direct URL.
+- Build /dashboard from GET /api/v1/dashboard only. Do not recompute cents
+- Header: Confirmed, Potential, the gap, next milestone, one alert. No third number
+- Attention rail. If nothing is due, say so
+- Cards for Rooms, Dining, and Gatherings. Gatherings stays visible at zero
+- Timeline, 90 days, with a 12-month switch
+- Venture switcher refetches the same page
+- Phone stacks header, attention, cards, timeline. Desktop shows all four and the header stays put
+- Failed load offers a retry. No sample dollars
 
 ## Henry — frontend
 
-- [ ] Rooms board: filter by Luminary website, Airbnb, or all.
-- [ ] Restaurant board: filter by outlet.
-- [ ] If a save or import fails before a JSON body comes back, say the desk could not be reached. Keep the submit button disabled while a save is in flight.
-- [ ] When Esmir says the versioned routes are ready, point every `fetch` at `/api/v1/bookings`. Request bodies stay the same.
-- [ ] Add a Dashboard link in `desk-nav.tsx` to `/dashboard`.
-- [ ] Do not put Confirmed or Potential on the Rooms, Restaurant, or Collect pages.
+- Rooms filter: Luminary website, Airbnb, or all
+- Restaurant filter by outlet
+- If the desk cannot be reached, say so
+- When Esmir is ready, point the forms at /api/v1/bookings
+- Add a Dashboard link in the nav
+- Do not put Confirmed or Potential on the collection pages
 
 ## Done when
 
-- [ ] An Airbnb import and a restaurant import change Confirmed and Potential on `/dashboard` with no hand edit of the database. (Esmir, Ryan)
-- [ ] A confirmed arrival two days out is the header milestone and an attention item. An arrival ten days out is on the timeline and not in the rail. (Esmir, Ryan)
-- [ ] Gatherings is on the screen at zero, labeled as not yet collected. (Ryan)
-- [ ] An inquiry amount is inside Potential and outside Confirmed. (Esmir)
-- [ ] A cancelled stay changes neither number. (Esmir)
-- [ ] Rooms, Restaurant, and Collect still create, import, update status, and remove. (Henry)
-- [ ] `npm test` and `npm run lint` in `apps/web` pass, including the projection tests. (Esmir)
-
-## Later — Nolan unlocks these
-
-- [ ] Postgres, `tenant_id`, the three Luminary ventures, and row-level security. The dashboard JSON does not change. (Esmir)
-- [ ] Owner login, one owner, with manager and associate checks tested before those users exist. (Esmir, then Ryan and Henry send the cookie the security doc already specifies)
-- [ ] Group deals and the daily flash. Nolan updates the cents rules in [next-steps.md](next-steps.md) before Esmir changes the projection. (Nolan, Esmir)
+- Nolan's fixture changes the dashboard numbers with no hand edit of the database
+- The 2-day arrival is the milestone and an alert. The 10-day arrival is only on the timeline
+- Gatherings is on the screen at zero
+- The inquiry is in Potential and not in Confirmed
+- The cancelled stay changes neither number
+- Rooms, Restaurant, and Collect still create, import, update, and remove
+- npm test and npm run lint pass
