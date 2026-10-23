@@ -46,6 +46,15 @@ test("an Airbnb-shaped export maps onto a room booking", () => {
   assert.equal(result.records[0].roomType, "River King");
 });
 
+test("a stay-shaped source keeps its own channel inside the property book", () => {
+  const csv = "confirmation_code,guest_name,arrival_date,departure_date,party_size,amount,status\nVR1,Ada Lovelace,2026-06-01,2026-06-04,2,200.00,confirmed\n";
+  const result = mapImport("vrbo", csv, "stay");
+  assert.equal(result.issues.length, 0);
+  assert.equal(result.records[0].channel, "vrbo");
+  assert.equal(result.records[0].kind, "room");
+  assert.equal(result.records[0].amountCents, 20000);
+});
+
 test("a restaurant row requires a known Luminary outlet", () => {
   const csv = "guest_name,date,time,party_size,outlet\nSam Lee,2026-06-01,7:30 PM,4,Silver King\n";
   const result = mapImport("restaurant", csv);

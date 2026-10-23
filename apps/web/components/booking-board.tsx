@@ -26,16 +26,21 @@ export function BookingBoard({
   kind,
   emptyTitle,
   emptyBody,
+  sources = [],
+  initialSource = "all",
 }: {
   bookings: BookingRecord[];
   today: string;
   kind: "room" | "restaurant";
   emptyTitle: string;
   emptyBody: string;
+  sources?: { key: string; label: string }[];
+  initialSource?: string;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState<"upcoming" | "all">("upcoming");
+  const [source, setSource] = useState(initialSource);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,6 +48,7 @@ export function BookingBoard({
     const needle = query.trim().toLowerCase();
     return bookings.filter((booking) => {
       if (scope === "upcoming" && !isUpcoming(booking, today)) return false;
+      if (kind === "room" && source !== "all" && booking.channel !== source) return false;
       if (!needle) return true;
       const haystack = [booking.guestName, booking.confirmationCode, booking.roomType, outletLabel(booking.outlet)]
         .filter(Boolean)
@@ -50,7 +56,7 @@ export function BookingBoard({
         .toLowerCase();
       return haystack.includes(needle);
     });
-  }, [bookings, query, scope, today]);
+  }, [bookings, kind, query, scope, source, today]);
 
   async function changeStatus(id: string, status: string) {
     setPendingId(id);
@@ -105,6 +111,21 @@ export function BookingBoard({
             All
           </button>
         </div>
+        {kind === "room" && sources.length > 0 ? (
+          <Select value={source} onValueChange={setSource}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All sources</SelectItem>
+              {sources.map((item) => (
+                <SelectItem key={item.key} value={item.key}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : null}
       </div>
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
       {visible.length === 0 ? (
@@ -120,7 +141,7 @@ export function BookingBoard({
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-base font-medium text-stone-950">{booking.guestName}</h3>
-                    <Badge variant="secondary">{channelLabel(booking.channel)}</Badge>
+                    <Badge variant="secondary">{sources.find((item) => item.key === booking.channel)?.label ?? channelLabel(booking.channel)}</Badge>
                     {booking.confirmationCode ? (
                       <span className="font-mono text-xs text-stone-500">{booking.confirmationCode}</span>
                     ) : null}

@@ -4,7 +4,8 @@ import { matchOutlet, type OutletKey, type RoomChannel } from "@/lib/catalog";
 import { parseBusinessDate, parseTime } from "@/lib/dates";
 import { dollarsToCents } from "@/lib/money";
 
-export type ImportStream = RoomChannel | "restaurant";
+export type ImportStream = RoomChannel | "restaurant" | (string & {});
+export type ImportShape = "stay" | "airbnb" | "restaurant";
 
 export type MappedBooking = {
   kind: "room" | "restaurant";
@@ -116,10 +117,11 @@ export function parseCsv(text: string): string[][] {
   return rows;
 }
 
-export function mapImport(stream: ImportStream, text: string): {
+export function mapImport(stream: string, text: string, shape?: ImportShape): {
   records: MappedBooking[];
   issues: ImportIssue[];
 } {
+  const resolved = resolveShape(stream, shape);
   const table = parseCsv(text);
   if (table.length === 0) {
     return { records: [], issues: [{ row: 1, message: "The file is empty." }] };
@@ -135,7 +137,7 @@ export function mapImport(stream: ImportStream, text: string): {
       headers.map((header, cellIndex) => [header, (cells[cellIndex] ?? "").trim()]),
     );
     try {
-      records.push(mapRow(stream, values));
+      records.push(mapRow(stream, resolved, values));
     } catch (error) {
       issues.push({
         row: rowNumber,
@@ -147,17 +149,25 @@ export function mapImport(stream: ImportStream, text: string): {
   return { records, issues };
 }
 
-export function templateCsv(stream: ImportStream): string {
-  if (stream === "airbnb") {
+export function templateCsv(stream: string, shape?: ImportShape): string {
+  const resolved = resolveShape(stream, shape);
+  if (resolved === "airbnb") {
     return "Confirmation code,Guest name,Start date,End date,Listing,# of adults,# of children,Earnings,Status\n";
   }
-  if (stream === "restaurant") {
+  if (resolved === "restaurant") {
     return "outlet,guest_name,date,time,party_size,confirmation_code,amount,status,notes\n";
   }
   return "confirmation_code,guest_name,arrival_date,departure_date,room_type,party_size,amount,status,notes\n";
 }
 
-function mapRow(stream: ImportStream, values: Record<string, string>): MappedBooking {
+function resolveShape(stream: string, shape?: ImportShape): ImportShape {
+  if (shape) return shape;
+  if (stream === "restaurant") return "restaurant";
+  if (stream === "airbnb") return "airbnb";
+  return "stay";
+}
+
+function mapRow(stream: string, shape: ImportShape, values: Record<string, string>): MappedBooking {
   const guestName = values.guest ?? "";
   if (!guestName) throw new Error("Guest name is required.");
 
@@ -175,7 +185,7 @@ function mapRow(stream: ImportStream, values: Record<string, string>): MappedBoo
   const confirmationCode = values.confirmation || null;
   const notes = values.notes || null;
 
-  if (stream === "restaurant") {
+  if (shape === "restaurant") {
     const outlet = matchOutlet(values.outlet ?? "");
     if (!outlet) {
       throw new Error("Outlet is required. Use a Luminary outlet name, such as Silver King or Ella Mae's.");

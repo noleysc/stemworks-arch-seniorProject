@@ -2,16 +2,27 @@
 
 import { NextResponse } from "next/server";
 
-import { templateCsv, type ImportStream } from "@/lib/csv";
-
-const streams = new Set<ImportStream>(["luminary_website", "airbnb", "restaurant"]);
+import { templateCsv } from "@/lib/csv";
+import { listRentalSources } from "@/lib/property";
 
 export async function GET(request: Request) {
-  const stream = new URL(request.url).searchParams.get("stream") as ImportStream | null;
-  if (!stream || !streams.has(stream)) {
+  const stream = new URL(request.url).searchParams.get("stream");
+  if (!stream) {
     return NextResponse.json({ error: "Unknown template." }, { status: 400 });
   }
-  return new NextResponse(templateCsv(stream), {
+  if (stream !== "restaurant") {
+    const sources = await listRentalSources();
+    const source = sources.find((item) => item.key === stream);
+    if (!source) {
+      return NextResponse.json({ error: "Unknown template." }, { status: 400 });
+    }
+    return csvResponse(templateCsv(stream, source.importShape), stream);
+  }
+  return csvResponse(templateCsv(stream, "restaurant"), stream);
+}
+
+function csvResponse(body: string, stream: string) {
+  return new NextResponse(body, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="${stream}-bookings.csv"`,

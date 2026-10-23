@@ -24,14 +24,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ROOM_CHANNELS, STATUSES, statusLabel } from "@/lib/catalog";
+import { STATUSES, statusLabel } from "@/lib/catalog";
 
-export function RoomForm() {
+export function RoomForm({ sources }: { sources: { key: string; label: string }[] }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [channel, setChannel] = useState("luminary_website");
+  const [channel, setChannel] = useState(sources[0]?.key ?? "luminary_website");
   const [status, setStatus] = useState("confirmed");
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -69,13 +69,13 @@ export function RoomForm() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Add room booking</Button>
+        <Button>Add rental</Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Room booking</DialogTitle>
           <DialogDescription>
-            A stay that came through the Luminary website or Airbnb. Type what the hotel already has.
+            A stay for this property. Pick the source it was rented on. The same confirmation code on another source stays a separate rental.
           </DialogDescription>
         </DialogHeader>
         <form className="grid gap-3" onSubmit={onSubmit}>
@@ -85,7 +85,7 @@ export function RoomForm() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {ROOM_CHANNELS.map((item) => (
+                {sources.map((item) => (
                   <SelectItem key={item.key} value={item.key}>
                     {item.label}
                   </SelectItem>

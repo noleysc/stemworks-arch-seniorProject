@@ -23,7 +23,7 @@ The sources reconciled here are the Technical Specification v1.0 (April 2026), t
 
 ## Run the booking desk
 
-The first running slice is Luminary Desk, in `apps/web`. It organizes room bookings from the Luminary website and from Airbnb, and restaurant reservations for the hotel's outlets. Collection is by typing a booking or by importing a CSV the hotel exports. The public Luminary and Marriott sites do not publish the reservation book, and this app does not scrape them.
+The first running slice is Luminary Desk, in `apps/web`. It is the rental aggregate for Luminary Hotel & Co.: every stay from the Luminary website, Airbnb, and any later rental source rolls into one property total. Restaurant reservations stay on the property and outside that total. Collection is by typing a booking or by importing a CSV the hotel exports. The public Luminary and Marriott sites do not publish the reservation book, and this app does not scrape them.
 
 ```bash
 cd apps/web

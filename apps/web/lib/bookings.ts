@@ -3,14 +3,14 @@
 import type { Booking } from "@prisma/client";
 import { z } from "zod";
 
-import { OUTLETS, ROOM_CHANNELS, STATUSES } from "@/lib/catalog";
-import { mapImport, type ImportStream, type MappedBooking } from "@/lib/csv";
+import { OUTLETS, STATUSES } from "@/lib/catalog";
+import { mapImport, type MappedBooking } from "@/lib/csv";
 import { prisma } from "@/lib/db";
 import { dollarsToCents } from "@/lib/money";
+import { ensureLuminary, listRentalSources } from "@/lib/property";
 
 const statusKeys = STATUSES.map((status) => status.key) as [string, ...string[]];
 const outletKeys = OUTLETS.map((outlet) => outlet.key) as [string, ...string[]];
-const roomChannels = ROOM_CHANNELS.map((channel) => channel.key) as [string, ...string[]];
 
 const baseFields = {
   guestName: z.string().trim().min(1, "Guest name is required.").max(160),
@@ -25,7 +25,7 @@ const baseFields = {
 export const roomInputSchema = z
   .object({
     ...baseFields,
-    channel: z.enum(roomChannels),
+    channel: z.string().trim().regex(/^[a-z][a-z0-9_]{0,40}$/, "Unknown rental source."),
     departureDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a real departure date."),
     roomType: z.string().trim().max(120).optional().or(z.literal("")),
   })
@@ -59,16 +59,23 @@ export type BookingRecord = {
 };
 
 export async function listBookings(filter?: { kind?: string }): Promise<BookingRecord[]> {
+  const property = await ensureLuminary();
   const rows = await prisma.booking.findMany({
-    where: filter?.kind ? { kind: filter.kind } : undefined,
+    where: { propertyId: property.id, ...(filter?.kind ? { kind: filter.kind } : {}) },
     orderBy: [{ arrivalDate: "asc" }, { reservationTime: "asc" }, { guestName: "asc" }],
   });
   return rows.map(toRecord);
 }
 
 export async function createRoomBooking(input: z.infer<typeof roomInputSchema>) {
+  const property = await ensureLuminary();
+  const sources = await listRentalSources();
+  if (!sources.some((source) => source.key === input.channel)) {
+    throw new Error("That rental source is not registered for this property.");
+  }
   return prisma.booking.create({
     data: {
+      propertyId: property.id,
       kind: "room",
       channel: input.channel,
       guestName: input.guestName,
@@ -86,8 +93,10 @@ export async function createRoomBooking(input: z.infer<typeof roomInputSchema>) 
 }
 
 export async function createRestaurantBooking(input: z.infer<typeof restaurantInputSchema>) {
+  const property = await ensureLuminary();
   return prisma.booking.create({
     data: {
+      propertyId: property.id,
       kind: "restaurant",
       channel: "restaurant",
       guestName: input.guestName,
@@ -115,13 +124,15 @@ export async function deleteBooking(id: string) {
   return prisma.booking.delete({ where: { id } });
 }
 
-export async function importBookings(stream: ImportStream, csv: string) {
-  const mapped = mapImport(stream, csv);
+export async function importBookings(stream: string, csv: string) {
+  const property = await ensureLuminary();
+  const shape = await importShapeFor(stream);
+  const mapped = mapImport(stream, csv, shape);
   let created = 0;
   let updated = 0;
 
   for (const record of mapped.records) {
-    const outcome = await upsertImported(record);
+    const outcome = await upsertImported(property.id, record);
     if (outcome === "created") created += 1;
     else updated += 1;
   }
@@ -129,10 +140,20 @@ export async function importBookings(stream: ImportStream, csv: string) {
   return { created, updated, issues: mapped.issues };
 }
 
-async function upsertImported(record: MappedBooking): Promise<"created" | "updated"> {
+async function importShapeFor(stream: string) {
+  if (stream === "restaurant") return "restaurant" as const;
+  const sources = await listRentalSources();
+  const source = sources.find((item) => item.key === stream);
+  if (!source) {
+    throw new Error("That rental source is not registered for this property.");
+  }
+  return source.importShape;
+}
+
+async function upsertImported(propertyId: string, record: MappedBooking): Promise<"created" | "updated"> {
   if (record.confirmationCode) {
     const existing = await prisma.booking.findFirst({
-      where: { channel: record.channel, confirmationCode: record.confirmationCode },
+      where: { propertyId, channel: record.channel, confirmationCode: record.confirmationCode },
     });
     if (existing) {
       await prisma.booking.update({
@@ -143,7 +164,7 @@ async function upsertImported(record: MappedBooking): Promise<"created" | "updat
     }
   }
 
-  await prisma.booking.create({ data: { ...record, source: "csv" } });
+  await prisma.booking.create({ data: { ...record, propertyId, source: "csv" } });
   return "created";
 }
 

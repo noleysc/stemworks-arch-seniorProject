@@ -83,11 +83,11 @@ The fact sheet's combined claim is more than 149,000 square feet across the hote
 
 The hotel's reservation book is not on the public Luminary website or on Marriott's shopping pages. Marriott's robots.txt disallows `/reservation/availabilitySearch.mi`. Airbnb reservations sit behind the host login. Restaurant books sit in the outlet's own system (Silver King publishes OpenTable and a phone line). Scraping those sites does not produce the hotel's bookings, and this build does not try.
 
-The running desk in `apps/web` collects three streams the team already has:
+The running desk in `apps/web` is the rental aggregate for one property, Luminary Hotel & Co. (`property.key = luminary`). A rental is a room stay on that property. A rental source is a row that feeds the aggregate. The seeded sources are the Luminary website (`importShape = stay`) and Airbnb (`importShape = airbnb`). Another source is another `RentalSource` row, not a new table. `GET /api/rentals` sums every registered source. A source with no stays stays in that payload at zero.
 
-- Room stays whose channel is the Luminary website, typed or imported from a reservation export.
-- Room stays whose channel is Airbnb, typed or imported from the host reservation export. The same confirmation code updates the existing stay.
-- Restaurant reservations by outlet, typed or imported from the outlet's list.
+Identity for an imported stay is `propertyId` + source key + confirmation code. The same code on two sources is two rentals. Re-importing the same triple updates the existing stay.
+
+Restaurant reservations stay on the property, by outlet, and are outside the rental total.
 
 Guest names in that desk are names the hotel typed or exported from its own tools. They are not a download of Marriott's guest file.
 

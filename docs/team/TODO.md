@@ -1,6 +1,6 @@
 # Luminary Desk — slice instructions
 
-Projection input is the `Booking` table in SQLite. Money is `amountCents` (integer cents). The business date is `America/New_York`, stored and compared as `YYYY-MM-DD`. Confirmed and Potential are computed only in `lib/dashboard.ts`. Ingestion is `POST` JSON and CSV import. The app does not read Luminary, Marriott, or Airbnb pages.
+Projection input is the `Booking` table in SQLite, scoped to property `luminary`. Money is `amountCents` (integer cents). The business date is `America/New_York`, stored and compared as `YYYY-MM-DD`. Confirmed and Potential for rentals are the sum of every `RentalSource` on that property (`luminary_website`, `airbnb`, and later rows). `GET /api/rentals` is that aggregate. A stay's identity is `propertyId` + source key + `confirmationCode`. Restaurant rows stay on the property and are outside the rental total. Ingestion is `POST` JSON and CSV import. The app does not read Luminary, Marriott, or Airbnb pages.
 
 Day delta is calendar days, not elapsed hours. Parse both `YYYY-MM-DD` values as UTC midnight and divide by `86400000`. A room amount is the stay total. Do not multiply by nights.
 

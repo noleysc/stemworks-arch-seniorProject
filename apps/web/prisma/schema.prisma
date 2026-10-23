@@ -7,8 +7,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Property {
+  id       String         @id @default(cuid())
+  key      String         @unique
+  name     String
+  address  String
+  timezone String
+  keys     Int
+  sources  RentalSource[]
+  bookings Booking[]
+}
+
+model RentalSource {
+  id          String   @id @default(cuid())
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id])
+  key         String
+  label       String
+  importShape String
+  createdAt   DateTime @default(now())
+
+  @@unique([propertyId, key])
+}
+
 model Booking {
   id               String   @id @default(cuid())
+  propertyId       String
+  property         Property @relation(fields: [propertyId], references: [id])
   kind             String
   channel          String
   guestName        String
@@ -26,6 +51,6 @@ model Booking {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  @@index([kind, arrivalDate])
-  @@index([channel, confirmationCode])
+  @@index([propertyId, kind, arrivalDate])
+  @@index([propertyId, channel, confirmationCode])
 }

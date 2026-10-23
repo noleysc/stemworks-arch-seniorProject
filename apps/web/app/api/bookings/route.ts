@@ -25,8 +25,14 @@ export async function POST(request: Request) {
   if (kind === "room") {
     const parsed = roomInputSchema.safeParse(body);
     if (!parsed.success) return fieldError(parsed.error.issues[0]?.message);
-    const booking = await createRoomBooking(parsed.data);
-    return NextResponse.json({ id: booking.id }, { status: 201 });
+    try {
+      const booking = await createRoomBooking(parsed.data);
+      return NextResponse.json({ id: booking.id }, { status: 201 });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : undefined;
+      if (message?.includes("rental source")) return fieldError(message);
+      throw error;
+    }
   }
   if (kind === "restaurant") {
     const parsed = restaurantInputSchema.safeParse(body);

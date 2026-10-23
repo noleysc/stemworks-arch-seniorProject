@@ -12,7 +12,7 @@ Luminary Desk is running in `apps/web`. It collects three kinds of bookings and 
 - Room stays whose channel is Airbnb
 - Restaurant reservations for the hotel's outlets
 
-People type a booking, or they import a CSV the hotel exported. The public Luminary site, Marriott reservation search, and Airbnb host pages are not scraped. Money is integer cents. The business date is America/New_York.
+People type a booking, or they import a CSV the hotel exported. Those room stays are one rental aggregate for the property: `GET /api/rentals` sums every `RentalSource` (`luminary_website`, `airbnb`, and any source added later). A confirmation code is unique per source. Restaurant rows stay on the property and outside that total. The public Luminary site, Marriott reservation search, and Airbnb host pages are not scraped. Money is integer cents. The business date is America/New_York.
 
 What is on screen today is a collection desk: Today, Rooms, Restaurant, and Collect. It is not yet the four-zone manager dashboard in [../architecture/dashboard.md](../architecture/dashboard.md). There is no login, no Postgres, and no row-level security. The API lives in Next.js route handlers under `/api/bookings`, not `/api/v1`.
 

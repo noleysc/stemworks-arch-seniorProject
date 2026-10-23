@@ -21,7 +21,7 @@ const newsreader = Newsreader({
 
 export const metadata: Metadata = {
   title: "Luminary Desk",
-  description: "Room and restaurant bookings for Luminary Hotel & Co., collected from the Luminary website, Airbnb, and the outlets.",
+  description: "Every rental for Luminary Hotel & Co., collected from the Luminary website, Airbnb, and the hotel's other sources.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -8,30 +8,32 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const streams = [
-  {
-    key: "luminary_website",
-    label: "Luminary website",
-    body: "Export the reservation report from the hotel’s Marriott or Luminary booking tools. Columns the desk recognizes: confirmation code, guest name, arrival, departure, room type, party size, amount, status, notes.",
-  },
-  {
-    key: "airbnb",
-    label: "Airbnb",
-    body: "From the Airbnb host account, export reservations. A file with Confirmation code, Guest name, Start date, End date, Listing, # of adults, # of children, Earnings, and Status drops in as-is.",
-  },
-  {
-    key: "restaurant",
-    label: "Restaurant",
-    body: "A list from the outlet’s reservation book, including an OpenTable export when the columns match. Outlet can be Silver King, Ella Mae's, Chips, Oxbow, Beacon, Dean Street, Pool Bar, or in-room dining.",
-  },
-] as const;
+type Source = { key: string; label: string; importShape: string };
+
+const restaurantStream = {
+  key: "restaurant",
+  label: "Restaurant",
+  body: "A list from the outlet’s reservation book, including an OpenTable export when the columns match. Outlet can be Silver King, Ella Mae's, Chips, Oxbow, Beacon, Dean Street, Pool Bar, or in-room dining. These rows stay off the rental total.",
+};
 
 type Issue = { row: number; message: string };
 type Result = { created: number; updated: number; issues: Issue[] };
 
-export function ImportPanel() {
+export function ImportPanel({ sources }: { sources: Source[] }) {
+  const streams = [
+    ...sources.map((source) => ({
+      key: source.key,
+      label: source.label,
+      body:
+        source.importShape === "airbnb"
+          ? "From the Airbnb host account, export reservations. A file with Confirmation code, Guest name, Start date, End date, Listing, # of adults, # of children, Earnings, and Status drops in as-is. Re-importing the same confirmation code updates that Airbnb rental."
+          : "Export the reservation report for this source. Columns the desk recognizes: confirmation code, guest name, arrival, departure, room type, party size, amount, status, notes. Re-importing the same confirmation code updates that source’s rental.",
+    })),
+    restaurantStream,
+  ];
+
   return (
-    <Tabs defaultValue="luminary_website">
+    <Tabs defaultValue={streams[0]?.key ?? "luminary_website"}>
       <TabsList className="h-auto flex-wrap">
         {streams.map((stream) => (
           <TabsTrigger key={stream.key} value={stream.key}>
