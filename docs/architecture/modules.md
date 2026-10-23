@@ -144,7 +144,7 @@ The first tenant is Luminary Hotel & Co. The Diaz Ventures ventures are a differ
 | Luminary Rooms | Luminary | `boutique_hotel` | `hotel` | Rooms projection, read-only, counts and cents |
 | Luminary Dining | Luminary | `boutique_hotel` | `hotel` | Outlet sales projection, net sales and covers |
 | Luminary Gatherings | Luminary | `boutique_hotel` | `hotel` | Public-show talent carry-forward only if `event-production` is later enabled |
-| Jade Flowers | Diaz Ventures | `product_brand` | none | `product`, `atelier` |
+| Jade Flowers | Diaz Ventures | `product_brand` | `product` (materials, SKUs, orders) | `atelier`, batches / lineage |
 | Jade Experiences | Diaz Ventures | `event_production` | none | `event-production` |
 | Jade Haven | Diaz Ventures | `wellness_hospitality` | none | `hospitality` |
 | Stemworks | Diaz Ventures | `software` | none | Its own commercial pipeline, manual milestones until a module is justified |

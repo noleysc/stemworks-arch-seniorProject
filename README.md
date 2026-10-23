@@ -1,8 +1,14 @@
 # Stemworks
 
-Architecture for the Stemworks operating system. Stemworks is owned by Diaz Ventures LLC. The first build is the operating record for Luminary Hotel & Co., the Autograph Collection hotel in downtown Fort Myers: rooms, dining outlets, and gatherings, beside Marriott's systems rather than in place of them. The same kernel is what later tenants run, including Diaz Ventures' own ventures, under row-level isolation from the first migration.
+Stemworks is a multi-tenant operating dashboard owned by Diaz Ventures LLC. Ventures plug into one board through module ports. Tenants never sum into each other.
 
-The running booking desk is in `apps/web`. The architecture documents below still govern what gets built next.
+Running slices in `apps/web`:
+
+- **Dashboard** — `/dashboard` — tenant switcher, Confirmed / Potential, attention, venture cards, timeline
+- **Luminary Desk** — `/` — rental aggregate for Luminary Hotel & Co. (website + Airbnb + later sources)
+- **Jade Flowers** — `/jade` — product materials, SKUs, and orders on the Diaz Ventures tenant
+
+The architecture documents below still govern what gets built next.
 
 ## Read this
 
@@ -11,7 +17,8 @@ Start with [docs/architecture/README.md](docs/architecture/README.md). It is the
 | Document | What it settles |
 | --- | --- |
 | [docs/architecture/README.md](docs/architecture/README.md) | Boundaries, shape, phase gates |
-| [docs/architecture/luminary.md](docs/architecture/luminary.md) | First build: Luminary Hotel & Co. |
+| [docs/architecture/luminary.md](docs/architecture/luminary.md) | Luminary Hotel & Co. property contract |
+| [docs/architecture/jade-flowers.md](docs/architecture/jade-flowers.md) | Jade Flowers product slice on Diaz Ventures |
 | [docs/architecture/modules.md](docs/architecture/modules.md) | Aggregates, ports, which venture enables which module |
 | [docs/architecture/security.md](docs/architecture/security.md) | Authentication, row-level security, ledger, secrets, CI |
 | [docs/architecture/dashboard.md](docs/architecture/dashboard.md) | The four zones and where Phase 1 numbers come from |
@@ -21,9 +28,7 @@ Start with [docs/architecture/README.md](docs/architecture/README.md). It is the
 
 The sources reconciled here are the Technical Specification v1.0 (April 2026), the Dashboard Specification, and the Native Module Client Definitions. Where those documents disagree on calendar phase, the architecture isolates the module and does not invent a schedule.
 
-## Run the booking desk
-
-The first running slice is Luminary Desk, in `apps/web`. It is the rental aggregate for Luminary Hotel & Co.: every stay from the Luminary website, Airbnb, and any later rental source rolls into one property total. Restaurant reservations stay on the property and outside that total. Collection is by typing a booking or by importing a CSV the hotel exports. The public Luminary and Marriott sites do not publish the reservation book, and this app does not scrape them.
+## Run the desks
 
 ```bash
 cd apps/web
@@ -32,6 +37,14 @@ npx prisma db push
 npm run dev
 ```
 
-The desk listens on port 43123. Jade Flowers, Candle Atelier, Event Production, the Jade Haven pipeline, and live Marriott or Airbnb connections are not part of this slice. Stemworks does not replace the hotel's property management system.
+The app listens on port 43123.
+
+| URL | What it is |
+| --- | --- |
+| `/dashboard` | Scalable command board. `?tenant=luminary` or `?tenant=diaz_ventures` |
+| `/` | Luminary rental desk |
+| `/jade` | Jade Flowers product desk |
+
+Candle Atelier, Event Production, Jade Haven pipeline, Postgres RLS, and live Craftybase / Marriott adapters are later slices. Stemworks does not replace the hotel's property management system.
 
 Copyright Diaz Ventures LLC. All rights reserved. See [LICENSE](LICENSE).

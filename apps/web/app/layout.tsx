@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { Newsreader } from "next/font/google";
 import localFont from "next/font/local";
 
-import { DeskNav } from "@/components/desk-nav";
+import { AppChrome } from "@/components/app-chrome";
 
 import "./globals.css";
 
@@ -20,16 +20,15 @@ const newsreader = Newsreader({
 });
 
 export const metadata: Metadata = {
-  title: "Luminary Desk",
-  description: "Every rental for Luminary Hotel & Co., collected from the Luminary website, Airbnb, and the hotel's other sources.",
+  title: "Stemworks",
+  description: "Multi-tenant operating dashboard for Diaz Ventures and Luminary Hotel & Co.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${newsreader.variable} bg-stone-50 font-sans text-stone-950 antialiased`}>
-        <DeskNav />
-        <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+        <AppChrome>{children}</AppChrome>
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 import { prisma } from "@/lib/db";
+import { ensureTenant } from "@/lib/tenancy";
 
 export const LUMINARY = {
   key: "luminary",
@@ -26,15 +27,17 @@ export type RentalSourceRecord = {
 const sourceKeyPattern = /^[a-z][a-z0-9_]{0,40}$/;
 
 export async function ensureLuminary() {
+  const tenant = await ensureTenant("luminary");
   const property = await prisma.property.upsert({
     where: { key: LUMINARY.key },
     update: {
+      tenantId: tenant.id,
       name: LUMINARY.name,
       address: LUMINARY.address,
       timezone: LUMINARY.timezone,
       keys: LUMINARY.keys,
     },
-    create: { ...LUMINARY },
+    create: { tenantId: tenant.id, ...LUMINARY },
   });
 
   for (const source of SEED_SOURCES) {

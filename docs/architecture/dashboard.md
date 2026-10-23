@@ -47,7 +47,11 @@ Phase 1 renders Confirmed and Potential only. Predicted is not reserved as a bla
 
 The composer asks each enabled module for `confirmedCents` and `potentialCents` on the ventures in view, and sums the cents. It does not average them and it does not convert through floating point.
 
-In the first build the only contributors are the three Luminary ventures, all from the `hotel` module. The formulas are in [luminary.md](luminary.md).
+The board is tenant-scoped. `GET /api/v1/dashboard?tenant=` selects the tenant. The composer asks each enabled module port for that tenant's ventures and sums cents inside that tenant only.
+
+For `tenant=luminary`, the contributors are the three Luminary ventures from the `hotel` port (room and restaurant bookings today; gatherings stay zero until deals are collected). Formulas for the full hotel flash path are in [luminary.md](luminary.md).
+
+For `tenant=diaz_ventures`, Jade Flowers contributes through the `product` port (orders and reorder alerts). Experiences, Haven, and Stemworks render as quiet placeholders until their modules are enabled. See [jade-flowers.md](jade-flowers.md).
 
 - Rooms confirmed is flashed room revenue for business dates already reached, plus definite group room revenue not yet recognized on a flash. Potential adds room revenue on inquiry and tentative deals. Unsold keys at rack rate are not potential.
 - Dining confirmed is posted outlet net sales. Potential adds food-and-beverage minimums on open deals that a flash has not yet recognized. A minimum and a flash for the same banquet are not both added.

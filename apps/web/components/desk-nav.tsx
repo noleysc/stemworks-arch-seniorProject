@@ -12,6 +12,8 @@ const links = [
   { href: "/rooms", label: "Rentals" },
   { href: "/restaurant", label: "Restaurant" },
   { href: "/import", label: "Collect" },
+  { href: "/dashboard?tenant=luminary", label: "Dashboard" },
+  { href: "/jade", label: "Jade Flowers" },
 ];
 
 export function DeskNav() {
@@ -26,7 +28,12 @@ export function DeskNav() {
         </Link>
         <nav className="flex gap-1 overflow-x-auto">
           {links.map((link) => {
-            const active = pathname === link.href;
+            const active =
+              link.href.startsWith("/dashboard")
+                ? pathname.startsWith("/dashboard")
+                : link.href === "/jade"
+                  ? pathname.startsWith("/jade")
+                  : pathname === link.href;
             return (
               <Link
                 key={link.href}

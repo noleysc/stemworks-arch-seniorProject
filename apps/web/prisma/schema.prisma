@@ -7,8 +7,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Tenant {
+  id        String     @id @default(cuid())
+  key       String     @unique
+  name      String
+  planTier  String     @default("internal")
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  ventures  Venture[]
+  properties Property[]
+}
+
+model Venture {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  key         String
+  name        String
+  type        String
+  prefixCode  String
+  colorToken  String
+  statusLabel String
+  createdAt   DateTime @default(now())
+
+  materials Material[]
+  skus      Sku[]
+  customers Customer[]
+  orders    Order[]
+
+  @@unique([tenantId, key])
+  @@unique([tenantId, prefixCode])
+}
+
 model Property {
   id       String         @id @default(cuid())
+  tenantId String
+  tenant   Tenant         @relation(fields: [tenantId], references: [id])
   key      String         @unique
   name     String
   address  String
@@ -53,4 +87,121 @@ model Booking {
 
   @@index([propertyId, kind, arrivalDate])
   @@index([propertyId, channel, confirmationCode])
+}
+
+model Material {
+  id            String   @id @default(cuid())
+  ventureId     String
+  venture       Venture  @relation(fields: [ventureId], references: [id])
+  name          String
+  category      String
+  unit          String
+  supplier      String?
+  supplierSku   String?
+  reorderPoint  Int      @default(0)
+  leadTimeDays  Int      @default(7)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  purchases     MaterialPurchase[]
+  level         InventoryLevel?
+  movements     InventoryMovement[]
+
+  @@index([ventureId, name])
+}
+
+model MaterialPurchase {
+  id                 String   @id @default(cuid())
+  materialId         String
+  material           Material @relation(fields: [materialId], references: [id])
+  receivedOn         String
+  quantityReceived   Int
+  quantityRemaining  Int
+  totalCostCents     Int
+  costPerUnitCents   Int
+  supplierOrderRef   String?
+  createdAt          DateTime @default(now())
+}
+
+model InventoryLevel {
+  materialId     String   @id
+  material       Material @relation(fields: [materialId], references: [id])
+  quantityOnHand Int      @default(0)
+  updatedAt      DateTime @updatedAt
+}
+
+model InventoryMovement {
+  id           String   @id @default(cuid())
+  materialId   String
+  material     Material @relation(fields: [materialId], references: [id])
+  kind         String
+  quantity     Int
+  referenceId  String?
+  note         String?
+  createdAt    DateTime @default(now())
+
+  @@index([materialId, createdAt])
+}
+
+model Sku {
+  id               String   @id @default(cuid())
+  ventureId        String
+  venture          Venture  @relation(fields: [ventureId], references: [id])
+  code             String
+  name             String
+  retailCents      Int
+  wholesaleCents   Int
+  eventCents       Int
+  unitsOnHand      Int      @default(0)
+  unitsAllocated   Int      @default(0)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  lineItems        OrderLineItem[]
+
+  @@unique([ventureId, code])
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  ventureId String
+  venture   Venture  @relation(fields: [ventureId], references: [id])
+  name      String
+  email     String?
+  kind      String
+  createdAt DateTime @default(now())
+  orders    Order[]
+
+  @@index([ventureId, name])
+}
+
+model Order {
+  id             String   @id @default(cuid())
+  ventureId      String
+  venture        Venture  @relation(fields: [ventureId], references: [id])
+  code           String
+  customerId     String?
+  customer       Customer? @relation(fields: [customerId], references: [id])
+  customerName   String
+  channel        String
+  status         String
+  netAmountCents Int
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  lineItems      OrderLineItem[]
+
+  @@unique([ventureId, code])
+  @@index([ventureId, status])
+}
+
+model OrderLineItem {
+  id              String @id @default(cuid())
+  orderId         String
+  order           Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  skuId           String
+  sku             Sku    @relation(fields: [skuId], references: [id])
+  quantity        Int
+  unitPriceCents  Int
+  lineTotalCents  Int
 }
