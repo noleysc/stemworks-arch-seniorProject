@@ -2,7 +2,7 @@
 
 Confidential. Diaz Ventures LLC · Stemworks LLC · 2026.
 
-The team lead owns the whole project. Three people take the next slice. This document is the work split. It does not reopen the architecture in [../architecture/README.md](../architecture/README.md) or the property contract in [../architecture/luminary.md](../architecture/luminary.md).
+Nolan is team lead. Esmir is backend. Ryan and Henry cover dashboard and frontend. The checklist with those names is [TODO.md](TODO.md). This document is the work split. It does not reopen the architecture in [../architecture/README.md](../architecture/README.md) or the property contract in [../architecture/luminary.md](../architecture/luminary.md).
 
 ## Where the work stands
 

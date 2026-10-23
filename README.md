@@ -17,6 +17,7 @@ Start with [docs/architecture/README.md](docs/architecture/README.md). It is the
 | [docs/architecture/dashboard.md](docs/architecture/dashboard.md) | The four zones and where Phase 1 numbers come from |
 | [docs/architecture/spec-gaps.md](docs/architecture/spec-gaps.md) | Spec omissions and the decision recorded for each |
 | [docs/team/next-steps.md](docs/team/next-steps.md) | Next slice for frontend, backend, and dashboard |
+| [docs/team/TODO.md](docs/team/TODO.md) | To-do list for Nolan, Esmir, Ryan, and Henry |
 
 The sources reconciled here are the Technical Specification v1.0 (April 2026), the Dashboard Specification, and the Native Module Client Definitions. Where those documents disagree on calendar phase, the architecture isolates the module and does not invent a schedule.
 
