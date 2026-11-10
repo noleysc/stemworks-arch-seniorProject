@@ -19,9 +19,8 @@ export default async function ExperiencesCrmPage({
         <h1 className="font-display text-4xl text-slate-950">Private business CRM</h1>
         <p className="mt-3 text-sm leading-6 text-slate-700">
           Contacts appear here only after an explicit per-vendor opt-in at RSVP. Filter with{" "}
-          <code className="rounded bg-slate-200/70 px-1">?business=jade_haven</code>,{" "}
-          <code className="rounded bg-slate-200/70 px-1">jade_flowers</code>, or{" "}
-          <code className="rounded bg-slate-200/70 px-1">charcuterie_co</code>.
+          <code className="rounded bg-slate-200/70 px-1">?business=the_pampered_soul</code> or any
+          vendor <code className="rounded bg-slate-200/70 px-1">businessKey</code> you added.
         </p>
       </div>
       <CrmBoard contacts={contacts} businessFilter={business} />

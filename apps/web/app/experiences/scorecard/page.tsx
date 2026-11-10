@@ -7,6 +7,17 @@ export const dynamic = "force-dynamic";
 
 export default async function ScorecardPage() {
   const scorecard = await eventScorecard();
+  if (!scorecard) {
+    return (
+      <p className="text-sm text-slate-600">
+        No event to score yet.{" "}
+        <a className="underline" href="/experiences/new">
+          Plan one
+        </a>
+        .
+      </p>
+    );
+  }
   const checkInPct =
     scorecard.checkInRate === null ? "—" : `${Math.round(scorecard.checkInRate * 100)}%`;
 

@@ -14,7 +14,7 @@ const links = [
   { href: "/import", label: "Collect" },
   { href: "/dashboard?tenant=luminary", label: "Dashboard" },
   { href: "/jade", label: "Jade Flowers" },
-  { href: "/experiences", label: "Experiences" },
+  { href: "/experiences", label: "Pampered Soul" },
 ];
 
 export function DeskNav() {

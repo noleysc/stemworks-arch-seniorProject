@@ -18,6 +18,7 @@ Companion documents:
 - [dashboard.md](dashboard.md) — the four zones, filter rules, and Phase 1 data sources
 - [spec-gaps.md](spec-gaps.md) — places a field list omitted a column the prose requires, and the decision recorded for each
 - [experiences-crm.md](experiences-crm.md) — Event + CRM PRD (spa / holiday pilot) mapped to Stemworks
+- [invite-page.md](invite-page.md) — owner planner vs guest invite for The Pampered Soul
 - [architecture-questions.md](architecture-questions.md) — decisions still required for that pilot
 - [competitive-differentiation.md](competitive-differentiation.md) — what we refuse to copy from Eventbrite / Partiful / Square / HoneyBook
 

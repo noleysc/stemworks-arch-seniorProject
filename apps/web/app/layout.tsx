@@ -17,6 +17,8 @@ const geistSans = localFont({
 const newsreader = Newsreader({
   subsets: ["latin"],
   variable: "--font-newsreader",
+  adjustFontFallback: false,
+  display: "swap",
 });
 
 export const metadata: Metadata = {

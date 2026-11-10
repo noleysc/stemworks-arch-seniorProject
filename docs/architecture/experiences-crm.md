@@ -11,14 +11,14 @@ Questions that remain open: [architecture-questions.md](architecture-questions.m
 | PRD concept | Stemworks home |
 | --- | --- |
 | Business account | `Tenant` + ventures (`Venture`) |
-| Event management | Experiences desk on **Jade Experiences** (`event-production` contract, pilot tables in `apps/web`) |
-| Public invite UX | Partiful-style page at `/e/{slug}` — host invite, guest wall, ticket checkout |
+| Event management | Owner desk on **The Pampered Soul** (`pampered_events`, pilot tables in `apps/web`) |
+| Public invite UX | Separate guest page at `/e/{slug}` — no planner chrome; host invite, guest wall, ticket checkout |
 | Ticketing | `TicketTier` + paid `EventRegistration` (`amountPaidCents`, confirmation code) |
 | Private business CRM | `BusinessCrmContact` scoped by `ventureId` / business key |
 | Shared customer network | Optional `GuestProfile` + preference / revoke flows |
 | Cross-business opt-in | `VendorConsent` with `channelScope = marketing` — checkbox **is** marketing consent |
 | Communications | Confirmations / reminders later via Connect + Resend; marketing sends require consent |
-| Spa operations | Jade Haven later (`hospitality`); pilot only needs CRM follow-ups from consented guests |
+| Spa operations | Pampered Soul spa menu (`SPA_SERVICES`) as planner-selected itinerary copy. MassageBook stays outside. |
 | Analytics / PoC metrics | Ticket revenue + guest wall + consent scorecard + dashboard port |
 
 Luminary Gatherings stays on the `hotel` module. Experiences never writes Luminary booking tables.
@@ -27,11 +27,11 @@ Luminary Gatherings stays on the `hotel` module. Experiences never writes Lumina
 
 ## Pilot seed
 
-- Tenant: `diaz_ventures`
-- Organizer venture: `jade_experiences` (prefix `JE`)
-- Participating businesses on the holiday event: Spa / Haven host, Jade Flowers, example charcuterie vendor
-- Public RSVP: `/e/{slug}`
-- Operator desk: `/experiences`
+- Tenant: `pampered_soul`
+- Organizer venture: `pampered_events` (prefix `PS`)
+- Events are owner-authored (no canned Jade Haven holiday seed)
+- Public RSVP: `/e/{slug}` (guest view)
+- Operator desk: `/experiences` (planner view)
 
 ## Data rules
 

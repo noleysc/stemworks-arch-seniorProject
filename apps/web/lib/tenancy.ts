@@ -13,6 +13,11 @@ export const TENANTS = {
     name: "Diaz Ventures LLC",
     planTier: "internal",
   },
+  pampered: {
+    key: "pampered_soul",
+    name: "The Pampered Soul",
+    planTier: "internal",
+  },
 } as const;
 
 export const JADE_FLOWERS = {
@@ -42,6 +47,15 @@ export const JADE_HAVEN = {
   statusLabel: "Pre-revenue · Development phase",
 } as const;
 
+export const PAMPERED_EVENTS = {
+  key: "pampered_events",
+  name: "Pampered Soul Events",
+  type: "event_production",
+  prefixCode: "PS",
+  colorToken: "experiences",
+  statusLabel: "Invite planner",
+} as const;
+
 export async function ensureTenant(key: keyof typeof TENANTS) {
   const seed = TENANTS[key];
   return prisma.tenant.upsert({
@@ -52,6 +66,7 @@ export async function ensureTenant(key: keyof typeof TENANTS) {
 }
 
 async function ensureVenture(
+  tenantKey: keyof typeof TENANTS,
   seed: {
     key: string;
     name: string;
@@ -61,7 +76,7 @@ async function ensureVenture(
     statusLabel: string;
   },
 ) {
-  const tenant = await ensureTenant("diaz");
+  const tenant = await ensureTenant(tenantKey);
   return prisma.venture.upsert({
     where: { tenantId_key: { tenantId: tenant.id, key: seed.key } },
     update: {
@@ -76,13 +91,17 @@ async function ensureVenture(
 }
 
 export async function ensureJadeFlowers() {
-  return ensureVenture(JADE_FLOWERS);
+  return ensureVenture("diaz", JADE_FLOWERS);
 }
 
 export async function ensureJadeExperiences() {
-  return ensureVenture(JADE_EXPERIENCES);
+  return ensureVenture("diaz", JADE_EXPERIENCES);
 }
 
 export async function ensureJadeHaven() {
-  return ensureVenture(JADE_HAVEN);
+  return ensureVenture("diaz", JADE_HAVEN);
+}
+
+export async function ensurePamperedEvents() {
+  return ensureVenture("pampered", PAMPERED_EVENTS);
 }

@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { FOLLOW_UP_STATUSES, followUpStatusLabel } from "@/lib/experiences/catalog";
 import { prisma } from "@/lib/db";
-import { ensureJadeExperiences, ensureJadeFlowers, ensureJadeHaven } from "@/lib/tenancy";
+import { ensurePamperedEvents } from "@/lib/tenancy";
 
 const followUpKeys = FOLLOW_UP_STATUSES.map((item) => item.key) as [string, ...string[]];
 
@@ -28,7 +28,7 @@ export type CrmContactRecord = {
 };
 
 export async function listCrmContacts(businessKey?: string): Promise<CrmContactRecord[]> {
-  await Promise.all([ensureJadeExperiences(), ensureJadeFlowers(), ensureJadeHaven()]);
+  await ensurePamperedEvents();
   const rows = await prisma.businessCrmContact.findMany({
     where: {
       status: "active",

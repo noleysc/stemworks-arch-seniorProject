@@ -7,7 +7,7 @@ Running slices in `apps/web`:
 - **Dashboard** — `/dashboard` — tenant switcher, Confirmed / Potential, attention, venture cards, timeline
 - **Luminary Desk** — `/` — rental aggregate for Luminary Hotel & Co. (website + Airbnb + later sources)
 - **Jade Flowers** — `/jade` — product materials, SKUs, and orders on the Diaz Ventures tenant
-- **Jade Experiences** — `/experiences` — Partiful-style ticketed invite, per-vendor marketing consent, private CRM, check-in, scorecard (public page `/e/{slug}`)
+- **The Pampered Soul** — `/experiences` owner desk (plan events, spa menu) and `/e/{slug}` guest invite (tickets + consent). Separate views.
 
 The architecture documents below still govern what gets built next.
 
@@ -21,6 +21,7 @@ Start with [docs/architecture/README.md](docs/architecture/README.md). It is the
 | [docs/architecture/luminary.md](docs/architecture/luminary.md) | Luminary Hotel & Co. property contract |
 | [docs/architecture/jade-flowers.md](docs/architecture/jade-flowers.md) | Jade Flowers product slice on Diaz Ventures |
 | [docs/architecture/experiences-crm.md](docs/architecture/experiences-crm.md) | Event + CRM PRD mapped onto Stemworks |
+| [docs/architecture/invite-page.md](docs/architecture/invite-page.md) | Owner planner vs guest invite surfaces |
 | [docs/architecture/architecture-questions.md](docs/architecture/architecture-questions.md) | Questions to settle before expanding Experiences |
 | [docs/architecture/competitive-differentiation.md](docs/architecture/competitive-differentiation.md) | Per-vendor consent and other competitor gaps |
 | [docs/architecture/modules.md](docs/architecture/modules.md) | Aggregates, ports, which venture enables which module |
@@ -45,19 +46,21 @@ Open **http://localhost:43123**
 
 | URL | What it is |
 | --- | --- |
-| `/dashboard` | Scalable command board. `?tenant=luminary` or `?tenant=diaz_ventures` |
+| `/dashboard` | Scalable command board. `?tenant=luminary`, `diaz_ventures`, or `pampered_soul` |
 | `/` | Luminary rental desk |
 | `/jade` | Jade Flowers product desk |
-| `/experiences` | Jade Experiences event + CRM desk |
-| `/e/holiday-spa-experience-2026` | Public ticketed invite (email, phone, card, per-vendor marketing consent) |
+| `/experiences` | Pampered Soul **owner desk** (plan events, spa menu, CRM) |
+| `/experiences/new` | Compose an event and add spa treatments |
+| `/e/{slug}` | **Guest invite** only (no planner chrome) |
 
 ### Experiences demo (ticket checkout)
 
 1. Start the app with the commands above.
-2. Open `/e/holiday-spa-experience-2026`.
-3. Pick a tier, enter **email + phone**, pay with demo card **`4242 4242 4242 4242`**, any future expiry, CVC `123`.
-4. Optionally check vendor marketing consent boxes.
-5. Operator views: `/experiences`, `/experiences/guests`, `/experiences/crm`, `/experiences/scorecard`.
+2. Open `/experiences/new`, fill the invite, add massages/facials from the spa menu, and publish.
+3. Open the public guest link `/e/{slug}` (separate view from the planner).
+4. Pick a tier, enter **email + phone**, pay with demo card **`4242 4242 4242 4242`**, any future expiry, CVC `123`.
+5. Optionally check vendor marketing consent boxes.
+6. Owner views: `/experiences`, `/experiences/{slug}`, `/experiences/guests`, `/experiences/crm`, `/experiences/scorecard`.
 
 Without `STRIPE_SECRET_KEY`, checkout runs in demo mode (Visa test cards only). Add Stripe keys in `.env` to charge live/test Stripe.
 

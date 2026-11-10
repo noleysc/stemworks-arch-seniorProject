@@ -4,9 +4,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { prisma } from "@/lib/db";
-import { HOLIDAY_EVENT } from "@/lib/experiences/catalog";
 import { listCrmContacts, vendorGuestView } from "@/lib/experiences/crm";
-import { ensureHolidayPilotEvent } from "@/lib/experiences/events";
+import { createOwnerEvent } from "@/lib/experiences/planner";
 import { revokeVendorConsent, submitRsvp } from "@/lib/experiences/rsvp";
 import { eventScorecard } from "@/lib/experiences/scorecard";
 
@@ -18,24 +17,48 @@ const demoPayment = {
   cvc: "123",
 };
 
+const TEST_EMAILS = ["avery@example.com", "declined@example.com", "blake@example.com"];
+
 async function resetPilot() {
-  const event = await ensureHolidayPilotEvent();
-  await prisma.consentAudit.deleteMany({});
-  await prisma.vendorConsent.deleteMany({});
-  await prisma.businessCrmContact.deleteMany({});
-  await prisma.eventRegistration.deleteMany({ where: { eventId: event.id } });
-  await prisma.guestProfile.deleteMany({});
-  await prisma.experienceEvent.update({
-    where: { id: event.id },
-    data: { status: "open" },
+  const leftover = await prisma.experienceEvent.findMany({
+    where: { slug: { startsWith: "consent-test-night" } },
+    select: { id: true },
   });
-  return event;
+  const eventIds = leftover.map((row) => row.id);
+  if (eventIds.length > 0) {
+    await prisma.vendorConsent.deleteMany({ where: { vendor: { eventId: { in: eventIds } } } });
+    await prisma.eventRegistration.deleteMany({ where: { eventId: { in: eventIds } } });
+    await prisma.experienceEvent.deleteMany({ where: { id: { in: eventIds } } });
+  }
+  await prisma.consentAudit.deleteMany({ where: { guest: { email: { in: TEST_EMAILS } } } });
+  await prisma.businessCrmContact.deleteMany({ where: { guest: { email: { in: TEST_EMAILS } } } });
+  await prisma.guestProfile.deleteMany({ where: { email: { in: TEST_EMAILS } } });
+
+  return createOwnerEvent({
+    title: "Consent test night",
+    summary: "Ticketed evening used by architecture tests.",
+    location: "16313 S Tamiami Trail, Fort Myers, FL 33908",
+    startsOn: "2026-12-18",
+    startsAtLabel: "5:00 PM",
+    capacity: 40,
+    hostDisplayName: "The Pampered Soul",
+    publish: true,
+    tiers: [
+      { label: "Early bird", description: "", price: 45, quantityAvailable: 20 },
+      { label: "General", description: "", price: 65, quantityAvailable: 40 },
+    ],
+    vendors: [
+      { displayName: "Jade Haven", roleLabel: "Spa partner" },
+      { displayName: "Jade Flowers", roleLabel: "Florals" },
+    ],
+    itinerary: [{ serviceKey: "swedish-50", startsAtLabel: "6:00 PM" }],
+  });
 }
 
 test("ticket purchase charges card and grants marketing consent only for that vendor", async () => {
   const event = await resetPilot();
 
-  const result = await submitRsvp(HOLIDAY_EVENT.slug, {
+  const result = await submitRsvp(event.slug, {
     fullName: "Avery Guest",
     email: "avery@example.com",
     phone: "239-555-0100",
@@ -48,7 +71,6 @@ test("ticket purchase charges card and grants marketing consent only for that ve
     vendorOptIns: {
       jade_haven: true,
       jade_flowers: false,
-      charcuterie_co: false,
     },
     payment: demoPayment,
   });
@@ -56,7 +78,7 @@ test("ticket purchase charges card and grants marketing consent only for that ve
   assert.equal(result.ticketQuantity, 2);
   assert.equal(result.amountPaidCents, 13000);
   assert.equal(result.paymentLast4, "4242");
-  assert.match(result.confirmationCode, /^JE-\d{4}-\d{4}$/);
+  assert.match(result.confirmationCode, /^PS-\d{4}-\d{4}$/);
 
   const registration = await prisma.eventRegistration.findUniqueOrThrow({
     where: { id: result.registrationId },
@@ -80,21 +102,22 @@ test("ticket purchase charges card and grants marketing consent only for that ve
   assert.equal(vendorView[0].email, null);
   assert.equal(vendorView[0].marketingOptIn, false);
 
-  const scorecard = await eventScorecard();
+  const scorecard = await eventScorecard(event.slug);
+  assert.ok(scorecard);
   assert.equal(scorecard.ticketsSold, 2);
   assert.equal(scorecard.ticketRevenueCents, 13000);
 });
 
 test("declined demo card does not create tickets", async () => {
-  await resetPilot();
+  const event = await resetPilot();
 
   await assert.rejects(
     () =>
-      submitRsvp(HOLIDAY_EVENT.slug, {
+      submitRsvp(event.slug, {
         fullName: "Declined Guest",
         email: "declined@example.com",
         phone: "239-555-0199",
-        tierKey: "early_bird",
+        tierKey: "early-bird",
         ticketQuantity: 1,
         vendorOptIns: {},
         payment: {
@@ -106,17 +129,17 @@ test("declined demo card does not create tickets", async () => {
     /declined/i,
   );
 
-  assert.equal(await prisma.eventRegistration.count(), 0);
+  assert.equal(await prisma.eventRegistration.count({ where: { eventId: event.id } }), 0);
 });
 
 test("revoking marketing consent strips contact channels from that business CRM only", async () => {
-  await resetPilot();
+  const event = await resetPilot();
 
-  await submitRsvp(HOLIDAY_EVENT.slug, {
+  await submitRsvp(event.slug, {
     fullName: "Blake Guest",
     email: "blake@example.com",
     phone: "239-555-0111",
-    tierKey: "early_bird",
+    tierKey: "early-bird",
     ticketQuantity: 1,
     networkOptIn: false,
     showOnGuestWall: false,

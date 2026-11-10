@@ -8,11 +8,12 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/experiences", label: "Today" },
+  { href: "/experiences", label: "Events" },
+  { href: "/experiences/new", label: "Plan event" },
   { href: "/experiences/guests", label: "Guests" },
   { href: "/experiences/crm", label: "Private CRM" },
   { href: "/experiences/scorecard", label: "Scorecard" },
-  { href: "/dashboard?tenant=diaz_ventures", label: "Dashboard" },
+  { href: "/dashboard?tenant=pampered_soul", label: "Dashboard" },
 ];
 
 export function ExperiencesNav() {
@@ -23,15 +24,17 @@ export function ExperiencesNav() {
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
         <Link href="/experiences" className="block">
           <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-slate-600">
-            Stemworks · Diaz Ventures
+            Stemworks · Owner desk
           </p>
-          <p className="font-display text-[1.7rem] leading-none text-slate-950">Jade Experiences</p>
+          <p className="font-display text-[1.7rem] leading-none text-slate-950">The Pampered Soul</p>
         </Link>
         <nav className="flex gap-1 overflow-x-auto">
           {links.map((link) => {
             const active = link.href.startsWith("/dashboard")
               ? pathname.startsWith("/dashboard")
-              : pathname === link.href;
+              : link.href === "/experiences"
+                ? pathname === "/experiences"
+                : pathname === link.href || pathname.startsWith(`${link.href}/`);
             return (
               <Link
                 key={link.href}

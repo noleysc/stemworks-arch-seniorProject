@@ -39,10 +39,24 @@ export const TENANT_REGISTRY: Record<string, TenantDefinition> = {
         key: "jade_experiences",
         name: "Jade Experiences",
         colorToken: "experiences",
-        module: "experiences",
+        module: "placeholder",
       },
       { key: "jade_haven", name: "Jade Haven", colorToken: "haven", module: "placeholder" },
       { key: "stemworks", name: "Stemworks", colorToken: "stemworks", module: "placeholder" },
+    ],
+  },
+  pampered_soul: {
+    key: "pampered_soul",
+    name: "The Pampered Soul",
+    timezone: "America/New_York",
+    deskHref: "/experiences",
+    ventures: [
+      {
+        key: "pampered_events",
+        name: "Pampered Soul Events",
+        colorToken: "experiences",
+        module: "experiences",
+      },
     ],
   },
 };

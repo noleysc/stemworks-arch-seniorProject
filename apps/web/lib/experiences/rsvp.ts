@@ -4,9 +4,8 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/db";
 import { wallFirstName } from "@/lib/experiences/catalog";
-import { ensureHolidayPilotEvent } from "@/lib/experiences/events";
 import { cardPaymentSchema, chargeTicketPayment, paymentMode } from "@/lib/experiences/payments";
-import { ensureJadeExperiences, ensureJadeFlowers, ensureJadeHaven } from "@/lib/tenancy";
+import { ensurePamperedEvents } from "@/lib/tenancy";
 
 const phoneSchema = z
   .string()
@@ -33,15 +32,8 @@ export const rsvpInputSchema = z.object({
   payment: cardPaymentSchema,
 });
 
-const VENTURE_FOR_BUSINESS: Record<string, () => Promise<{ id: string }>> = {
-  jade_experiences: ensureJadeExperiences,
-  jade_flowers: ensureJadeFlowers,
-  jade_haven: ensureJadeHaven,
-};
-
-export async function submitRsvp(slug: string, raw: z.infer<typeof rsvpInputSchema>) {
+export async function submitRsvp(slug: string, raw: z.input<typeof rsvpInputSchema>) {
   const input = rsvpInputSchema.parse(raw);
-  await ensureHolidayPilotEvent();
   const event = await prisma.experienceEvent.findUnique({
     where: { slug },
     include: {
@@ -121,7 +113,6 @@ async function purchaseTickets(
     throw new Error("You already have tickets for this event.");
   }
 
-  // Take payment before issuing tickets. No unpaid confirmed registrations.
   const charge = await chargeTicketPayment({
     amountCents: amountDueCents,
     email,
@@ -166,7 +157,6 @@ async function purchaseTickets(
         },
       });
 
-  // Opt-in checkbox = marketing consent for that business only.
   for (const vendor of event.vendors) {
     const granted = Boolean(input.vendorOptIns[vendor.businessKey]);
     await prisma.vendorConsent.upsert({
@@ -296,8 +286,7 @@ async function upsertCrmContact(input: {
   sourceEventId: string;
   sourceVendorId: string;
 }) {
-  const ensureVenture = VENTURE_FOR_BUSINESS[input.businessKey];
-  const venture = ensureVenture ? await ensureVenture() : await ensureJadeExperiences();
+  const venture = await ensurePamperedEvents();
 
   return prisma.businessCrmContact.upsert({
     where: {
@@ -335,7 +324,7 @@ async function upsertCrmContact(input: {
 async function nextConfirmationCode(eventId: string) {
   const count = await prisma.eventRegistration.count({ where: { eventId } });
   const seq = String(count + 1).padStart(4, "0");
-  return `JE-${new Date().getUTCFullYear()}-${seq}`;
+  return `PS-${new Date().getUTCFullYear()}-${seq}`;
 }
 
 function emptyToNull(value: string | undefined) {

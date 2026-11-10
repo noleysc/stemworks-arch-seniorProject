@@ -1,14 +1,8 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
-import {
-  HOLIDAY_EVENT,
-  HOLIDAY_TICKET_TIERS,
-  PILOT_VENDORS,
-  eventStatusLabel,
-  wallFirstName,
-} from "@/lib/experiences/catalog";
+import { eventStatusLabel, wallFirstName } from "@/lib/experiences/catalog";
 import { prisma } from "@/lib/db";
-import { ensureJadeExperiences } from "@/lib/tenancy";
+import { ensurePamperedEvents } from "@/lib/tenancy";
 
 export type TicketTierRecord = {
   id: string;
@@ -21,6 +15,20 @@ export type TicketTierRecord = {
   remaining: number;
   sortOrder: number;
   isActive: boolean;
+};
+
+export type ItineraryBlock = {
+  id: string;
+  startsAtLabel: string;
+  title: string;
+  detail: string | null;
+  placeLabel: string | null;
+  emoji: string | null;
+  serviceKey: string | null;
+  durationMinutes: number | null;
+  menuPriceCents: number | null;
+  category: string | null;
+  sortOrder: number;
 };
 
 export type ExperienceEventRecord = {
@@ -50,6 +58,7 @@ export type ExperienceEventRecord = {
     sortOrder: number;
   }[];
   tiers: TicketTierRecord[];
+  itinerary: ItineraryBlock[];
 };
 
 export type GuestWallEntry = {
@@ -58,129 +67,42 @@ export type GuestWallEntry = {
   ticketQuantity: number;
 };
 
-export async function ensureHolidayPilotEvent() {
-  const venture = await ensureJadeExperiences();
-  const existing = await prisma.experienceEvent.findUnique({ where: { slug: HOLIDAY_EVENT.slug } });
-
-  const event = existing
-    ? await prisma.experienceEvent.update({
-        where: { id: existing.id },
-        data: {
-          title: HOLIDAY_EVENT.title,
-          summary: HOLIDAY_EVENT.summary,
-          location: HOLIDAY_EVENT.location,
-          startsOn: HOLIDAY_EVENT.startsOn,
-          endsOn: HOLIDAY_EVENT.endsOn,
-          startsAtLabel: HOLIDAY_EVENT.startsAtLabel,
-          capacity: HOLIDAY_EVENT.capacity,
-          ticketPriceCents: HOLIDAY_EVENT.ticketPriceCents,
-          disclosureText: HOLIDAY_EVENT.disclosureText,
-          hostDisplayName: HOLIDAY_EVENT.hostDisplayName,
-          coverTone: HOLIDAY_EVENT.coverTone,
-          status: existing.status === "draft" ? "open" : existing.status,
-        },
-      })
-    : await prisma.experienceEvent.create({
-        data: {
-          ventureId: venture.id,
-          slug: HOLIDAY_EVENT.slug,
-          title: HOLIDAY_EVENT.title,
-          summary: HOLIDAY_EVENT.summary,
-          location: HOLIDAY_EVENT.location,
-          startsOn: HOLIDAY_EVENT.startsOn,
-          endsOn: HOLIDAY_EVENT.endsOn,
-          startsAtLabel: HOLIDAY_EVENT.startsAtLabel,
-          capacity: HOLIDAY_EVENT.capacity,
-          ticketPriceCents: HOLIDAY_EVENT.ticketPriceCents,
-          disclosureText: HOLIDAY_EVENT.disclosureText,
-          hostDisplayName: HOLIDAY_EVENT.hostDisplayName,
-          coverTone: HOLIDAY_EVENT.coverTone,
-          status: "open",
-          vendors: {
-            create: PILOT_VENDORS.map((vendor) => ({ ...vendor })),
-          },
-        },
-      });
-
-  if (existing) {
-    for (const vendor of PILOT_VENDORS) {
-      await prisma.eventVendor.upsert({
-        where: { eventId_businessKey: { eventId: event.id, businessKey: vendor.businessKey } },
-        update: {
-          displayName: vendor.displayName,
-          roleLabel: vendor.roleLabel,
-          sortOrder: vendor.sortOrder,
-        },
-        create: { eventId: event.id, ...vendor },
-      });
-    }
-  }
-
-  for (const tier of HOLIDAY_TICKET_TIERS) {
-    await prisma.ticketTier.upsert({
-      where: { eventId_key: { eventId: event.id, key: tier.key } },
-      update: {
-        label: tier.label,
-        description: tier.description,
-        priceCents: tier.priceCents,
-        quantityAvailable: tier.quantityAvailable,
-        sortOrder: tier.sortOrder,
-        isActive: true,
-      },
-      create: { eventId: event.id, ...tier },
-    });
-  }
-
-  return prisma.experienceEvent.findUniqueOrThrow({
-    where: { id: event.id },
-    include: {
-      vendors: { orderBy: { sortOrder: "asc" } },
-      tiers: { orderBy: { sortOrder: "asc" } },
+const eventInclude = {
+  vendors: { orderBy: { sortOrder: "asc" as const } },
+  tiers: { orderBy: { sortOrder: "asc" as const } },
+  itineraryItems: { orderBy: { sortOrder: "asc" as const } },
+  registrations: {
+    select: {
+      status: true,
+      ticketQuantity: true,
+      amountPaidCents: true,
+      tierId: true,
     },
-  });
-}
+  },
+};
 
 export async function getEventBySlug(slug: string): Promise<ExperienceEventRecord | null> {
-  await ensureHolidayPilotEvent();
   const row = await prisma.experienceEvent.findUnique({
     where: { slug },
-    include: {
-      vendors: { orderBy: { sortOrder: "asc" } },
-      tiers: { orderBy: { sortOrder: "asc" } },
-      registrations: {
-        select: {
-          status: true,
-          ticketQuantity: true,
-          amountPaidCents: true,
-          tierId: true,
-        },
-      },
-    },
+    include: eventInclude,
   });
   if (!row) return null;
   return toRecord(row);
 }
 
 export async function listExperienceEvents(): Promise<ExperienceEventRecord[]> {
-  await ensureHolidayPilotEvent();
-  const venture = await ensureJadeExperiences();
+  const venture = await ensurePamperedEvents();
   const rows = await prisma.experienceEvent.findMany({
     where: { ventureId: venture.id },
-    include: {
-      vendors: { orderBy: { sortOrder: "asc" } },
-      tiers: { orderBy: { sortOrder: "asc" } },
-      registrations: {
-        select: {
-          status: true,
-          ticketQuantity: true,
-          amountPaidCents: true,
-          tierId: true,
-        },
-      },
-    },
+    include: eventInclude,
     orderBy: [{ startsOn: "asc" }],
   });
   return rows.map(toRecord);
+}
+
+export async function getPrimaryEvent(): Promise<ExperienceEventRecord | null> {
+  const events = await listExperienceEvents();
+  return events.find((event) => event.status === "open" || event.status === "full") ?? events[0] ?? null;
 }
 
 export async function listGuestWall(eventId: string): Promise<GuestWallEntry[]> {
@@ -273,6 +195,19 @@ function toRecord(row: {
     sortOrder: number;
     isActive: boolean;
   }[];
+  itineraryItems?: {
+    id: string;
+    startsAtLabel: string;
+    title: string;
+    detail: string | null;
+    placeLabel: string | null;
+    emoji: string | null;
+    serviceKey: string | null;
+    durationMinutes: number | null;
+    menuPriceCents: number | null;
+    category: string | null;
+    sortOrder: number;
+  }[];
   registrations: {
     status: string;
     ticketQuantity: number;
@@ -309,6 +244,19 @@ function toRecord(row: {
     attendedCount: attended.length,
     goingCount: active.length,
     vendors: row.vendors,
+    itinerary: (row.itineraryItems ?? []).map((item) => ({
+      id: item.id,
+      startsAtLabel: item.startsAtLabel,
+      title: item.title,
+      detail: item.detail,
+      placeLabel: item.placeLabel,
+      emoji: item.emoji,
+      serviceKey: item.serviceKey,
+      durationMinutes: item.durationMinutes,
+      menuPriceCents: item.menuPriceCents,
+      category: item.category,
+      sortOrder: item.sortOrder,
+    })),
     tiers: row.tiers.map((tier) => {
       const quantitySold = soldByTier.get(tier.id) ?? 0;
       return {

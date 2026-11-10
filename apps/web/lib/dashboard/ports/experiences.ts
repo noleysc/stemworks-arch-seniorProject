@@ -12,6 +12,19 @@ export async function experiencesPort(businessDate: string): Promise<VenturePort
     eventScorecard(),
     listCrmContacts(),
   ]);
+  if (!scorecard) {
+    return {
+      confirmedCents: 0,
+      potentialCents: 0,
+      openCount: 0,
+      hasCurrentActivity: false,
+      statusLabel: "No published event",
+      topItems: [],
+      attention: [],
+      milestones: [],
+      detailHref: "/experiences",
+    };
+  }
   const cents = projectExperienceCents(scorecard);
   const openEvents = events.filter((event) => event.status === "open" || event.status === "full");
   const followUpQueued = contacts.filter((contact) => contact.followUpStatus === "queued").length;
@@ -34,7 +47,7 @@ export async function experiencesPort(businessDate: string): Promise<VenturePort
           delta === 0
             ? `${event.title} is today · ${event.ticketCount} tickets sold`
             : `${event.title} is in ${delta} days · ${event.ticketCount} tickets sold`,
-        venture: "jade_experiences",
+        venture: "pampered_events",
       });
     }
   }
@@ -42,13 +55,13 @@ export async function experiencesPort(businessDate: string): Promise<VenturePort
     attention.push({
       type: "pipeline_stalled",
       body: `${followUpQueued} marketing-consent follow-ups are queued after the event`,
-      venture: "jade_experiences",
+      venture: "pampered_events",
     });
   }
 
   const milestones = openEvents.map((event) => ({
     id: event.id,
-    venture: "jade_experiences",
+    venture: "pampered_events",
     title: event.title,
     dueOn: event.startsOn,
     kind: "event_date" as const,

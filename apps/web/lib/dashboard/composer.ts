@@ -10,6 +10,7 @@ import { businessToday } from "@/lib/dates";
 const PLACEHOLDER_STATUS: Record<string, string> = {
   jade_haven: "Pre-revenue · Development phase",
   stemworks: "Pre-revenue · Validation phase",
+  jade_experiences: "Event production · Diaz cultural series",
 };
 
 export async function composeDashboard(input: {

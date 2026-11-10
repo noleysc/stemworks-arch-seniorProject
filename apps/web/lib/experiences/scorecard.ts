@@ -1,7 +1,7 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 import { prisma } from "@/lib/db";
-import { ensureHolidayPilotEvent } from "@/lib/experiences/events";
+import { getPrimaryEvent } from "@/lib/experiences/events";
 
 export type EventScorecard = {
   eventId: string;
@@ -22,10 +22,13 @@ export type EventScorecard = {
   tiers: { key: string; label: string; sold: number; remaining: number; revenueCents: number }[];
 };
 
-export async function eventScorecard(slug?: string): Promise<EventScorecard> {
-  const seeded = await ensureHolidayPilotEvent();
-  const event = await prisma.experienceEvent.findUniqueOrThrow({
-    where: { slug: slug ?? seeded.slug },
+export async function eventScorecard(slug?: string): Promise<EventScorecard | null> {
+  const fallback = slug ? null : await getPrimaryEvent();
+  const lookup = slug ?? fallback?.slug;
+  if (!lookup) return null;
+
+  const event = await prisma.experienceEvent.findUnique({
+    where: { slug: lookup },
     include: {
       vendors: { orderBy: { sortOrder: "asc" } },
       tiers: { orderBy: { sortOrder: "asc" } },
@@ -34,14 +37,13 @@ export async function eventScorecard(slug?: string): Promise<EventScorecard> {
       },
     },
   });
+  if (!event) return null;
 
   const active = event.registrations.filter((reg) => reg.status !== "cancelled");
   const attended = active.filter((reg) => reg.status === "attended");
   const ticketsSold = active.reduce((sum, reg) => sum + reg.ticketQuantity, 0);
   const ticketRevenueCents = active.reduce((sum, reg) => sum + reg.amountPaidCents, 0);
-
-  // Potential: paid revenue plus remaining GA inventory at list price (simple pilot signal).
-  const general = event.tiers.find((tier) => tier.key === "general");
+  const general = event.tiers[0];
   const remainingSeats = Math.max(0, event.capacity - ticketsSold);
   const potentialTicketCents =
     ticketRevenueCents + remainingSeats * (general?.priceCents ?? event.ticketPriceCents);
@@ -58,17 +60,12 @@ export async function eventScorecard(slug?: string): Promise<EventScorecard> {
   });
 
   const crm = await prisma.businessCrmContact.findMany({
-    where: {
-      sourceEventId: event.id,
-      status: "active",
-    },
+    where: { sourceEventId: event.id, status: "active" },
     select: { followUpStatus: true },
   });
 
   const consentAudits = await prisma.consentAudit.count({
-    where: {
-      businessKey: { in: event.vendors.map((vendor) => vendor.businessKey) },
-    },
+    where: { businessKey: { in: event.vendors.map((vendor) => vendor.businessKey) } },
   });
 
   const tiers = event.tiers.map((tier) => {

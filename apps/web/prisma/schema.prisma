@@ -244,9 +244,30 @@ model ExperienceEvent {
   updatedAt        DateTime @updatedAt
   vendors          EventVendor[]
   tiers            TicketTier[]
+  itineraryItems   EventItineraryItem[]
   registrations    EventRegistration[]
 
   @@index([ventureId, startsOn])
+}
+
+model EventItineraryItem {
+  id              String          @id @default(cuid())
+  eventId         String
+  event           ExperienceEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  startsAtLabel   String
+  title           String
+  detail          String?
+  placeLabel      String?
+  emoji           String?
+  serviceKey      String?
+  durationMinutes Int?
+  menuPriceCents  Int?
+  category        String?
+  sortOrder       Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([eventId, sortOrder])
 }
 
 model TicketTier {
