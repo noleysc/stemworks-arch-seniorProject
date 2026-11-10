@@ -14,6 +14,7 @@ const links = [
   { href: "/import", label: "Collect" },
   { href: "/dashboard?tenant=luminary", label: "Dashboard" },
   { href: "/jade", label: "Jade Flowers" },
+  { href: "/experiences", label: "Experiences" },
 ];
 
 export function DeskNav() {
@@ -33,7 +34,9 @@ export function DeskNav() {
                 ? pathname.startsWith("/dashboard")
                 : link.href === "/jade"
                   ? pathname.startsWith("/jade")
-                  : pathname === link.href;
+                  : link.href === "/experiences"
+                    ? pathname.startsWith("/experiences")
+                    : pathname === link.href;
             return (
               <Link
                 key={link.href}

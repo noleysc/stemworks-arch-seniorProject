@@ -12,6 +12,7 @@ const links = [
   { href: "/jade/materials", label: "Materials" },
   { href: "/jade/skus", label: "SKUs" },
   { href: "/jade/orders", label: "Orders" },
+  { href: "/experiences", label: "Experiences" },
   { href: "/dashboard?tenant=diaz_ventures", label: "Dashboard" },
 ];
 

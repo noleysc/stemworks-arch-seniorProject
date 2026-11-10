@@ -39,7 +39,7 @@ export const TENANT_REGISTRY: Record<string, TenantDefinition> = {
         key: "jade_experiences",
         name: "Jade Experiences",
         colorToken: "experiences",
-        module: "placeholder",
+        module: "experiences",
       },
       { key: "jade_haven", name: "Jade Haven", colorToken: "haven", module: "placeholder" },
       { key: "stemworks", name: "Stemworks", colorToken: "stemworks", module: "placeholder" },

@@ -1,13 +1,13 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 import { getTenant } from "@/lib/dashboard/registry";
+import { experiencesPort } from "@/lib/dashboard/ports/experiences";
 import { hotelPort } from "@/lib/dashboard/ports/hotel";
 import { placeholderPort, productPort } from "@/lib/dashboard/ports/product";
 import type { DashboardPayload, VentureDefinition, VenturePortResult } from "@/lib/dashboard/types";
 import { businessToday } from "@/lib/dates";
 
 const PLACEHOLDER_STATUS: Record<string, string> = {
-  jade_experiences: "Event production · not enabled",
   jade_haven: "Pre-revenue · Development phase",
   stemworks: "Pre-revenue · Validation phase",
 };
@@ -106,6 +106,9 @@ async function resolvePort(
   }
   if (definition.module === "product") {
     return productPort(businessDate);
+  }
+  if (definition.module === "experiences") {
+    return experiencesPort(businessDate);
   }
   return placeholderPort(PLACEHOLDER_STATUS[definition.key] ?? "Not enabled", "/dashboard");
 }

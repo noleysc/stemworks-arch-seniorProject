@@ -68,6 +68,6 @@ export type VentureDefinition = {
   key: string;
   name: string;
   colorToken: string;
-  module: "hotel" | "product" | "placeholder";
+  module: "hotel" | "product" | "experiences" | "placeholder";
   hotelSlice?: "rooms" | "dining" | "gatherings";
 };

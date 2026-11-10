@@ -8,7 +8,7 @@ import { DeskNav } from "@/components/desk-nav";
 
 export function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname.startsWith("/jade")) {
+  if (pathname.startsWith("/jade") || pathname.startsWith("/experiences") || pathname.startsWith("/e/")) {
     return <>{children}</>;
   }
 

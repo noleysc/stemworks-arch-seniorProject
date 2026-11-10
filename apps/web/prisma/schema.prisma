@@ -34,6 +34,8 @@ model Venture {
   skus      Sku[]
   customers Customer[]
   orders    Order[]
+  events    ExperienceEvent[]
+  crmContacts BusinessCrmContact[]
 
   @@unique([tenantId, key])
   @@unique([tenantId, prefixCode])
@@ -204,4 +206,164 @@ model OrderLineItem {
   quantity        Int
   unitPriceCents  Int
   lineTotalCents  Int
+}
+
+/// Experiences + CRM (PRD pilot). Private CRM and per-vendor consent live here.
+model GuestProfile {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  fullName     String
+  phone        String?
+  networkOptIn Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  registrations EventRegistration[]
+  consents     VendorConsent[]
+  crmContacts  BusinessCrmContact[]
+  audits       ConsentAudit[]
+}
+
+model ExperienceEvent {
+  id               String   @id @default(cuid())
+  ventureId        String
+  venture          Venture  @relation(fields: [ventureId], references: [id])
+  slug             String   @unique
+  title            String
+  summary          String
+  location         String
+  startsOn         String
+  endsOn           String?
+  startsAtLabel    String?
+  capacity         Int
+  ticketPriceCents Int      @default(0)
+  status           String   @default("draft")
+  disclosureText   String
+  hostDisplayName  String   @default("Jade Experiences")
+  coverTone        String   @default("slate")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  vendors          EventVendor[]
+  tiers            TicketTier[]
+  registrations    EventRegistration[]
+
+  @@index([ventureId, startsOn])
+}
+
+model TicketTier {
+  id               String          @id @default(cuid())
+  eventId          String
+  event            ExperienceEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  key              String
+  label            String
+  description      String
+  priceCents       Int
+  quantityAvailable Int
+  sortOrder        Int             @default(0)
+  isActive         Boolean         @default(true)
+  registrations    EventRegistration[]
+
+  @@unique([eventId, key])
+}
+
+model EventVendor {
+  id           String          @id @default(cuid())
+  eventId      String
+  event        ExperienceEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  businessKey  String
+  displayName  String
+  roleLabel    String
+  sortOrder    Int             @default(0)
+  consents     VendorConsent[]
+  crmContacts  BusinessCrmContact[]
+
+  @@unique([eventId, businessKey])
+}
+
+model EventRegistration {
+  id               String          @id @default(cuid())
+  eventId          String
+  event            ExperienceEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guestId          String
+  guest            GuestProfile    @relation(fields: [guestId], references: [id])
+  tierId           String?
+  tier             TicketTier?     @relation(fields: [tierId], references: [id])
+  status           String          @default("registered")
+  partySize        Int             @default(1)
+  ticketQuantity   Int             @default(1)
+  amountPaidCents  Int             @default(0)
+  amountDueCents   Int             @default(0)
+  confirmationCode String?
+  paymentRef       String?
+  paymentStatus    String          @default("unpaid")
+  paymentBrand     String?
+  paymentLast4     String?
+  paidAt           DateTime?
+  showOnGuestWall  Boolean         @default(true)
+  wallName         String?
+  guestNote        String?
+  notes            String?
+  checkedInAt      DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  consents         VendorConsent[]
+
+  @@unique([eventId, guestId])
+  @@unique([confirmationCode])
+  @@index([eventId, status])
+}
+
+model VendorConsent {
+  id             String            @id @default(cuid())
+  registrationId String
+  registration   EventRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  vendorId       String
+  vendor         EventVendor       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  guestId        String
+  guest          GuestProfile      @relation(fields: [guestId], references: [id])
+  granted        Boolean
+  channelScope   String            @default("email")
+  source         String
+  createdAt      DateTime          @default(now())
+  revokedAt      DateTime?
+
+  @@unique([registrationId, vendorId])
+  @@index([vendorId, granted])
+}
+
+model BusinessCrmContact {
+  id              String       @id @default(cuid())
+  ventureId       String
+  venture         Venture      @relation(fields: [ventureId], references: [id])
+  businessKey     String
+  guestId         String
+  guest           GuestProfile @relation(fields: [guestId], references: [id])
+  sourceEventId   String?
+  sourceVendorId  String?
+  sourceVendor    EventVendor? @relation(fields: [sourceVendorId], references: [id])
+  fullName        String
+  email           String?
+  phone           String?
+  status          String       @default("active")
+  followUpStatus  String       @default("none")
+  lastInteraction String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([ventureId, businessKey, guestId])
+  @@index([ventureId, businessKey, status])
+}
+
+model ConsentAudit {
+  id           String       @id @default(cuid())
+  guestId      String
+  guest        GuestProfile @relation(fields: [guestId], references: [id])
+  businessKey  String
+  action       String
+  channelScope String
+  source       String
+  disclosure   String?
+  createdAt    DateTime     @default(now())
+
+  @@index([guestId, createdAt])
+  @@index([businessKey, createdAt])
 }

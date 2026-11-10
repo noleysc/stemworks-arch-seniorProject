@@ -96,6 +96,13 @@ export function formatDate(value: string | null | undefined): string {
   }).format(new Date(Date.UTC(year, month - 1, day)));
 }
 
+/** Calendar-day delta from `from` to `to` (`YYYY-MM-DD`), both read as UTC midnight. */
+export function dayDelta(from: string, to: string): number {
+  const start = Date.parse(`${from}T00:00:00.000Z`);
+  const end = Date.parse(`${to}T00:00:00.000Z`);
+  return Math.round((end - start) / 86_400_000);
+}
+
 function validDate(year: string, month: string, day: string): string | null {
   const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
   if (
