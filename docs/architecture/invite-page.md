@@ -6,12 +6,12 @@ Two surfaces, two jobs:
 
 | Surface | Who | Route |
 | --- | --- | --- |
-| **Owner desk** | Pampered Soul owner / event planner | `/experiences`, `/experiences/new`, `/experiences/[slug]` |
-| **Guest invite** | Anyone with the share link | `/e/{slug}` |
+| **Ticketed invite creator** | Pampered Soul owner | `/experiences`, `/experiences/new`, `/experiences/[slug]` |
+| **Guest checkout invite** | Anyone with the share link | `/e/{slug}` |
 
-They do not share chrome. Planner nav, CRM, scorecard, and edit controls stay on `/experiences/*`. The public invite has no planner header and is read-only except ticket checkout.
+They do not share chrome. Creator nav, CRM, scorecard, and edit controls stay on `/experiences/*`. The public invite has no planner header and is read-only except ticket checkout.
 
-UX for guests is modeled on Partiful. Tickets, marketing consent, and private CRM follow [experiences-crm.md](experiences-crm.md).
+The owner product is a **ticketed invite creator**: compose invite copy, set ticket tiers, optionally attach spa-menu treatments, publish, share `/e/{slug}`. UX for guests is modeled on Partiful. Tickets, marketing consent, and private CRM follow [experiences-crm.md](experiences-crm.md).
 
 ## Who hosts
 
@@ -24,20 +24,20 @@ UX for guests is modeled on Partiful. Tickets, marketing consent, and private CR
 
 Jade Flowers, Jade Haven, and Jade Experiences **do not host** this invite.
 
-## Owner-composed event (the planning system)
+## Ticketed invite creator
 
-The owner creates an event. Stemworks does not seed a holiday spa night.
+The owner creates a ticketed invite. Stemworks does not seed a holiday spa night.
 
 Owner fills, in order:
 
 1. **Invite fields** — title, summary, date, time label, location (default `16313 S Tamiami Trail, Fort Myers, FL 33908`), capacity, host display name (default `The Pampered Soul`)
-2. **Spa menu** — owner picks live Pampered Soul treatments from `SPA_SERVICES`. Each pick becomes an `EventItineraryItem` with `serviceKey`, duration, and menu price.
-3. **Custom itinerary** — optional moments the menu does not cover.
-4. **Ticket tiers** — at least one before publish
+2. **Ticket tiers** — at least one before publish (required product of the creator)
+3. **Spa menu** — optional. Owner picks live Pampered Soul treatments from `SPA_SERVICES`. Each pick becomes an `EventItineraryItem` with `serviceKey`, duration, and menu price.
+4. **Custom itinerary** — optional moments the menu does not cover.
 5. **Participating businesses** — optional marketing-consent checkboxes
-6. **Publish** — `draft` → `open` unlocks `/e/{slug}`
+6. **Publish** — `draft` → `open` unlocks `/e/{slug}` and the shareable guest link
 
-Draft events are not publicly reachable. Guests hitting a draft or missing slug get 404.
+Draft invites are not publicly reachable. Guests hitting a draft or missing slug get 404.
 
 ## Guest page composition
 
@@ -54,13 +54,13 @@ Buying a ticket is not marketing consent. A vendor checkbox is.
 
 | Route | Job |
 | --- | --- |
-| `/experiences` | Owner desk list |
-| `/experiences/new` | Compose event + spa menu picks |
-| `/experiences/[slug]` | Edit treatments, publish |
+| `/experiences` | Invite list + share link |
+| `/experiences/new` | Create ticketed invite (copy, tiers, spa menu) |
+| `/experiences/[slug]` | Edit invite, publish, copy guest link |
 | `/experiences/guests` | Check-in |
 | `/experiences/crm` | Consented contacts |
 | `/experiences/scorecard` | Revenue + consent |
-| `/e/{slug}` | Public invite only |
+| `/e/{slug}` | Public ticketed invite / checkout only |
 
 ## Recorded decisions
 

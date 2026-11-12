@@ -112,15 +112,15 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
       <section className="space-y-4 rounded-3xl border border-slate-900/10 bg-white/80 p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Owner desk · {event.statusLabel}</p>
-            <h2 className="mt-1 font-display text-2xl">Treatments on this event</h2>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Invite · {event.statusLabel}</p>
+            <h2 className="mt-1 font-display text-2xl">Treatments on this invite</h2>
           </div>
           {event.status === "open" || event.status === "full" ? (
             <Link className="text-sm underline" href={`/e/${event.slug}`} target="_blank">
-              Open guest invite
+              Open guest checkout
             </Link>
           ) : (
-            <span className="text-sm text-slate-500">Publish to share the guest invite</span>
+            <span className="text-sm text-slate-500">Publish to unlock guest checkout</span>
           )}
         </div>
         {event.itinerary.length === 0 ? (
@@ -168,7 +168,7 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
         </div>
         {event.status === "draft" ? (
           <Button type="button" disabled={pendingKey === "publish"} onClick={publish}>
-            Publish guest invite
+            Publish ticketed invite
           </Button>
         ) : null}
         {error ? <p className="text-sm text-red-700">{error}</p> : null}
@@ -176,7 +176,7 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
 
       <section className="rounded-3xl border border-slate-900/10 bg-white/80 p-5">
         <h2 className="font-display text-2xl">Spa menu</h2>
-        <p className="mt-1 mb-4 text-sm text-slate-600">Add another Pampered Soul treatment to this event.</p>
+        <p className="mt-1 mb-4 text-sm text-slate-600">Add another Pampered Soul treatment to this invite.</p>
         <SpaMenuPicker selectedKeys={selectedKeys} onAdd={addService} disabled={Boolean(pendingKey)} />
       </section>
     </div>

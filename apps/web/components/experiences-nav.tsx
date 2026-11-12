@@ -8,8 +8,8 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/experiences", label: "Events" },
-  { href: "/experiences/new", label: "Plan event" },
+  { href: "/experiences", label: "Invites" },
+  { href: "/experiences/new", label: "Create invite" },
   { href: "/experiences/guests", label: "Guests" },
   { href: "/experiences/crm", label: "Private CRM" },
   { href: "/experiences/scorecard", label: "Scorecard" },
@@ -24,7 +24,7 @@ export function ExperiencesNav() {
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
         <Link href="/experiences" className="block">
           <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-slate-600">
-            Stemworks · Owner desk
+            Stemworks · Ticketed invite creator
           </p>
           <p className="font-display text-[1.7rem] leading-none text-slate-950">The Pampered Soul</p>
         </Link>

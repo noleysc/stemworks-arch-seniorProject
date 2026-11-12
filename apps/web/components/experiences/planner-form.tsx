@@ -161,13 +161,13 @@ export function PlannerForm() {
       <div className="space-y-6">
         <section className="space-y-4 rounded-3xl border border-slate-900/10 bg-white/80 p-5">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-slate-500">Owner desk</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-slate-500">Ticketed invite</p>
             <h2 className="mt-1 font-display text-2xl">Invite copy</h2>
           </div>
-          <Field label="Event title" htmlFor="title">
+          <Field label="Invite title" htmlFor="title">
             <Input id="title" name="title" required maxLength={160} placeholder="Holiday spa evening" />
           </Field>
-          <Field label="What is this night?" htmlFor="summary">
+          <Field label="What should guests know?" htmlFor="summary">
             <Textarea
               id="summary"
               name="summary"
@@ -198,7 +198,12 @@ export function PlannerForm() {
         </section>
 
         <section className="space-y-4 rounded-3xl border border-slate-900/10 bg-white/80 p-5">
-          <h2 className="font-display text-2xl">Tickets</h2>
+          <div>
+            <h2 className="font-display text-2xl">Ticket types</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Guests pick a tier and pay on the public invite. You need at least one before publishing.
+            </p>
+          </div>
           <ul className="space-y-3">
             {tiers.map((tier, index) => (
               <li key={tier.localId} className="grid gap-3 rounded-2xl border border-slate-900/10 bg-[#eef2f6] p-3 sm:grid-cols-2">
@@ -397,11 +402,11 @@ export function PlannerForm() {
 
         <div className="flex flex-wrap items-center gap-3 rounded-3xl border border-slate-900/10 bg-white/80 p-5">
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="publish" className="h-4 w-4" />
-            Publish the invite now
+            <input type="checkbox" name="publish" className="h-4 w-4" defaultChecked />
+            Publish guest checkout now
           </label>
           <Button type="submit" disabled={pending}>
-            {pending ? "Saving…" : "Save event"}
+            {pending ? "Creating…" : "Create ticketed invite"}
           </Button>
           {error ? <p className="w-full text-sm text-red-700">{error}</p> : null}
         </div>

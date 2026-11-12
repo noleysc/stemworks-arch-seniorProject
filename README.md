@@ -7,7 +7,7 @@ Running slices in `apps/web`:
 - **Dashboard** — `/dashboard` — tenant switcher, Confirmed / Potential, attention, venture cards, timeline
 - **Luminary Desk** — `/` — rental aggregate for Luminary Hotel & Co. (website + Airbnb + later sources)
 - **Jade Flowers** — `/jade` — product materials, SKUs, and orders on the Diaz Ventures tenant
-- **The Pampered Soul** — `/experiences` owner desk (plan events, spa menu) and `/e/{slug}` guest invite (tickets + consent). Separate views.
+- **The Pampered Soul** — `/experiences` ticketed invite creator and `/e/{slug}` guest checkout (tickets + consent). Separate views.
 
 The architecture documents below still govern what gets built next.
 
@@ -49,16 +49,16 @@ Open **http://localhost:43123**
 | `/dashboard` | Scalable command board. `?tenant=luminary`, `diaz_ventures`, or `pampered_soul` |
 | `/` | Luminary rental desk |
 | `/jade` | Jade Flowers product desk |
-| `/experiences` | Pampered Soul **owner desk** (plan events, spa menu, CRM) |
-| `/experiences/new` | Compose an event and add spa treatments |
-| `/e/{slug}` | **Guest invite** only (no planner chrome) |
+| `/experiences` | Pampered Soul **ticketed invite creator** (list + share links) |
+| `/experiences/new` | Create invite: copy, ticket tiers, spa menu, publish |
+| `/e/{slug}` | **Guest checkout** only (no creator chrome) |
 
-### Experiences demo (ticket checkout)
+### Ticketed invite demo
 
 1. Start the app with the commands above.
-2. Open `/experiences/new`, fill the invite, add massages/facials from the spa menu, and publish.
-3. Open the public guest link `/e/{slug}` (separate view from the planner).
-4. Pick a tier, enter **email + phone**, pay with demo card **`4242 4242 4242 4242`**, any future expiry, CVC `123`.
+2. Open `/experiences/new` — create a ticketed invite (ticket types required; spa treatments optional).
+3. Leave **Publish guest checkout now** checked, submit, then copy the guest link from the invite page.
+4. Open `/e/{slug}`. Pick a tier, enter **email + phone**, pay with demo card **`4242 4242 4242 4242`**, any future expiry, CVC `123`.
 5. Optionally check vendor marketing consent boxes.
 6. Owner views: `/experiences`, `/experiences/{slug}`, `/experiences/guests`, `/experiences/crm`, `/experiences/scorecard`.
 
