@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -14,13 +14,17 @@ export function ShareInviteLink({
   published: boolean;
 }) {
   const [copied, setCopied] = useState(false);
+  const [origin, setOrigin] = useState("");
   const path = `/e/${slug}`;
-  const absolute =
-    typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
+  const absolute = `${origin}${path}`;
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(absolute);
+      await navigator.clipboard.writeText(`${window.location.origin}${path}`);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
