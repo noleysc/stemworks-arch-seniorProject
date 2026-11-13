@@ -3,6 +3,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -19,9 +20,18 @@ const kindStyles: Record<CalendarItem["kind"], string> = {
 };
 
 export function CalendarBoard() {
+  const searchParams = useSearchParams();
   const now = new Date();
-  const [year, setYear] = useState(now.getUTCFullYear());
-  const [month, setMonth] = useState(now.getUTCMonth());
+  const queryYear = Number(searchParams.get("year"));
+  const queryMonth = Number(searchParams.get("month"));
+  const startYear =
+    Number.isFinite(queryYear) && queryYear >= 2000 ? queryYear : now.getUTCFullYear();
+  const startMonth =
+    Number.isFinite(queryMonth) && queryMonth >= 0 && queryMonth <= 11
+      ? queryMonth
+      : now.getUTCMonth();
+  const [year, setYear] = useState(startYear);
+  const [month, setMonth] = useState(startMonth);
   const [items, setItems] = useState<CalendarItem[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [pending, setPending] = useState(true);
