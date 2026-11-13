@@ -3,9 +3,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import { formatTicketPrice } from "@/lib/experiences/catalog";
+import { requestErrorMessage, requestJson } from "@/lib/http";
+import { registrationDetailsSchema, type RegistrationDetails } from "@/lib/experiences/checkout-input";
+import { validationMessage } from "@/lib/experiences/errors";
 
 type Vendor = {
   businessKey: string;
@@ -34,6 +37,10 @@ export function RsvpForm({
 }) {
   const router = useRouter();
   const available = tiers.filter((tier) => tier.remaining > 0);
+  const [step, setStep] = useState<"details" | "payment">("details");
+  const [details, setDetails] = useState<RegistrationDetails | null>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const previousStep = useRef(step);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<{
@@ -56,26 +63,60 @@ export function RsvpForm({
   );
   const totalCents = (selected?.priceCents ?? 0) * quantity;
 
+  useEffect(() => {
+    if (previousStep.current !== step) {
+      headingRef.current?.focus();
+      previousStep.current = step;
+    }
+  }, [step]);
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (pending) return;
     const formData = new FormData(event.currentTarget);
-    setPending(true);
     setError(null);
+    if (!selected || selected.remaining < quantity) {
+      setError("There aren’t enough tickets left for that quantity. Please review your tickets.");
+      setStep("details");
+      return;
+    }
+
+    let guestDetails = details;
+    if (step === "details") {
+      const parsed = registrationDetailsSchema.safeParse({
+        fullName: String(formData.get("fullName") ?? ""),
+        email: String(formData.get("email") ?? ""),
+        phone: String(formData.get("phone") ?? ""),
+        tierKey,
+        ticketQuantity: quantity,
+        notes: String(formData.get("notes") ?? ""),
+        guestNote: String(formData.get("guestNote") ?? ""),
+        showOnGuestWall: formData.get("showOnGuestWall") === "on",
+        networkOptIn: formData.get("networkOptIn") === "on",
+        vendorOptIns: optIns,
+      });
+      if (!parsed.success) {
+        setError(validationMessage(parsed.error));
+        return;
+      }
+      guestDetails = parsed.data;
+      setDetails(parsed.data);
+      if (totalCents > 0) {
+        setStep("payment");
+        return;
+      }
+    }
+    if (!guestDetails) {
+      setStep("details");
+      return;
+    }
+    setPending(true);
     try {
-      const response = await fetch(`/api/experiences/events/${slug}/rsvp`, {
+      const payload = await requestJson<NonNullable<typeof receipt>>(`/api/experiences/events/${slug}/rsvp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fullName: String(formData.get("fullName") ?? ""),
-          email: String(formData.get("email") ?? ""),
-          phone: String(formData.get("phone") ?? ""),
-          tierKey,
-          ticketQuantity: quantity,
-          notes: String(formData.get("notes") ?? ""),
-          guestNote: String(formData.get("guestNote") ?? ""),
-          showOnGuestWall: formData.get("showOnGuestWall") === "on",
-          networkOptIn: formData.get("networkOptIn") === "on",
-          vendorOptIns: optIns,
+          ...guestDetails,
           ...(totalCents > 0
             ? {
                 payment: {
@@ -88,9 +129,9 @@ export function RsvpForm({
               }
             : {}),
         }),
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error ?? "Could not get tickets.");
+      }, totalCents > 0
+        ? "We couldn’t complete your ticket purchase. Check your payment status or contact the organizer before trying again."
+        : "We couldn’t confirm your free tickets. Check your registration with the organizer before trying again.");
       setReceipt({
         confirmationCode: payload.confirmationCode,
         amountPaidCents: payload.amountPaidCents,
@@ -101,7 +142,7 @@ export function RsvpForm({
       });
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "The desk could not be reached.");
+      setError(requestErrorMessage(err, "We couldn’t confirm your tickets. Contact the organizer for help.", totalCents > 0));
     } finally {
       setPending(false);
     }
@@ -137,10 +178,16 @@ export function RsvpForm({
       className="space-y-5 rounded-[1.75rem] border border-white/15 bg-white p-6 text-slate-950 shadow-[0_24px_80px_rgba(0,0,0,0.35)]"
     >
       <div>
-        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-slate-500">Get tickets</p>
-        <h2 className="mt-1 font-display text-3xl">Join the night</h2>
+        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-slate-500">
+          Get tickets{totalCents > 0 ? ` · Step ${step === "details" ? "1" : "2"} of 2` : ""}
+        </p>
+        <h2 ref={headingRef} tabIndex={-1} className="mt-1 font-display text-3xl">
+          {step === "details" ? "Join the night" : "Complete payment"}
+        </h2>
       </div>
 
+      <fieldset hidden={step !== "details"} disabled={step !== "details" || pending} className="min-w-0 space-y-5">
+        <legend className="sr-only">Guest details and consent</legend>
       <div className="space-y-2">
         {tiers.map((tier) => {
           const soldOut = tier.remaining <= 0;
@@ -150,7 +197,10 @@ export function RsvpForm({
               key={tier.key}
               type="button"
               disabled={soldOut}
-              onClick={() => setTierKey(tier.key)}
+              onClick={() => {
+                setTierKey(tier.key);
+                setQuantity((current) => Math.min(current, tier.remaining));
+              }}
               className={`flex w-full items-start justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition ${
                 active ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 bg-slate-50"
               } ${soldOut ? "opacity-45" : ""}`}
@@ -194,33 +244,11 @@ export function RsvpForm({
         <span>Show me on the guest wall (first name only)</span>
       </label>
 
-      {totalCents > 0 ? (
-        <fieldset className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <legend className="px-1 text-sm font-medium text-slate-900">Payment</legend>
-          <p className="text-sm text-slate-600">
-            Card is charged when you buy tickets. Demo mode accepts Visa test card{" "}
-            <span className="font-mono">4242 4242 4242 4242</span>.
-          </p>
-          <Field label="Name on card" name="cardholderName" required autoComplete="cc-name" />
-          <Field
-            label="Card number"
-            name="cardNumber"
-            required
-            autoComplete="cc-number"
-            inputMode="numeric"
-            placeholder="4242 4242 4242 4242"
-          />
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Field label="Exp month" name="expMonth" required inputMode="numeric" placeholder="12" />
-            <Field label="Exp year" name="expYear" required inputMode="numeric" placeholder="2030" />
-            <Field label="CVC" name="cvc" required inputMode="numeric" placeholder="123" autoComplete="cc-csc" />
-          </div>
-        </fieldset>
-      ) : (
+      {totalCents === 0 ? (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-950">
           These tickets are free — no payment information needed.
         </div>
-      )}
+      ) : null}
 
       <fieldset className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
         <legend className="px-1 text-sm font-medium text-slate-900">Marketing consent</legend>
@@ -246,8 +274,43 @@ export function RsvpForm({
           <span>Keep my preferences in the Stemworks guest network for future invites.</span>
         </label>
       </fieldset>
+      </fieldset>
 
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {step === "payment" ? (
+        <>
+        <div className="rounded-2xl bg-slate-100 px-4 py-3 text-sm">
+          <p className="font-medium">{quantity} × {selected?.label} · {formatTicketPrice(totalCents)}</p>
+          <p className="mt-1 break-words text-slate-600">{details?.fullName} · {details?.email}</p>
+        </div>
+        <fieldset disabled={pending} className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <legend className="px-1 text-sm font-medium text-slate-900">Payment</legend>
+          <p className="text-sm text-slate-600">
+            Card is charged when you buy tickets. Demo mode accepts Visa test card{" "}
+            <span className="font-mono">4242 4242 4242 4242</span>.
+          </p>
+          <Field label="Name on card" name="cardholderName" required autoComplete="cc-name" />
+          <Field
+            label="Card number"
+            name="cardNumber"
+            required
+            autoComplete="cc-number"
+            inputMode="numeric"
+            placeholder="4242 4242 4242 4242"
+          />
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Exp month" name="expMonth" required inputMode="numeric" placeholder="12" />
+            <Field label="Exp year" name="expYear" required inputMode="numeric" placeholder="2030" />
+            <Field label="CVC" name="cvc" required inputMode="numeric" placeholder="123" autoComplete="cc-csc" />
+          </div>
+        </fieldset>
+        <button type="button" disabled={pending} onClick={() => { setError(null); setStep("details"); }}
+          className="w-full rounded-full border border-slate-300 px-5 py-3 text-sm font-medium disabled:opacity-60">
+          Back to guest details
+        </button>
+        </>
+      ) : null}
+
+      {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
       <button
         type="submit"
         disabled={pending || !selected || selected.remaining <= 0}
@@ -257,9 +320,9 @@ export function RsvpForm({
           ? totalCents > 0
             ? "Charging card…"
             : "Confirming…"
-          : totalCents > 0
-            ? `Pay ${formatTicketPrice(totalCents)} · get tickets`
-            : "Get free tickets"}
+          : totalCents === 0
+            ? "Get free tickets"
+            : step === "details" ? "Next: Payment" : `Pay ${formatTicketPrice(totalCents)} · get tickets`}
       </button>
     </form>
   );

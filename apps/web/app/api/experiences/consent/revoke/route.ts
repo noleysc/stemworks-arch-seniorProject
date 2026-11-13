@@ -2,6 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { errorResponse } from "@/lib/experiences/api-error";
 
 import { revokeVendorConsent } from "@/lib/experiences/rsvp";
 
@@ -18,7 +19,6 @@ export async function POST(request: Request) {
     const result = await revokeVendorConsent(body);
     return NextResponse.json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Revoke failed.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return errorResponse(error, "We couldn’t update those marketing preferences. Please try again.");
   }
 }

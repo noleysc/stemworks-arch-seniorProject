@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { registrationStatusLabel } from "@/lib/experiences/catalog";
+import { requestErrorMessage, requestJson } from "@/lib/http";
 
 type GuestRow = {
   id: string;
@@ -29,12 +30,10 @@ export function CheckInBoard({ registrations }: { registrations: GuestRow[] }) {
     setPendingId(id);
     setError(null);
     try {
-      const response = await fetch(`/api/experiences/registrations/${id}/check-in`, { method: "POST" });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error ?? "Check-in failed.");
+      await requestJson(`/api/experiences/registrations/${id}/check-in`, { method: "POST" }, "We couldn’t check in this guest. Please try again.");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "The desk could not be reached.");
+      setError(requestErrorMessage(err, "We couldn’t check in this guest. Please try again."));
     } finally {
       setPendingId(null);
     }
@@ -42,7 +41,7 @@ export function CheckInBoard({ registrations }: { registrations: GuestRow[] }) {
 
   return (
     <div className="space-y-3">
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
       {registrations.length === 0 ? (
         <p className="text-sm text-slate-600">No guests yet. Share the public RSVP link.</p>
       ) : (

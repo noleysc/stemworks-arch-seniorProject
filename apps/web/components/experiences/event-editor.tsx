@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { ExperienceEventRecord } from "@/lib/experiences/events";
+import { requestErrorMessage, requestJson } from "@/lib/http";
 import { formatTicketPrice } from "@/lib/experiences/catalog";
 import { formatDuration, formatMenuPrice, THROUGHOUT_LABEL, type SpaService } from "@/lib/experiences/spa-menu";
 
@@ -71,18 +72,14 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
     setPendingKey(service.key);
     setError(null);
     try {
-      const response = await fetch(`/api/experiences/events/${event.slug}/itinerary`, {
+      await requestJson(`/api/experiences/events/${event.slug}/itinerary`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ serviceKey: service.key, startsAtLabel: startsAtLabelValue }),
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(typeof payload.error === "string" ? payload.error : "Could not add that treatment.");
-      }
+      }, "We couldn’t add that treatment. Please try again.");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not add that treatment.");
+      setError(requestErrorMessage(err, "We couldn’t add that treatment. Please try again."));
     } finally {
       setPendingKey(null);
     }
@@ -94,23 +91,19 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
     setPendingKey("moment");
     setError(null);
     try {
-      const response = await fetch(`/api/experiences/events/${event.slug}/itinerary`, {
+      await requestJson(`/api/experiences/events/${event.slug}/itinerary`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: momentTitle,
           startsAtLabel: customTime.trim() || THROUGHOUT_LABEL,
         }),
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(typeof payload.error === "string" ? payload.error : "Could not add that moment.");
-      }
+      }, "We couldn’t add that itinerary item. Please try again.");
       setCustomTitle("");
       setCustomTime("");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not add that moment.");
+      setError(requestErrorMessage(err, "We couldn’t add that itinerary item. Please try again."));
     } finally {
       setPendingKey(null);
     }
@@ -120,14 +113,10 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
     setPendingKey(id);
     setError(null);
     try {
-      const response = await fetch(`/api/experiences/events/${event.slug}/itinerary/${id}`, { method: "DELETE" });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(typeof payload.error === "string" ? payload.error : "Could not remove that item.");
-      }
+      await requestJson(`/api/experiences/events/${event.slug}/itinerary/${id}`, { method: "DELETE" }, "We couldn’t remove that itinerary item. Please try again.");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not remove that item.");
+      setError(requestErrorMessage(err, "We couldn’t remove that itinerary item. Please try again."));
     } finally {
       setPendingKey(null);
     }
@@ -137,7 +126,7 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
     setPendingKey("save");
     setError(null);
     try {
-      const response = await fetch(`/api/experiences/events/${event.slug}`, {
+      await requestJson(`/api/experiences/events/${event.slug}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -156,14 +145,10 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
             quantityAvailable: tier.quantityAvailable,
           })),
         }),
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(typeof payload.error === "string" ? payload.error : "Could not save invite.");
-      }
+      }, "We couldn’t save your invite changes. Please try again.");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save invite.");
+      setError(requestErrorMessage(err, "We couldn’t save your invite changes. Please try again."));
     } finally {
       setPendingKey(null);
     }
@@ -173,14 +158,10 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
     setPendingKey("publish");
     setError(null);
     try {
-      const response = await fetch(`/api/experiences/events/${event.slug}/publish`, { method: "POST" });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(typeof payload.error === "string" ? payload.error : "Could not publish.");
-      }
+      await requestJson(`/api/experiences/events/${event.slug}/publish`, { method: "POST" }, "We couldn’t publish your invite. Please try again.");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not publish.");
+      setError(requestErrorMessage(err, "We couldn’t publish your invite. Please try again."));
     } finally {
       setPendingKey(null);
     }
@@ -190,14 +171,10 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
     setPendingKey("unpublish");
     setError(null);
     try {
-      const response = await fetch(`/api/experiences/events/${event.slug}/unpublish`, { method: "POST" });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(typeof payload.error === "string" ? payload.error : "Could not unpublish.");
-      }
+      await requestJson(`/api/experiences/events/${event.slug}/unpublish`, { method: "POST" }, "We couldn’t unpublish your invite. Please try again.");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not unpublish.");
+      setError(requestErrorMessage(err, "We couldn’t unpublish your invite. Please try again."));
     } finally {
       setPendingKey(null);
     }
@@ -208,14 +185,10 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
     setPendingKey("cancel");
     setError(null);
     try {
-      const response = await fetch(`/api/experiences/events/${event.slug}/cancel`, { method: "POST" });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(typeof payload.error === "string" ? payload.error : "Could not cancel.");
-      }
+      await requestJson(`/api/experiences/events/${event.slug}/cancel`, { method: "POST" }, "We couldn’t cancel your invite. Please try again.");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not cancel.");
+      setError(requestErrorMessage(err, "We couldn’t cancel your invite. Please try again."));
     } finally {
       setPendingKey(null);
     }
@@ -326,7 +299,7 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
                         current.map((row) => (row.localId === tier.localId ? { ...row, label: e.target.value } : row)),
                       )
                     }
-                    placeholder="General admission"
+                    placeholder="Ticket Name"
                   />
                   <Input
                     value={tier.price}
@@ -348,7 +321,7 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
                         ),
                       )
                     }
-                    placeholder="What this ticket includes"
+                    placeholder="Ticket Description"
                   />
                   <Input
                     value={tier.quantityAvailable}
@@ -360,7 +333,7 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
                         ),
                       )
                     }
-                    placeholder="Quantity"
+                    placeholder="Total Tickets Available"
                   />
                   <p className="text-xs text-slate-600 sm:col-span-2">
                     {tier.sold > 0
@@ -425,7 +398,7 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
             ) : (
               <p className="text-sm text-slate-600">This invite is cancelled.</p>
             )}
-            {error ? <p className="w-full text-sm text-red-700">{error}</p> : null}
+            {error ? <p role="alert" className="w-full text-sm text-red-700">{error}</p> : null}
           </div>
         </div>
 

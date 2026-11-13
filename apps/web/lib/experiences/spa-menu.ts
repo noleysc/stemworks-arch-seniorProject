@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 import { formatTicketPrice } from "@/lib/experiences/catalog";
+import { PublicError } from "@/lib/experiences/errors";
 
 export const SPA_MENU_CATEGORIES = [
   { key: "massage", label: "Massage" },
@@ -219,7 +220,7 @@ export function getSpaService(key: string): SpaService | null {
 
 export function requireSpaService(key: string): SpaService {
   const service = getSpaService(key);
-  if (!service) throw new Error(`Unknown spa service: ${key}`);
+  if (!service) throw new PublicError("That treatment is no longer available. Refresh the spa menu and choose another treatment.");
   return service;
 }
 

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { requestErrorMessage, requestJson } from "@/lib/http";
 import {
   formatDuration,
   formatMenuPrice,
@@ -48,11 +49,12 @@ export function ServiceBookForm() {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     setPending(true);
     setError(null);
     try {
-      const response = await fetch("/api/experiences/appointments", {
+      const payload = await requestJson<{ appointment: NonNullable<typeof receipt> }>("/api/experiences/appointments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -64,20 +66,18 @@ export function ServiceBookForm() {
           clientPhone: form.get("clientPhone"),
           notes: form.get("notes"),
         }),
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(typeof payload.error === "string" ? payload.error : "Booking failed.");
-      }
+      }, "We couldn’t confirm your appointment. Check your bookings or contact the spa before trying again.");
       setReceipt({
         confirmationCode: payload.appointment.confirmationCode,
         serviceTitle: payload.appointment.serviceTitle,
         appointmentOn: payload.appointment.appointmentOn,
         startsAtLabel: payload.appointment.startsAtLabel,
       });
-      event.currentTarget.reset();
+      formElement.reset();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Booking failed.");
+      setError(err instanceof TypeError
+        ? "We lost the connection while booking. Check your bookings or contact the spa before trying again."
+        : requestErrorMessage(err, "We couldn’t confirm your appointment. Check your bookings or contact the spa before trying again."));
     } finally {
       setPending(false);
     }
@@ -177,7 +177,7 @@ export function ServiceBookForm() {
               .join(" · ")}
           </p>
         ) : null}
-        {error ? <p className="w-full text-sm text-red-300">{error}</p> : null}
+        {error ? <p role="alert" className="w-full text-sm text-red-300">{error}</p> : null}
       </div>
     </form>
   );

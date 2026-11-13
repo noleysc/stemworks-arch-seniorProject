@@ -1,7 +1,7 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
+import { errorResponse } from "@/lib/experiences/api-error";
 
 import { getEventBySlug, listExperienceEvents } from "@/lib/experiences/events";
 import { createOwnerEvent, ownerEventSchema } from "@/lib/experiences/planner";
@@ -9,8 +9,12 @@ import { createOwnerEvent, ownerEventSchema } from "@/lib/experiences/planner";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const events = await listExperienceEvents();
-  return NextResponse.json({ events });
+  try {
+    const events = await listExperienceEvents();
+    return NextResponse.json({ events });
+  } catch (error) {
+    return errorResponse(error, "We couldn’t load your invites. Please try again.");
+  }
 }
 
 export async function POST(request: Request) {
@@ -21,10 +25,6 @@ export async function POST(request: Request) {
     const event = await getEventBySlug(created.slug);
     return NextResponse.json({ event }, { status: 201 });
   } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json({ error: error.issues[0]?.message ?? "Invalid event." }, { status: 400 });
-    }
-    const message = error instanceof Error ? error.message : "Could not save the event.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return errorResponse(error, "We couldn’t save your invite. Please try again.");
   }
 }
