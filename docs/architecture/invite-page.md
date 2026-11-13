@@ -58,9 +58,12 @@ Buying a ticket is not marketing consent. A vendor checkbox is.
 | `/experiences/new` | Create ticketed invite (copy, tiers, spa menu) |
 | `/experiences/[slug]` | Edit invite copy and tiers, publish / unpublish / cancel, copy guest link |
 | `/experiences/[slug]/preview` | Owner preview of the guest invite (drafts included; checkout locked) |
+| `/experiences/calendar` | Month calendar: invites, service bookings, ticketed guests |
+| `/experiences/bookings` | Individual spa appointments booked at `/book` |
 | `/experiences/guests` | Check-in |
 | `/experiences/crm` | Consented contacts |
 | `/experiences/scorecard` | Revenue + consent |
+| `/book` | Public client booking for one spa service |
 | `/e/{slug}` | Public ticketed invite / checkout only |
 
 ## Recorded decisions

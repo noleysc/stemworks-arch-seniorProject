@@ -7,7 +7,7 @@ Running slices in `apps/web`:
 - **Dashboard** — `/dashboard` — tenant switcher, Confirmed / Potential, attention, venture cards, timeline
 - **Rentals** — `/` — rental aggregate across booking sources (website + Airbnb + later sources)
 - **Jade Flowers** — `/jade` — product materials, SKUs, and orders on the Diaz Ventures tenant
-- **The Pampered Soul** — `/experiences` ticketed invite creator and `/e/{slug}` guest checkout (tickets + consent). Separate views.
+- **The Pampered Soul** — `/experiences` ticketed invite creator, `/experiences/calendar` schedule, `/book` individual service booking, and `/e/{slug}` guest checkout.
 
 The architecture documents below still govern what gets built next.
 
@@ -56,7 +56,11 @@ Open **http://localhost:43123**
 | `/jade` | Jade Flowers product desk |
 | `/experiences` | Pampered Soul **ticketed invite creator** (list + share links) |
 | `/experiences/new` | Create invite: copy, ticket tiers, spa menu, publish |
+| `/experiences/calendar` | Month calendar of invites, service bookings, and ticketed guests |
+| `/experiences/bookings` | Individual spa service appointments |
+| `/book` | **Client** page to book one spa service |
 | `/e/{slug}` | **Guest checkout** only (no creator chrome) |
+| `/dashboard` | Command board + per-tenant to-do list |
 
 ### Ticketed invite demo
 

@@ -31,7 +31,11 @@ async function resetPilot() {
     await prisma.experienceEvent.deleteMany({ where: { id: { in: eventIds } } });
   }
   await prisma.consentAudit.deleteMany({ where: { guest: { email: { in: TEST_EMAILS } } } });
-  await prisma.businessCrmContact.deleteMany({ where: { guest: { email: { in: TEST_EMAILS } } } });
+  await prisma.businessCrmContact.deleteMany({
+    where: {
+      OR: [{ guest: { email: { in: TEST_EMAILS } } }, { businessKey: { in: ["jade_haven", "jade_flowers"] } }],
+    },
+  });
   await prisma.guestProfile.deleteMany({ where: { email: { in: TEST_EMAILS } } });
 
   return createOwnerEvent({
