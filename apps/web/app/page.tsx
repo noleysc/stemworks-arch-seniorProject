@@ -25,11 +25,11 @@ export default async function TodayPage() {
     <div className="space-y-8">
       <div className="max-w-2xl">
         <p className="text-sm text-stone-500">
-          {aggregate.property.address} · Business date {formatDate(today)} · {aggregate.property.timezone}
+          Business date {formatDate(today)} · {aggregate.property.timezone}
         </p>
-        <h1 className="mt-2 font-display text-4xl leading-tight text-stone-950">{aggregate.property.name}</h1>
+        <h1 className="mt-2 font-display text-4xl leading-tight text-stone-950">Today</h1>
         <p className="mt-3 text-sm leading-6 text-stone-600">
-          Every rental for this property is one book. The Luminary website, Airbnb, and any later source each keep
+          Every rental for this property is one book. The property website, Airbnb, and any later source each keep
           their own confirmation codes, and the totals add those sources together.
         </p>
       </div>
