@@ -78,7 +78,7 @@ test("ticket purchase charges card and grants marketing consent only for that ve
   assert.equal(result.ticketQuantity, 2);
   assert.equal(result.amountPaidCents, 13000);
   assert.equal(result.paymentLast4, "4242");
-  assert.match(result.confirmationCode, /^PS-\d{4}-\d{4}$/);
+  assert.match(result.confirmationCode, /^PS-\d{4}-[A-Z0-9]+$/);
 
   const registration = await prisma.eventRegistration.findUniqueOrThrow({
     where: { id: result.registrationId },
@@ -165,4 +165,79 @@ test("revoking marketing consent strips contact channels from that business CRM 
   assert.equal(haven.length, 1);
   assert.equal(haven[0].email, "blake@example.com");
   assert.equal(haven[0].phone, "239-555-0111");
+});
+
+test("two published events can each sell a ticket with different confirmation codes", async () => {
+  const emails = ["multi-a@example.com", "multi-b@example.com"];
+  const leftover = await prisma.experienceEvent.findMany({
+    where: { slug: { startsWith: "multi-event-code" } },
+    select: { id: true },
+  });
+  const eventIds = leftover.map((row) => row.id);
+  if (eventIds.length > 0) {
+    await prisma.vendorConsent.deleteMany({ where: { vendor: { eventId: { in: eventIds } } } });
+    await prisma.eventRegistration.deleteMany({ where: { eventId: { in: eventIds } } });
+    await prisma.experienceEvent.deleteMany({ where: { id: { in: eventIds } } });
+  }
+  await prisma.consentAudit.deleteMany({ where: { guest: { email: { in: emails } } } });
+  await prisma.businessCrmContact.deleteMany({ where: { guest: { email: { in: emails } } } });
+  await prisma.guestProfile.deleteMany({ where: { email: { in: emails } } });
+
+  const eventA = await createOwnerEvent({
+    title: "Multi event code A",
+    summary: "First published invite for confirmation uniqueness.",
+    location: "16313 S Tamiami Trail, Fort Myers, FL 33908",
+    startsOn: "2026-12-20",
+    startsAtLabel: "5:00 PM",
+    capacity: 20,
+    hostDisplayName: "The Pampered Soul",
+    publish: true,
+    tiers: [{ label: "General", description: "", price: 55, quantityAvailable: 20 }],
+    vendors: [{ displayName: "Jade Haven", roleLabel: "Spa partner" }],
+    itinerary: [{ serviceKey: "swedish-50", startsAtLabel: "6:00 PM" }],
+  });
+  const eventB = await createOwnerEvent({
+    title: "Multi event code B",
+    summary: "Second published invite for confirmation uniqueness.",
+    location: "16313 S Tamiami Trail, Fort Myers, FL 33908",
+    startsOn: "2026-12-21",
+    startsAtLabel: "5:00 PM",
+    capacity: 20,
+    hostDisplayName: "The Pampered Soul",
+    publish: true,
+    tiers: [{ label: "General", description: "", price: 55, quantityAvailable: 20 }],
+    vendors: [{ displayName: "Jade Haven", roleLabel: "Spa partner" }],
+    itinerary: [{ serviceKey: "swedish-50", startsAtLabel: "6:00 PM" }],
+  });
+
+  const ticketA = await submitRsvp(eventA.slug, {
+    fullName: "Multi Guest A",
+    email: "multi-a@example.com",
+    phone: "239-555-0201",
+    tierKey: "general",
+    ticketQuantity: 1,
+    vendorOptIns: { jade_haven: false },
+    payment: { ...demoPayment, cardholderName: "Multi Guest A" },
+  });
+  const ticketB = await submitRsvp(eventB.slug, {
+    fullName: "Multi Guest B",
+    email: "multi-b@example.com",
+    phone: "239-555-0202",
+    tierKey: "general",
+    ticketQuantity: 1,
+    vendorOptIns: { jade_haven: false },
+    payment: { ...demoPayment, cardholderName: "Multi Guest B" },
+  });
+
+  assert.match(ticketA.confirmationCode, /^PS-\d{4}-[A-Z0-9]+$/);
+  assert.match(ticketB.confirmationCode, /^PS-\d{4}-[A-Z0-9]+$/);
+  assert.notEqual(ticketA.confirmationCode, ticketB.confirmationCode);
+
+  const cleanupIds = [eventA.id, eventB.id];
+  await prisma.vendorConsent.deleteMany({ where: { vendor: { eventId: { in: cleanupIds } } } });
+  await prisma.eventRegistration.deleteMany({ where: { eventId: { in: cleanupIds } } });
+  await prisma.experienceEvent.deleteMany({ where: { id: { in: cleanupIds } } });
+  await prisma.consentAudit.deleteMany({ where: { guest: { email: { in: emails } } } });
+  await prisma.businessCrmContact.deleteMany({ where: { guest: { email: { in: emails } } } });
+  await prisma.guestProfile.deleteMany({ where: { email: { in: emails } } });
 });
