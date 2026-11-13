@@ -76,24 +76,28 @@ export function RsvpForm({
           showOnGuestWall: formData.get("showOnGuestWall") === "on",
           networkOptIn: formData.get("networkOptIn") === "on",
           vendorOptIns: optIns,
-          payment: {
-            cardholderName: String(formData.get("cardholderName") ?? ""),
-            cardNumber: String(formData.get("cardNumber") ?? ""),
-            expMonth: Number(formData.get("expMonth") ?? 0),
-            expYear: Number(formData.get("expYear") ?? 0),
-            cvc: String(formData.get("cvc") ?? ""),
-          },
+          ...(totalCents > 0
+            ? {
+                payment: {
+                  cardholderName: String(formData.get("cardholderName") ?? ""),
+                  cardNumber: String(formData.get("cardNumber") ?? ""),
+                  expMonth: Number(formData.get("expMonth") ?? 0),
+                  expYear: Number(formData.get("expYear") ?? 0),
+                  cvc: String(formData.get("cvc") ?? ""),
+                },
+              }
+            : {}),
         }),
       });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error ?? "Could not buy tickets.");
+      if (!response.ok) throw new Error(payload.error ?? "Could not get tickets.");
       setReceipt({
         confirmationCode: payload.confirmationCode,
         amountPaidCents: payload.amountPaidCents,
         ticketQuantity: payload.ticketQuantity,
         tierLabel: payload.tierLabel,
-        paymentLast4: payload.paymentLast4,
-        paymentBrand: payload.paymentBrand,
+        paymentLast4: payload.paymentLast4 || undefined,
+        paymentBrand: payload.paymentBrand || undefined,
       });
       router.refresh();
     } catch (err) {
@@ -110,9 +114,11 @@ export function RsvpForm({
         <h2 className="mt-2 font-display text-3xl">Tickets confirmed</h2>
         <p className="mt-3 text-sm leading-6 text-slate-700">
           {receipt.ticketQuantity} × {receipt.tierLabel} · {formatTicketPrice(receipt.amountPaidCents)}
-          {receipt.paymentLast4
-            ? ` · charged ${receipt.paymentBrand ?? "card"} ···· ${receipt.paymentLast4}`
-            : ""}
+          {receipt.amountPaidCents === 0
+            ? " · no payment required"
+            : receipt.paymentLast4
+              ? ` · charged ${receipt.paymentBrand ?? "card"} ···· ${receipt.paymentLast4}`
+              : ""}
         </p>
         <p className="mt-4 rounded-2xl bg-slate-100 px-4 py-3 font-mono text-sm tracking-wide">
           {receipt.confirmationCode}
@@ -188,27 +194,33 @@ export function RsvpForm({
         <span>Show me on the guest wall (first name only)</span>
       </label>
 
-      <fieldset className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-        <legend className="px-1 text-sm font-medium text-slate-900">Payment</legend>
-        <p className="text-sm text-slate-600">
-          Card is charged when you buy tickets. Demo mode accepts Visa test card{" "}
-          <span className="font-mono">4242 4242 4242 4242</span>.
-        </p>
-        <Field label="Name on card" name="cardholderName" required autoComplete="cc-name" />
-        <Field
-          label="Card number"
-          name="cardNumber"
-          required
-          autoComplete="cc-number"
-          inputMode="numeric"
-          placeholder="4242 4242 4242 4242"
-        />
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Exp month" name="expMonth" required inputMode="numeric" placeholder="12" />
-          <Field label="Exp year" name="expYear" required inputMode="numeric" placeholder="2030" />
-          <Field label="CVC" name="cvc" required inputMode="numeric" placeholder="123" autoComplete="cc-csc" />
+      {totalCents > 0 ? (
+        <fieldset className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <legend className="px-1 text-sm font-medium text-slate-900">Payment</legend>
+          <p className="text-sm text-slate-600">
+            Card is charged when you buy tickets. Demo mode accepts Visa test card{" "}
+            <span className="font-mono">4242 4242 4242 4242</span>.
+          </p>
+          <Field label="Name on card" name="cardholderName" required autoComplete="cc-name" />
+          <Field
+            label="Card number"
+            name="cardNumber"
+            required
+            autoComplete="cc-number"
+            inputMode="numeric"
+            placeholder="4242 4242 4242 4242"
+          />
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Exp month" name="expMonth" required inputMode="numeric" placeholder="12" />
+            <Field label="Exp year" name="expYear" required inputMode="numeric" placeholder="2030" />
+            <Field label="CVC" name="cvc" required inputMode="numeric" placeholder="123" autoComplete="cc-csc" />
+          </div>
+        </fieldset>
+      ) : (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-950">
+          These tickets are free — no payment information needed.
         </div>
-      </fieldset>
+      )}
 
       <fieldset className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
         <legend className="px-1 text-sm font-medium text-slate-900">Marketing consent</legend>
@@ -241,7 +253,13 @@ export function RsvpForm({
         disabled={pending || !selected || selected.remaining <= 0}
         className="w-full rounded-full bg-[linear-gradient(135deg,#0f172a,#334155)] px-5 py-3 text-sm font-medium text-white disabled:opacity-60"
       >
-        {pending ? "Charging card…" : `Pay ${formatTicketPrice(totalCents)} · get tickets`}
+        {pending
+          ? totalCents > 0
+            ? "Charging card…"
+            : "Confirming…"
+          : totalCents > 0
+            ? `Pay ${formatTicketPrice(totalCents)} · get tickets`
+            : "Get free tickets"}
       </button>
     </form>
   );

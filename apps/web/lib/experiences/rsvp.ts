@@ -29,7 +29,8 @@ export const rsvpInputSchema = z.object({
    * true means the guest grants that business marketing consent (email + SMS).
    */
   vendorOptIns: z.record(z.string(), z.boolean()).default({}),
-  payment: cardPaymentSchema,
+  /** Required when the ticket total is greater than $0. Omitted for free tickets. */
+  payment: cardPaymentSchema.optional(),
 });
 
 export async function submitRsvp(slug: string, raw: z.input<typeof rsvpInputSchema>) {
@@ -113,13 +114,17 @@ async function purchaseTickets(
     throw new Error("You already have tickets for this event.");
   }
 
+  if (amountDueCents > 0 && !input.payment) {
+    throw new Error("Payment is required for paid tickets.");
+  }
+
   const charge = await chargeTicketPayment({
     amountCents: amountDueCents,
     email,
     phone,
     fullName: input.fullName,
     description: `${event.title} · ${tier.label} × ${input.ticketQuantity}`,
-    card: input.payment,
+    card: amountDueCents > 0 ? input.payment : null,
   });
 
   const registrationData = {
@@ -129,9 +134,9 @@ async function purchaseTickets(
     amountDueCents,
     amountPaidCents: charge.amountCents,
     paymentRef: charge.paymentRef,
-    paymentStatus: "paid",
-    paymentBrand: charge.brand,
-    paymentLast4: charge.last4,
+    paymentStatus: amountDueCents === 0 ? "comped" : "paid",
+    paymentBrand: charge.last4 ? charge.brand : null,
+    paymentLast4: charge.last4 || null,
     paidAt: charge.paidAt,
     tierId: tier.id,
     showOnGuestWall: input.showOnGuestWall,
@@ -207,8 +212,8 @@ async function purchaseTickets(
     ticketQuantity: input.ticketQuantity,
     tierLabel: tier.label,
     paymentRef: charge.paymentRef,
-    paymentBrand: charge.brand,
-    paymentLast4: charge.last4,
+    paymentBrand: charge.last4 ? charge.brand : null,
+    paymentLast4: charge.last4 || null,
     paymentMode: charge.mode || paymentMode(),
   };
 }
@@ -342,11 +347,11 @@ async function saveRegistrationWithUniqueCode(input: {
     ticketQuantity: number;
     amountDueCents: number;
     amountPaidCents: number;
-    paymentRef: string;
+    paymentRef: string | null;
     paymentStatus: string;
     paymentBrand: string | null;
     paymentLast4: string | null;
-    paidAt: Date;
+    paidAt: Date | null;
     tierId: string;
     showOnGuestWall: boolean;
     wallName: string;

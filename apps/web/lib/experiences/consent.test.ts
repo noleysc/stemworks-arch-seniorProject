@@ -245,3 +245,80 @@ test("two published events can each sell a ticket with different confirmation co
   await prisma.businessCrmContact.deleteMany({ where: { guest: { email: { in: emails } } } });
   await prisma.guestProfile.deleteMany({ where: { email: { in: emails } } });
 });
+
+test("free tickets confirm without payment information", async () => {
+  const event = await createOwnerEvent({
+    title: "Complimentary open house",
+    summary: "Free ticketed night.",
+    location: "16313 S Tamiami Trail, Fort Myers, FL 33908",
+    startsOn: "2026-12-21",
+    startsAtLabel: "4:00 PM",
+    capacity: 20,
+    publish: true,
+    tiers: [{ label: "Guest pass", price: 0, quantityAvailable: 20 }],
+  });
+
+  const result = await submitRsvp(event.slug, {
+    fullName: "Free Guest",
+    email: "free-guest@example.com",
+    phone: "239-555-0400",
+    tierKey: "guest-pass",
+    ticketQuantity: 2,
+    showOnGuestWall: false,
+    networkOptIn: false,
+    vendorOptIns: {},
+  });
+
+  assert.equal(result.amountPaidCents, 0);
+  assert.equal(result.paymentLast4, null);
+  assert.match(result.confirmationCode, /^PS-\d{4}-/);
+
+  const registration = await prisma.eventRegistration.findUniqueOrThrow({
+    where: { id: result.registrationId },
+  });
+  assert.equal(registration.paymentStatus, "comped");
+  assert.equal(registration.amountPaidCents, 0);
+  assert.equal(registration.paymentLast4, null);
+
+  // Paid tier still requires a card even on an event that also has free options.
+  const paidEvent = await createOwnerEvent({
+    title: "Mixed price night",
+    summary: "Free and paid tiers.",
+    location: "16313 S Tamiami Trail, Fort Myers, FL 33908",
+    startsOn: "2026-12-22",
+    startsAtLabel: "6:00 PM",
+    capacity: 20,
+    publish: true,
+    tiers: [
+      { label: "Comp", price: 0, quantityAvailable: 10 },
+      { label: "General", price: 35, quantityAvailable: 10 },
+    ],
+  });
+  await assert.rejects(
+    () =>
+      submitRsvp(paidEvent.slug, {
+        fullName: "Needs Card",
+        email: "needs-card@example.com",
+        phone: "239-555-0401",
+        tierKey: "general",
+        ticketQuantity: 1,
+        showOnGuestWall: false,
+        networkOptIn: false,
+        vendorOptIns: {},
+      }),
+    /payment is required/i,
+  );
+
+  const emails = ["free-guest@example.com", "needs-card@example.com"];
+  await prisma.vendorConsent.deleteMany({
+    where: { vendor: { eventId: { in: [event.id, paidEvent.id] } } },
+  });
+  await prisma.consentAudit.deleteMany({ where: { guest: { email: { in: emails } } } });
+  await prisma.businessCrmContact.deleteMany({ where: { guest: { email: { in: emails } } } });
+  await prisma.eventRegistration.deleteMany({ where: { eventId: { in: [event.id, paidEvent.id] } } });
+  await prisma.ticketTier.deleteMany({ where: { eventId: { in: [event.id, paidEvent.id] } } });
+  await prisma.eventVendor.deleteMany({ where: { eventId: { in: [event.id, paidEvent.id] } } });
+  await prisma.eventItineraryItem.deleteMany({ where: { eventId: { in: [event.id, paidEvent.id] } } });
+  await prisma.experienceEvent.deleteMany({ where: { id: { in: [event.id, paidEvent.id] } } });
+  await prisma.guestProfile.deleteMany({ where: { email: { in: emails } } });
+});

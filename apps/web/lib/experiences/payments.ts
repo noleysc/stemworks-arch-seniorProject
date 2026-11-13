@@ -27,17 +27,34 @@ export function paymentMode(): "stripe" | "demo" {
   return process.env.STRIPE_SECRET_KEY?.trim() ? "stripe" : "demo";
 }
 
-/** Charge for tickets. Never persists the full card number. */
+/** Charge for tickets. Never persists the full card number. $0 tickets need no card. */
 export async function chargeTicketPayment(input: {
   amountCents: number;
   email: string;
   phone: string;
   fullName: string;
   description: string;
-  card: CardPaymentInput;
+  card?: CardPaymentInput | null;
 }): Promise<ChargeResult> {
-  if (input.amountCents <= 0) {
-    throw new Error("Payment is required for ticketed events.");
+  if (input.amountCents < 0) {
+    throw new Error("Ticket total cannot be negative.");
+  }
+  if (input.amountCents === 0) {
+    return {
+      paymentRef: `comp_free_${createHash("sha256")
+        .update(`${input.email}:${input.description}:${randomBytes(6).toString("hex")}`)
+        .digest("hex")
+        .slice(0, 20)}`,
+      brand: "complimentary",
+      last4: "",
+      amountCents: 0,
+      mode: paymentMode(),
+      paidAt: new Date(),
+    };
+  }
+
+  if (!input.card) {
+    throw new Error("Payment is required for paid tickets.");
   }
 
   const card = cardPaymentSchema.parse(input.card);
