@@ -43,6 +43,7 @@ export function followUpStatusLabel(status: string) {
 }
 
 export function formatTicketPrice(cents: number) {
+  if (cents === 0) return "Free";
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
 }
 
