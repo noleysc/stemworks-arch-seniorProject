@@ -24,8 +24,8 @@ export function DeskNav() {
     <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
         <Link href="/" className="block">
-          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-stone-500">Stemworks · boutique hotel</p>
-          <p className="font-display text-[1.7rem] leading-none text-stone-950">Luminary Hotel &amp; Co.</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-stone-500">Stemworks</p>
+          <p className="font-display text-[1.7rem] leading-none text-stone-950">Rentals</p>
         </Link>
         <nav className="flex gap-1 overflow-x-auto">
           {links.map((link) => {
