@@ -11,6 +11,10 @@ Running slices in `apps/web`:
 
 The architecture documents below still govern what gets built next.
 
+### Pampered Soul error handling
+
+Pampered Soul business rules use `PublicError` from `apps/web/lib/experiences/errors.ts` for deliberately user-facing messages. Its API handlers use `errorResponse` to translate validation, database, and payment failures without returning raw diagnostics. Client forms use the generic `requestJson` / `requestErrorMessage` helpers in `apps/web/lib/http.ts`; only API messages explicitly marked `publicError: true` are displayed. Unexpected failures use action-specific fallbacks. Keep diagnostic codes on the server without logging guest contacts, card data, or secrets. Payment failures must not claim that no charge occurred or automatically resubmit a purchase. Page-loading error boundaries cover the owner desk, public invites, and service bookings.
+
 ## Read this
 
 Start with [docs/architecture/README.md](docs/architecture/README.md). It is the map: what must stay a separate module, how the process is shaped, and what is built first.

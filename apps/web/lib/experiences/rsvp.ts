@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { wallFirstName } from "@/lib/experiences/catalog";
 import { cardPaymentSchema, chargeTicketPayment, paymentMode } from "@/lib/experiences/payments";
 import { ensurePamperedEvents } from "@/lib/tenancy";
+import { PublicError } from "@/lib/experiences/errors";
 
 const phoneSchema = z
   .string()
@@ -46,7 +47,7 @@ export async function submitRsvp(slug: string, raw: z.input<typeof rsvpInputSche
       },
     },
   });
-  if (!event) throw new Error("That event is not published.");
+  if (!event) throw new PublicError("That invite is not available. Check the link with the organizer.", 404);
   return purchaseTickets(event, input);
 }
 
@@ -71,21 +72,21 @@ async function purchaseTickets(
   },
   input: z.infer<typeof rsvpInputSchema>,
 ) {
-  if (event.status !== "open") throw new Error("Tickets are sold out or closed for this event.");
+  if (event.status !== "open") throw new PublicError("Tickets are sold out or closed for this event.", 409);
 
   const tier = event.tiers.find((item) => item.key === input.tierKey && item.isActive);
-  if (!tier) throw new Error("That ticket tier is not available.");
+  if (!tier) throw new PublicError("That ticket type is no longer available. Choose another ticket type.", 409);
 
   const ticketsSold = event.registrations.reduce((sum, reg) => sum + reg.ticketQuantity, 0);
   if (ticketsSold + input.ticketQuantity > event.capacity) {
-    throw new Error("Not enough seats left for that quantity.");
+    throw new PublicError("There aren’t enough tickets left for that quantity. Choose fewer tickets.", 409);
   }
 
   const soldInTier = event.registrations
     .filter((reg) => reg.tierId === tier.id)
     .reduce((sum, reg) => sum + reg.ticketQuantity, 0);
   if (soldInTier + input.ticketQuantity > tier.quantityAvailable) {
-    throw new Error(`${tier.label} does not have enough tickets left.`);
+    throw new PublicError("There aren’t enough tickets left in that ticket type. Choose fewer tickets or another type.", 409);
   }
 
   const email = input.email.toLowerCase();
@@ -111,11 +112,11 @@ async function purchaseTickets(
     where: { eventId_guestId: { eventId: event.id, guestId: guest.id } },
   });
   if (existing && existing.status !== "cancelled") {
-    throw new Error("You already have tickets for this event.");
+    throw new PublicError("You already have tickets for this event. Contact the organizer if you need help.", 409);
   }
 
   if (amountDueCents > 0 && !input.payment) {
-    throw new Error("Payment is required for paid tickets.");
+    throw new PublicError("Payment is required for paid tickets. Enter your card details.");
   }
 
   const charge = await chargeTicketPayment({
@@ -226,7 +227,7 @@ export async function revokeVendorConsent(input: {
   const guest = await prisma.guestProfile.findUnique({
     where: { email: input.guestEmail.toLowerCase() },
   });
-  if (!guest) throw new Error("Guest profile not found.");
+  if (!guest) throw new PublicError("No guest was found with that email address. Check the address and try again.", 404);
 
   const consents = await prisma.vendorConsent.findMany({
     where: {

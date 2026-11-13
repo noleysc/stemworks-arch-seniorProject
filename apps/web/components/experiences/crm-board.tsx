@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 
 import { FOLLOW_UP_STATUSES } from "@/lib/experiences/catalog";
 import type { CrmContactRecord } from "@/lib/experiences/crm";
+import { requestErrorMessage, requestJson } from "@/lib/http";
 
 export function CrmBoard({
   contacts,
@@ -30,16 +31,14 @@ export function CrmBoard({
     setPendingId(id);
     setError(null);
     try {
-      const response = await fetch(`/api/experiences/crm/${id}`, {
+      await requestJson(`/api/experiences/crm/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ followUpStatus }),
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error ?? "Update failed.");
+      }, "We couldn’t save the follow-up status. Please try again.");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "The desk could not be reached.");
+      setError(requestErrorMessage(err, "We couldn’t save the follow-up status. Please try again."));
     } finally {
       setPendingId(null);
     }
@@ -48,23 +47,21 @@ export function CrmBoard({
   async function revoke() {
     setError(null);
     try {
-      const response = await fetch("/api/experiences/consent/revoke", {
+      await requestJson("/api/experiences/consent/revoke", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ guestEmail: revokeEmail, businessKey: revokeBusiness }),
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error ?? "Revoke failed.");
+      }, "We couldn’t update those marketing preferences. Please try again.");
       setRevokeEmail("");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "The desk could not be reached.");
+      setError(requestErrorMessage(err, "We couldn’t update those marketing preferences. Please try again."));
     }
   }
 
   return (
     <div className="space-y-6">
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
 
       <div className="rounded-3xl border border-slate-900/10 bg-white/90 p-5">
         <h2 className="font-display text-2xl">Guest preference revoke</h2>

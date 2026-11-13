@@ -55,7 +55,7 @@ test("creation and editing APIs return the duplicate-name instruction as plain t
   });
   for (const response of [await POST(request()), await PATCH(request(), { params: { slug: "validation-fails-before-lookup" } })]) {
     assert.equal(response.status, 400);
-    assert.deepEqual(await response.json(), { error: duplicateMessage });
+    assert.deepEqual(await response.json(), { error: duplicateMessage, publicError: true });
   }
 });
 

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSpaService, requireSpaService } from "@/lib/experiences/spa-menu";
 import { ensurePamperedEvents } from "@/lib/tenancy";
+import { PublicError } from "@/lib/experiences/errors";
 
 const phoneSchema = z
   .string()
@@ -43,7 +44,7 @@ export async function bookServiceAppointment(raw: z.input<typeof bookAppointment
   const input = bookAppointmentSchema.parse(raw);
   const service = requireSpaService(input.serviceKey);
   if (service.menuPriceCents == null) {
-    throw new Error("That service needs a quoted price — call the spa to book it.");
+    throw new PublicError("That service needs a quoted price — call the spa to book it.");
   }
 
   const venture = await ensurePamperedEvents();

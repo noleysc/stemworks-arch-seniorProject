@@ -77,7 +77,7 @@ test("unknown spa service keys are rejected", async () => {
         tiers: [{ label: "GA", price: 10, quantityAvailable: 10 }],
         itinerary: [{ serviceKey: "not-a-real-service" }],
       }),
-    /Unknown spa service/,
+    /That treatment is no longer available/,
   );
 });
 

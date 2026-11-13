@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { SpaMenuPicker } from "@/components/experiences/spa-menu-picker";
+import { requestErrorMessage, requestJson } from "@/lib/http";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -110,7 +111,7 @@ export function PlannerForm() {
     setPending(true);
     setError(null);
     try {
-      const response = await fetch("/api/experiences/events", {
+      const payload = await requestJson<{ event: { slug: string } }>("/api/experiences/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -143,15 +144,11 @@ export function PlannerForm() {
               roleLabel: vendor.roleLabel,
             })),
         }),
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(typeof payload.error === "string" ? payload.error : "The event did not save.");
-      }
+      }, "We couldn’t save your invite. Please try again.");
       router.push(`/experiences/${payload.event.slug}`);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "The event did not save.");
+      setError(requestErrorMessage(err, "We couldn’t save your invite. Please try again."));
       setPending(false);
     }
   }
@@ -408,7 +405,7 @@ export function PlannerForm() {
           <Button type="submit" disabled={pending}>
             {pending ? "Creating…" : "Create ticketed invite"}
           </Button>
-          {error ? <p className="w-full text-sm text-red-700">{error}</p> : null}
+          {error ? <p role="alert" className="w-full text-sm text-red-700">{error}</p> : null}
         </div>
       </div>
     </form>
