@@ -299,7 +299,7 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
                         current.map((row) => (row.localId === tier.localId ? { ...row, label: e.target.value } : row)),
                       )
                     }
-                    placeholder="General admission"
+                    placeholder="Ticket Name"
                   />
                   <Input
                     value={tier.price}
@@ -321,7 +321,7 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
                         ),
                       )
                     }
-                    placeholder="What this ticket includes"
+                    placeholder="Ticket Description"
                   />
                   <Input
                     value={tier.quantityAvailable}
@@ -333,7 +333,7 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
                         ),
                       )
                     }
-                    placeholder="Quantity"
+                    placeholder="Total Tickets Available"
                   />
                   <p className="text-xs text-slate-600 sm:col-span-2">
                     {tier.sold > 0
