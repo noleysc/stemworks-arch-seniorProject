@@ -19,6 +19,22 @@ const dollarToCents = (value: string | number) => {
   return Math.round(n * 100);
 };
 
+function validateTicketNames(tiers: { label: string }[], context: z.RefinementCtx) {
+  const names = new Set<string>();
+  tiers.forEach((tier, index) => {
+    // Match key generation exactly, including case, punctuation, and truncation.
+    const key = slugifyTitle(tier.label);
+    if (names.has(key)) {
+      context.addIssue({
+        code: "custom",
+        path: [index, "label"],
+        message: "Ticket types must have different names. Rename the duplicate ticket type.",
+      });
+    }
+    names.add(key);
+  });
+}
+
 export const ownerEventSchema = z.object({
   title: z.string().trim().min(1, "Event title is required.").max(160),
   summary: z.string().trim().min(1, "Tell guests what this is.").max(800),
@@ -37,7 +53,8 @@ export const ownerEventSchema = z.object({
         quantityAvailable: z.coerce.number().int().min(1).max(10_000),
       }),
     )
-    .min(1, "Add at least one ticket type."),
+    .min(1, "Add at least one ticket type.")
+    .superRefine(validateTicketNames),
   vendors: z
     .array(
       z.object({
@@ -180,7 +197,8 @@ export const updateOwnerEventSchema = z.object({
         quantityAvailable: z.coerce.number().int().min(1).max(10_000),
       }),
     )
-    .min(1, "Add at least one ticket type."),
+    .min(1, "Add at least one ticket type.")
+    .superRefine(validateTicketNames),
 });
 
 export async function updateOwnerEvent(slug: string, raw: z.input<typeof updateOwnerEventSchema>) {

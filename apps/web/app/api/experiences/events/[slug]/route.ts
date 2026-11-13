@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 import { NextResponse } from "next/server";
+import { ZodError } from "zod";
 
 import { getEventBySlug } from "@/lib/experiences/events";
 import { updateOwnerEvent } from "@/lib/experiences/planner";
@@ -20,6 +21,9 @@ export async function PATCH(request: Request, context: { params: { slug: string 
     const event = await getEventBySlug(context.params.slug);
     return NextResponse.json({ event });
   } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json({ error: error.issues[0]?.message ?? "Check the invite details." }, { status: 400 });
+    }
     const message = error instanceof Error ? error.message : "Could not update invite.";
     const status = message.includes("not found") ? 404 : 400;
     return NextResponse.json({ error: message }, { status });
