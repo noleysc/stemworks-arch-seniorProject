@@ -42,6 +42,17 @@ export const CUSTOMER_KINDS = [
   { key: "corporate_client", label: "Corporate client" },
 ] as const;
 
+export const BATCH_SIZES = [6, 10] as const;
+
+export const BATCH_STATUSES = [
+  { key: "in_production", label: "In production" },
+  { key: "curing", label: "Curing" },
+  { key: "qc_review", label: "QC review" },
+  { key: "released", label: "Released" },
+  { key: "archived", label: "Archived" },
+  { key: "recalled", label: "Recalled" },
+] as const;
+
 export type OrderChannel = (typeof ORDER_CHANNELS)[number]["key"];
 export type OrderStatus = (typeof ORDER_STATUSES)[number]["key"];
 
@@ -55,4 +66,8 @@ export function statusLabel(key: string): string {
 
 export function categoryLabel(key: string): string {
   return MATERIAL_CATEGORIES.find((item) => item.key === key)?.label ?? key;
+}
+
+export function batchStatusLabel(key: string): string {
+  return BATCH_STATUSES.find((item) => item.key === key)?.label ?? key;
 }

@@ -6,7 +6,7 @@ Running slices in `apps/web`:
 
 - **Dashboard** — `/dashboard` — tenant switcher, Confirmed / Potential, attention, venture cards, timeline
 - **Rentals** — `/` — rental aggregate across booking sources (website + Airbnb + later sources)
-- **Jade Flowers** — `/jade` — product materials, SKUs, and orders on the Diaz Ventures tenant
+- **Jade Flowers** — `/jade` — materials, products, batches (6/10 pours + recall), and orders on Diaz Ventures
 - **The Pampered Soul** — `/experiences` ticketed invite creator, `/experiences/calendar` schedule, `/book` individual service booking, and `/e/{slug}` guest checkout.
 
 The architecture documents below still govern what gets built next.
@@ -54,6 +54,8 @@ Open **http://localhost:43123**
 | `/dashboard` | Scalable command board. `?tenant=luminary`, `diaz_ventures`, or `pampered_soul` |
 | `/` | Luminary rental desk |
 | `/jade` | Jade Flowers product desk |
+| `/jade/products` | Finished goods + pour a batch of 6 or 10 |
+| `/jade/batches` | Batch release to inventory and recall tracking |
 | `/experiences` | Pampered Soul **ticketed invite creator** (list + share links) |
 | `/experiences/new` | Create invite: copy, ticket tiers, spa menu, publish |
 | `/experiences/calendar` | Month calendar of invites, service bookings, and ticketed guests |

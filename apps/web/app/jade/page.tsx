@@ -27,15 +27,15 @@ export default async function JadeHomePage() {
         <p className="text-sm text-emerald-900/60">{venture.statusLabel} · prefix {venture.prefixCode}</p>
         <h1 className="mt-2 font-display text-4xl leading-tight text-emerald-950">{venture.name}</h1>
         <p className="mt-3 text-sm leading-6 text-emerald-950/70">
-          Product operations for the Diaz Ventures tenant. Materials, SKUs, and orders feed the Stemworks dashboard
-          through the product port. This book does not mix with Luminary.
+          Product operations for the Diaz Ventures tenant. Materials, product batches, and orders feed the Stemworks
+          dashboard through the product port. This book does not mix with Luminary.
         </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
         <Stat label="Confirmed" value={formatMoney(totals.confirmedCents)} detail="processing, shipped, delivered" />
         <Stat label="Potential" value={formatMoney(totals.potentialCents)} detail="confirmed plus pending" />
-        <Stat label="Open orders" value={String(open.length)} detail={`${skus.length} active SKUs`} href="/jade/orders" />
+        <Stat label="Open orders" value={String(open.length)} detail={`${skus.length} products`} href="/jade/orders" />
       </div>
 
       <section className="grid gap-4 lg:grid-cols-2">
