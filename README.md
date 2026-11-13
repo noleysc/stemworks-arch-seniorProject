@@ -64,6 +64,12 @@ Open **http://localhost:43123**
 
 Without `STRIPE_SECRET_KEY`, checkout runs in demo mode (Visa test cards only). Add Stripe keys in `.env` to charge live/test Stripe.
 
+## Supabase
+
+Hosted project: [`kcskzamqbpzxlfpqisib`](https://supabase.com/dashboard/project/kcskzamqbpzxlfpqisib). Repo layout for the GitHub integration is in [`supabase/`](supabase/). Setup steps: [docs/architecture/supabase.md](docs/architecture/supabase.md).
+
+Local desks still use SQLite until the Postgres cutover. Put the project URL and keys in `apps/web/.env` from `.env.example`.
+
 Candle Atelier, Event Production, Jade Haven pipeline, Postgres RLS, and live Craftybase / Marriott adapters are later slices. Stemworks does not replace the hotel's property management system.
 
 Copyright Diaz Ventures LLC. All rights reserved. See [LICENSE](LICENSE).
