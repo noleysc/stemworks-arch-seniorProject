@@ -16,6 +16,10 @@ Managed Postgres for Stemworks. Architecture already allows Supabase as the host
 
 Local desks still default to SQLite (`apps/web/prisma`). Point `DATABASE_URL` at the Supabase Session pooler when the Postgres cutover starts. Prisma stays the write path until auth and RLS ship.
 
+Runtime keys live in `apps/web/.env.local` (gitignored): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`. Clients: `apps/web/lib/supabase/`. Health check: `GET /api/v1/supabase/health`.
+
+A personal access token (`sbp_…`) can link the CLI (`supabase link --project-ref kcskzamqbpzxlfpqisib`) and fetch project keys. It does not replace the dashboard GitHub Integration authorize step unless the token has org integration scopes.
+
 ## Connect this repo in the Supabase dashboard
 
 The agent cannot complete GitHub OAuth for you. Do this once in the browser:
