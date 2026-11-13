@@ -6,7 +6,7 @@ Nolan is team lead. Esmir is backend. Ryan and Henry cover dashboard and fronten
 
 ## Where the work stands
 
-Luminary Desk is running in `apps/web`. It collects three kinds of bookings and nothing else:
+Luminary Hotel & Co. is running in `apps/web`. It collects three kinds of bookings and nothing else:
 
 - Room stays whose channel is the Luminary website
 - Room stays whose channel is Airbnb

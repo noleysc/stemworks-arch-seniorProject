@@ -5,7 +5,7 @@ Stemworks is a multi-tenant operating dashboard owned by Diaz Ventures LLC. Vent
 Running slices in `apps/web`:
 
 - **Dashboard** — `/dashboard` — tenant switcher, Confirmed / Potential, attention, venture cards, timeline
-- **Luminary Desk** — `/` — rental aggregate for Luminary Hotel & Co. (website + Airbnb + later sources)
+- **Luminary Hotel & Co.** — `/` — rental aggregate for Luminary Hotel & Co. (website + Airbnb + later sources)
 - **Jade Flowers** — `/jade` — product materials, SKUs, and orders on the Diaz Ventures tenant
 - **The Pampered Soul** — `/experiences` ticketed invite creator and `/e/{slug}` guest checkout (tickets + consent). Separate views.
 
