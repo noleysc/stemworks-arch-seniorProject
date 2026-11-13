@@ -16,6 +16,7 @@ model Tenant {
   createdAt DateTime   @default(now())
   ventures  Venture[]
   properties Property[]
+  todos     DashboardTodo[]
 }
 
 model Venture {
@@ -36,6 +37,7 @@ model Venture {
   orders    Order[]
   events    ExperienceEvent[]
   crmContacts BusinessCrmContact[]
+  appointments ServiceAppointment[]
 
   @@unique([tenantId, key])
   @@unique([tenantId, prefixCode])
@@ -221,6 +223,47 @@ model GuestProfile {
   consents     VendorConsent[]
   crmContacts  BusinessCrmContact[]
   audits       ConsentAudit[]
+  appointments ServiceAppointment[]
+}
+
+/// Individual spa/service booking (not a ticketed invite).
+model ServiceAppointment {
+  id               String        @id @default(cuid())
+  ventureId        String
+  venture          Venture       @relation(fields: [ventureId], references: [id])
+  guestId          String?
+  guest            GuestProfile? @relation(fields: [guestId], references: [id])
+  clientName       String
+  clientEmail      String?
+  clientPhone      String?
+  serviceKey       String
+  serviceTitle     String
+  durationMinutes  Int?
+  priceCents       Int           @default(0)
+  appointmentOn    String
+  startsAtLabel    String
+  status           String        @default("booked")
+  notes            String?
+  confirmationCode String?       @unique
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([ventureId, appointmentOn])
+  @@index([appointmentOn, status])
+}
+
+model DashboardTodo {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  title     String
+  done      Boolean  @default(false)
+  dueOn     String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId, done, sortOrder])
 }
 
 model ExperienceEvent {

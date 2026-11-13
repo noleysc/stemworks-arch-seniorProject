@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { DashboardTodoList } from "@/components/dashboard/todo-list";
 import { Button } from "@/components/ui/button";
 import type { DashboardPayload } from "@/lib/dashboard/types";
 import { formatMoney } from "@/lib/money";
@@ -162,6 +163,8 @@ export function DashboardBoard({
           </ul>
         )}
       </section>
+
+      <DashboardTodoList tenantKey={tenantKey} />
 
       <section className="grid gap-3 lg:grid-cols-2">
         {payload.ventures.map((card) => (

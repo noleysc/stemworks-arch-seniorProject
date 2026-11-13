@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 const links = [
   { href: "/experiences", label: "Invites" },
   { href: "/experiences/new", label: "Create invite" },
+  { href: "/experiences/calendar", label: "Calendar" },
+  { href: "/experiences/bookings", label: "Bookings" },
   { href: "/experiences/guests", label: "Guests" },
   { href: "/experiences/crm", label: "Private CRM" },
   { href: "/experiences/scorecard", label: "Scorecard" },
