@@ -23,22 +23,20 @@ export async function GET() {
   const projectRef = new URL(url).hostname.split(".")[0];
 
   try {
-    const supabase = createSupabaseServerClient();
-    const { error } = await supabase.from("_stemworks_health").select("*").limit(1);
-    // Missing table is fine — it still proves Auth/REST accepted the key.
-    const reachable =
-      !error ||
-      error.code === "PGRST116" ||
-      error.code === "42P01" ||
-      error.message?.toLowerCase().includes("does not exist") ||
-      error.message?.toLowerCase().includes("could not find");
+    const authRes = await fetch(`${url}/auth/v1/health`, {
+      headers: {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      },
+      cache: "no-store",
+    });
+    const authBody = authRes.ok ? await authRes.json().catch(() => null) : null;
 
     return NextResponse.json({
-      ok: reachable,
+      ok: authRes.ok,
       project: projectRef,
       url,
-      rest: reachable ? "reachable" : "error",
-      detail: error && !reachable ? error.message : null,
+      auth: authRes.ok ? "reachable" : "error",
+      detail: authRes.ok ? authBody : await authRes.text(),
     });
   } catch (err) {
     return NextResponse.json(
