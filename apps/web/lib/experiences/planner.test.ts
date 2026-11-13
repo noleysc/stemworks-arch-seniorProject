@@ -80,3 +80,76 @@ test("unknown spa service keys are rejected", async () => {
     /Unknown spa service/,
   );
 });
+
+test("owner can update invite copy, unpublish, and cancel", async () => {
+  const { updateOwnerEvent, unpublishEvent, cancelEvent, publishEvent } = await import(
+    "@/lib/experiences/planner"
+  );
+
+  const created = await createOwnerEvent({
+    title: "Edit flow night",
+    summary: "Starting summary.",
+    location: "16313 S Tamiami Trail, Fort Myers, FL 33908",
+    startsOn: "2026-12-20",
+    startsAtLabel: "6:00 PM",
+    capacity: 20,
+    publish: true,
+    tiers: [
+      { label: "General admission", price: 55, quantityAvailable: 20 },
+      { label: "VIP", price: 120, quantityAvailable: 4 },
+    ],
+  });
+
+  const event = await getEventBySlug(created.slug);
+  assert.ok(event);
+  assert.equal(event.status, "open");
+  const general = event.tiers.find((tier) => tier.label === "General admission");
+  assert.ok(general);
+
+  await updateOwnerEvent(event.slug, {
+    title: "Edited invite night",
+    summary: "Updated for guests.",
+    location: "16313 S Tamiami Trail, Fort Myers, FL 33908",
+    startsOn: "2026-12-21",
+    startsAtLabel: "7:00 PM",
+    capacity: 30,
+    hostDisplayName: "The Pampered Soul",
+    tiers: [
+      {
+        id: general.id,
+        label: "General admission",
+        description: "Evening access",
+        price: 60,
+        quantityAvailable: 28,
+      },
+      {
+        label: "Couple",
+        price: 95,
+        quantityAvailable: 6,
+      },
+    ],
+  });
+
+  const updated = await getEventBySlug(event.slug);
+  assert.ok(updated);
+  assert.equal(updated.title, "Edited invite night");
+  assert.equal(updated.startsOn, "2026-12-21");
+  assert.equal(updated.startsAtLabel, "7:00 PM");
+  assert.equal(updated.capacity, 30);
+  assert.equal(updated.tiers.length, 2);
+  assert.equal(updated.tiers.find((tier) => tier.label === "General admission")?.priceCents, 6000);
+  assert.ok(updated.tiers.some((tier) => tier.label === "Couple"));
+
+  await unpublishEvent(event.slug);
+  const draft = await getEventBySlug(event.slug);
+  assert.equal(draft?.status, "draft");
+
+  await publishEvent(event.slug);
+  await cancelEvent(event.slug);
+  const cancelled = await getEventBySlug(event.slug);
+  assert.equal(cancelled?.status, "cancelled");
+
+  await prisma.ticketTier.deleteMany({ where: { eventId: event.id } });
+  await prisma.eventVendor.deleteMany({ where: { eventId: event.id } });
+  await prisma.experienceEvent.delete({ where: { id: event.id } });
+});

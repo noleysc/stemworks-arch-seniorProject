@@ -1,0 +1,196 @@
+/* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
+
+import { RsvpForm } from "@/components/experiences/rsvp-form";
+import { formatDate } from "@/lib/dates";
+import { formatTicketPrice } from "@/lib/experiences/catalog";
+import type { ExperienceEventRecord, GuestWallEntry } from "@/lib/experiences/events";
+import { formatDuration, formatMenuPrice, THROUGHOUT_LABEL } from "@/lib/experiences/spa-menu";
+
+type GuestInviteViewProps = {
+  event: ExperienceEventRecord;
+  wall: GuestWallEntry[];
+  /** Owner draft preview disables checkout and shows a banner. */
+  preview?: boolean;
+};
+
+/** Shared Partiful-style guest invite surface used by `/e/{slug}` and owner preview. */
+export function GuestInviteView({ event, wall, preview = false }: GuestInviteViewProps) {
+  const tierPrices = event.tiers.map((tier) => tier.priceCents);
+  const fromPrice = tierPrices.length > 0 ? Math.min(...tierPrices) : event.ticketPriceCents;
+  const treatments = event.itinerary.filter((item) => item.serviceKey);
+  const checkoutEnabled = !preview && (event.status === "open" || event.status === "full");
+
+  return (
+    <div className="relative overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(251,191,36,0.28),transparent_34%),radial-gradient(circle_at_80%_0%,rgba(56,189,248,0.18),transparent_30%),linear-gradient(160deg,#111827_0%,#020617_55%,#000_100%)]" />
+      <div className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-amber-300/10 blur-3xl" />
+      <div className="relative mx-auto grid max-w-6xl gap-10 px-4 pb-16 pt-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:pt-16">
+        <section className="space-y-8">
+          {preview ? (
+            <div className="rounded-2xl border border-amber-300/40 bg-amber-300/15 px-4 py-3 text-sm text-amber-50">
+              Owner preview · guests cannot open this page until you publish
+              {event.status === "draft" ? " (still a draft)." : "."}
+            </div>
+          ) : null}
+
+          <div className="space-y-4">
+            <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-amber-100/80">
+              {event.hostDisplayName} invites you
+            </p>
+            <h1 className="max-w-xl font-display text-5xl leading-[0.95] text-white sm:text-7xl">
+              {event.title}
+            </h1>
+            <p className="max-w-lg text-base leading-7 text-slate-300">{event.summary}</p>
+          </div>
+
+          <div className="flex flex-wrap gap-3 text-sm text-slate-100">
+            <Meta>{event.startsAtLabel ?? formatDate(event.startsOn)}</Meta>
+            <Meta>{event.location}</Meta>
+            <Meta>
+              {event.goingCount} going · from {formatTicketPrice(fromPrice)}
+            </Meta>
+          </div>
+
+          {treatments.length > 0 ? (
+            <section className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 backdrop-blur">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Spa menu</p>
+              <h2 className="mt-1 font-display text-2xl">Treatments on this night</h2>
+              <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+                {treatments.map((item) => (
+                  <li key={item.id} className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                    <p className="font-medium text-white">
+                      {item.emoji ? `${item.emoji} ` : ""}
+                      {item.title}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-300">
+                      {[
+                        item.startsAtLabel !== THROUGHOUT_LABEL ? item.startsAtLabel : null,
+                        formatDuration(item.durationMinutes),
+                        formatMenuPrice(item.menuPriceCents),
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                    {item.detail ? <p className="mt-2 text-sm leading-5 text-slate-400">{item.detail}</p> : null}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {event.itinerary.length > 0 ? (
+            <section className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 backdrop-blur">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Itinerary</p>
+              <h2 className="mt-1 font-display text-2xl">The night</h2>
+              <ol className="mt-5 space-y-4">
+                {event.itinerary.map((item) => (
+                  <li key={item.id} className="grid grid-cols-[5.5rem_1fr] gap-3 text-sm">
+                    <span className="pt-0.5 text-slate-400">{item.startsAtLabel}</span>
+                    <span>
+                      <span className="font-medium text-white">
+                        {item.emoji ? `${item.emoji} ` : ""}
+                        {item.title}
+                      </span>
+                      {item.serviceKey ? (
+                        <span className="block text-slate-400">
+                          {[formatDuration(item.durationMinutes), formatMenuPrice(item.menuPriceCents)]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </span>
+                      ) : null}
+                      {item.placeLabel ? <span className="block text-slate-400">{item.placeLabel}</span> : null}
+                      {item.detail ? <span className="mt-1 block text-slate-300">{item.detail}</span> : null}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ) : null}
+
+          <section className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 backdrop-blur">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Who is going</p>
+                <h2 className="mt-1 font-display text-2xl">The wall</h2>
+              </div>
+              <p className="text-sm text-slate-400">{event.ticketCount} tickets claimed</p>
+            </div>
+            {wall.length === 0 ? (
+              <p className="mt-4 text-sm leading-6 text-slate-300">
+                Be first on the wall. Grab a ticket and optionally share your first name.
+              </p>
+            ) : (
+              <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+                {wall.map((guest, index) => (
+                  <li
+                    key={`${guest.wallName}-${index}`}
+                    className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3"
+                  >
+                    <p className="font-medium text-white">{guest.wallName}</p>
+                    <p className="text-sm text-slate-400">
+                      {guest.guestNote || `${guest.ticketQuantity} ticket${guest.ticketQuantity > 1 ? "s" : ""}`}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">With</p>
+            <ul className="mt-3 flex flex-wrap gap-2 text-sm">
+              {event.vendors.map((vendor) => (
+                <li key={vendor.id} className="rounded-full border border-white/15 px-3 py-1 text-slate-200">
+                  {vendor.displayName}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {checkoutEnabled ? (
+          <RsvpForm
+            slug={event.slug}
+            disclosureText={event.disclosureText}
+            vendors={event.vendors.map((vendor) => ({
+              businessKey: vendor.businessKey,
+              displayName: vendor.displayName,
+              roleLabel: vendor.roleLabel,
+            }))}
+            tiers={event.tiers.map((tier) => ({
+              key: tier.key,
+              label: tier.label,
+              description: tier.description,
+              priceCents: tier.priceCents,
+              remaining: tier.remaining,
+            }))}
+          />
+        ) : (
+          <aside className="rounded-[1.75rem] border border-white/10 bg-white/5 p-6 text-slate-200 backdrop-blur">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Tickets</p>
+            <h2 className="mt-1 font-display text-3xl text-white">Checkout locked</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-300">
+              {preview
+                ? "This is how guests will see the invite. Publishing unlocks ticket purchase on the public link."
+                : "Tickets are not available for this invite right now."}
+            </p>
+            <ul className="mt-5 space-y-3">
+              {event.tiers.map((tier) => (
+                <li key={tier.id} className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                  <p className="font-medium text-white">{tier.label}</p>
+                  <p className="text-sm text-slate-400">
+                    {formatTicketPrice(tier.priceCents)} · {tier.quantityAvailable} seats
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Meta({ children }: { children: React.ReactNode }) {
+  return <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5">{children}</span>;
+}
