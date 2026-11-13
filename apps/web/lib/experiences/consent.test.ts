@@ -214,12 +214,15 @@ test("confirmation codes stay unique across events", async () => {
 
   assert.notEqual(a.confirmationCode, b.confirmationCode);
 
+  const emails = ["code-a@example.com", "code-b@example.com"];
   await prisma.vendorConsent.deleteMany({
     where: { vendor: { eventId: { in: [first.id, second.id] } } },
   });
+  await prisma.consentAudit.deleteMany({ where: { guest: { email: { in: emails } } } });
+  await prisma.businessCrmContact.deleteMany({ where: { guest: { email: { in: emails } } } });
   await prisma.eventRegistration.deleteMany({ where: { eventId: { in: [first.id, second.id] } } });
   await prisma.ticketTier.deleteMany({ where: { eventId: { in: [first.id, second.id] } } });
   await prisma.eventVendor.deleteMany({ where: { eventId: { in: [first.id, second.id] } } });
   await prisma.experienceEvent.deleteMany({ where: { id: { in: [first.id, second.id] } } });
-  await prisma.guestProfile.deleteMany({ where: { email: { in: ["code-a@example.com", "code-b@example.com"] } } });
+  await prisma.guestProfile.deleteMany({ where: { email: { in: emails } } });
 });
