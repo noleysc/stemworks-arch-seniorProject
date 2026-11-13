@@ -7,6 +7,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { DashboardTodoRecord } from "@/lib/dashboard/todos";
+import { RequestError, requestErrorMessage, requestJson } from "@/lib/http";
 
 export function DashboardTodoList({ tenantKey }: { tenantKey: string }) {
   const [todos, setTodos] = useState<DashboardTodoRecord[]>([]);
@@ -18,14 +19,11 @@ export function DashboardTodoList({ tenantKey }: { tenantKey: string }) {
   async function load() {
     setError(null);
     try {
-      const response = await fetch(`/api/v1/todos?tenant=${encodeURIComponent(tenantKey)}`);
-      const body = await response.json().catch(() => null);
-      if (!response.ok) {
-        throw new Error(typeof body?.error === "string" ? body.error : "Could not load to-dos.");
-      }
-      setTodos(body.todos as DashboardTodoRecord[]);
+      const body = await requestJson<{ todos: DashboardTodoRecord[] }>(`/api/v1/todos?tenant=${encodeURIComponent(tenantKey)}`, {}, "We couldn’t load your tasks. Please try again.");
+      if (!Array.isArray(body.todos)) throw new RequestError("We couldn’t load your tasks. Please try again.");
+      setTodos(body.todos);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not load to-dos.");
+      setError(requestErrorMessage(err, "We couldn’t load your tasks. Please try again."));
     }
   }
 
@@ -40,20 +38,16 @@ export function DashboardTodoList({ tenantKey }: { tenantKey: string }) {
     setPending(true);
     setError(null);
     try {
-      const response = await fetch(`/api/v1/todos?tenant=${encodeURIComponent(tenantKey)}`, {
+      await requestJson(`/api/v1/todos?tenant=${encodeURIComponent(tenantKey)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, dueOn }),
-      });
-      const body = await response.json().catch(() => null);
-      if (!response.ok) {
-        throw new Error(typeof body?.error === "string" ? body.error : "Could not add to-do.");
-      }
+      }, "We couldn’t add this task. Check its title and date, then try again.");
       setTitle("");
       setDueOn("");
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not add to-do.");
+      setError(requestErrorMessage(err, "We couldn’t add this task. Check its title and date, then try again."));
     } finally {
       setPending(false);
     }
@@ -61,28 +55,26 @@ export function DashboardTodoList({ tenantKey }: { tenantKey: string }) {
 
   async function toggleDone(todo: DashboardTodoRecord) {
     setError(null);
-    const response = await fetch(`/api/v1/todos/${todo.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ done: !todo.done }),
-    });
-    if (!response.ok) {
-      const body = await response.json().catch(() => null);
-      setError(typeof body?.error === "string" ? body.error : "Could not update to-do.");
-      return;
+    try {
+      await requestJson(`/api/v1/todos/${todo.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ done: !todo.done }),
+      }, "We couldn’t update this task. Please try again.");
+      await load();
+    } catch (error) {
+      setError(requestErrorMessage(error, "We couldn’t update this task. Please try again."));
     }
-    await load();
   }
 
   async function remove(todoId: string) {
     setError(null);
-    const response = await fetch(`/api/v1/todos/${todoId}`, { method: "DELETE" });
-    if (!response.ok) {
-      const body = await response.json().catch(() => null);
-      setError(typeof body?.error === "string" ? body.error : "Could not delete to-do.");
-      return;
+    try {
+      await requestJson(`/api/v1/todos/${todoId}`, { method: "DELETE" }, "We couldn’t delete this task. Please try again.");
+      await load();
+    } catch (error) {
+      setError(requestErrorMessage(error, "We couldn’t delete this task. Please try again."));
     }
-    await load();
   }
 
   return (
@@ -107,7 +99,7 @@ export function DashboardTodoList({ tenantKey }: { tenantKey: string }) {
         </Button>
       </form>
 
-      {error ? <p className="mt-3 text-sm text-red-700">{error}</p> : null}
+      {error ? <p role="alert" className="mt-3 text-sm text-red-700">{error}</p> : null}
 
       {todos.length === 0 ? (
         <p className="mt-4 text-sm text-stone-600">No to-dos yet.</p>

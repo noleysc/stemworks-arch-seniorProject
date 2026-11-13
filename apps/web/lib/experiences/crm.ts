@@ -5,6 +5,7 @@ import { z } from "zod";
 import { FOLLOW_UP_STATUSES, followUpStatusLabel } from "@/lib/experiences/catalog";
 import { prisma } from "@/lib/db";
 import { ensurePamperedEvents } from "@/lib/tenancy";
+import { PublicError } from "@/lib/experiences/errors";
 
 const followUpKeys = FOLLOW_UP_STATUSES.map((item) => item.key) as [string, ...string[]];
 
@@ -54,7 +55,7 @@ export async function listCrmContacts(businessKey?: string): Promise<CrmContactR
 export async function updateFollowUp(id: string, raw: z.infer<typeof followUpInputSchema>) {
   const input = followUpInputSchema.parse(raw);
   const existing = await prisma.businessCrmContact.findUnique({ where: { id } });
-  if (!existing || existing.status !== "active") throw new Error("Contact not found.");
+  if (!existing || existing.status !== "active") throw new PublicError("That contact is no longer available. Refresh the contact list and try again.", 404);
   return prisma.businessCrmContact.update({
     where: { id },
     data: {
@@ -72,7 +73,7 @@ export async function vendorGuestView(eventId: string, businessKey: string) {
   const vendor = await prisma.eventVendor.findFirst({
     where: { eventId, businessKey },
   });
-  if (!vendor) throw new Error("Vendor is not on this event.");
+  if (!vendor) throw new PublicError("That business is not part of this event. Choose a participating business.");
 
   const registrations = await prisma.eventRegistration.findMany({
     where: { eventId, status: { not: "cancelled" } },

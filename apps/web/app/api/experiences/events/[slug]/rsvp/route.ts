@@ -1,7 +1,7 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 import { NextResponse } from "next/server";
-import { ZodError } from "zod";
+import { errorResponse } from "@/lib/experiences/api-error";
 
 import { rsvpInputSchema, submitRsvp } from "@/lib/experiences/rsvp";
 
@@ -14,14 +14,6 @@ export async function POST(request: Request, context: { params: { slug: string }
     const result = await submitRsvp(context.params.slug, parsed);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json({ error: error.issues[0]?.message ?? "Invalid ticket order." }, { status: 400 });
-    }
-    const message = error instanceof Error ? error.message : "Could not register.";
-    const status =
-      message.includes("already have tickets") || message.includes("capacity") || message.includes("enough")
-        ? 409
-        : 400;
-    return NextResponse.json({ error: message }, { status });
+    return errorResponse(error, "We couldn’t complete your ticket request. If you were paying, check your payment status or contact the organizer before trying again.", true);
   }
 }

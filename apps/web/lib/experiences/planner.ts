@@ -12,10 +12,11 @@ import {
 } from "@/lib/experiences/catalog";
 import { itineraryDraftSchema, resolveItineraryDraft } from "@/lib/experiences/itinerary-draft";
 import { ensurePamperedEvents } from "@/lib/tenancy";
+import { PublicError } from "@/lib/experiences/errors";
 
 const dollarToCents = (value: string | number) => {
   const n = typeof value === "number" ? value : Number(String(value).replace(/[^0-9.]/g, ""));
-  if (!Number.isFinite(n) || n < 0) throw new Error("Ticket price must be a number.");
+  if (!Number.isFinite(n) || n < 0) throw new PublicError("Enter a valid ticket price of zero or more.");
   return Math.round(n * 100);
 };
 
@@ -148,9 +149,9 @@ export async function publishEvent(slug: string) {
     where: { slug },
     include: { tiers: true },
   });
-  if (!event) throw new Error("Event not found.");
-  if (event.tiers.length === 0) throw new Error("Add a ticket type before publishing.");
-  if (event.status === "cancelled") throw new Error("Cancelled invites cannot be published.");
+  if (!event) throw new PublicError("That invite could not be found. Refresh the invite list and try again.", 404);
+  if (event.tiers.length === 0) throw new PublicError("Add a ticket type before publishing.");
+  if (event.status === "cancelled") throw new PublicError("Cancelled invites cannot be published.");
   return prisma.experienceEvent.update({
     where: { id: event.id },
     data: { status: "open" },
@@ -159,9 +160,9 @@ export async function publishEvent(slug: string) {
 
 export async function unpublishEvent(slug: string) {
   const event = await prisma.experienceEvent.findUnique({ where: { slug } });
-  if (!event) throw new Error("Event not found.");
+  if (!event) throw new PublicError("That invite could not be found. Refresh the invite list and try again.", 404);
   if (event.status !== "open" && event.status !== "full") {
-    throw new Error("Only a published invite can be unpublished.");
+    throw new PublicError("Only a published invite can be unpublished.");
   }
   return prisma.experienceEvent.update({
     where: { id: event.id },
@@ -171,7 +172,7 @@ export async function unpublishEvent(slug: string) {
 
 export async function cancelEvent(slug: string) {
   const event = await prisma.experienceEvent.findUnique({ where: { slug } });
-  if (!event) throw new Error("Event not found.");
+  if (!event) throw new PublicError("That invite could not be found. Refresh the invite list and try again.", 404);
   if (event.status === "cancelled") return event;
   return prisma.experienceEvent.update({
     where: { id: event.id },
@@ -210,8 +211,8 @@ export async function updateOwnerEvent(slug: string, raw: z.input<typeof updateO
       registrations: { select: { tierId: true, ticketQuantity: true, status: true } },
     },
   });
-  if (!event) throw new Error("Event not found.");
-  if (event.status === "cancelled") throw new Error("Cancelled invites cannot be edited.");
+  if (!event) throw new PublicError("That invite could not be found. Refresh the invite list and try again.", 404);
+  if (event.status === "cancelled") throw new PublicError("Cancelled invites cannot be edited.");
 
   const soldByTier = new Map<string, number>();
   for (const registration of event.registrations) {
@@ -227,7 +228,7 @@ export async function updateOwnerEvent(slug: string, raw: z.input<typeof updateO
   for (const existing of event.tiers) {
     const sold = soldByTier.get(existing.id) ?? 0;
     if (!incomingIds.has(existing.id) && sold > 0) {
-      throw new Error(`Cannot remove “${existing.label}” — ${sold} ticket(s) already sold.`);
+      throw new PublicError(`Cannot remove “${existing.label}” — ${sold} ticket(s) already sold.`);
     }
   }
 
@@ -250,7 +251,7 @@ export async function updateOwnerEvent(slug: string, raw: z.input<typeof updateO
     const priceCents = dollarToCents(tier.price);
     const sold = tier.id ? soldByTier.get(tier.id) ?? 0 : 0;
     if (tier.quantityAvailable < sold) {
-      throw new Error(
+      throw new PublicError(
         `“${tier.label}” quantity must be at least ${sold} (already sold).`,
       );
     }

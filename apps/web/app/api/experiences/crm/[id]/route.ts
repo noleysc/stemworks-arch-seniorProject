@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 import { NextResponse } from "next/server";
+import { errorResponse } from "@/lib/experiences/api-error";
 
 import { followUpInputSchema, updateFollowUp } from "@/lib/experiences/crm";
 
@@ -13,7 +14,6 @@ export async function PATCH(request: Request, context: { params: { id: string } 
     await updateFollowUp(context.params.id, parsed);
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Update failed.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return errorResponse(error, "We couldn’t save the follow-up status. Please try again.");
   }
 }

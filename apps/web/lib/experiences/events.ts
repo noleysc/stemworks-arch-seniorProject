@@ -3,6 +3,7 @@
 import { eventStatusLabel, wallFirstName } from "@/lib/experiences/catalog";
 import { prisma } from "@/lib/db";
 import { ensurePamperedEvents } from "@/lib/tenancy";
+import { PublicError } from "@/lib/experiences/errors";
 
 export type TicketTierRecord = {
   id: string;
@@ -162,8 +163,8 @@ export async function listRegistrations(eventId: string) {
 
 export async function checkInRegistration(registrationId: string) {
   const row = await prisma.eventRegistration.findUnique({ where: { id: registrationId } });
-  if (!row) throw new Error("Registration not found.");
-  if (row.status === "cancelled") throw new Error("Cancelled guests cannot be checked in.");
+  if (!row) throw new PublicError("That guest registration could not be found. Refresh the guest list and try again.", 404);
+  if (row.status === "cancelled") throw new PublicError("This registration was cancelled and cannot be checked in.");
   return prisma.eventRegistration.update({
     where: { id: registrationId },
     data: { status: "attended", checkedInAt: new Date() },

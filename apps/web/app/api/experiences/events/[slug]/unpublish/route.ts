@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 import { NextResponse } from "next/server";
+import { errorResponse } from "@/lib/experiences/api-error";
 
 import { getEventBySlug } from "@/lib/experiences/events";
 import { unpublishEvent } from "@/lib/experiences/planner";
@@ -13,8 +14,6 @@ export async function POST(_request: Request, context: { params: { slug: string 
     const event = await getEventBySlug(context.params.slug);
     return NextResponse.json({ event });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Could not unpublish.";
-    const status = message.includes("not found") ? 404 : 400;
-    return NextResponse.json({ error: message }, { status });
+    return errorResponse(error, "We couldn’t unpublish your invite. Please try again.");
   }
 }

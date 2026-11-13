@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import type { DashboardPayload } from "@/lib/dashboard/types";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { RequestError, requestErrorMessage, requestJson } from "@/lib/http";
 
 const tokenClass: Record<string, string> = {
   rooms: "bg-stone-950",
@@ -44,17 +45,12 @@ export function DashboardBoard({
     if (venture) query.set("venture", venture);
     if (horizon === "12m") query.set("horizon", "12m");
     try {
-      const response = await fetch(`/api/v1/dashboard?${query.toString()}`);
-      const body = await response.json().catch(() => null);
-      if (!response.ok) {
-        setPayload(null);
-        setError(typeof body?.error === "string" ? body.error : "The board could not be loaded.");
-        return;
-      }
-      setPayload(body as DashboardPayload);
-    } catch {
+      const body = await requestJson<DashboardPayload>(`/api/v1/dashboard?${query.toString()}`, {}, "We couldn’t load the dashboard. Refresh the page or choose another section.");
+      if (!body.header || !Array.isArray(body.ventures)) throw new RequestError("We couldn’t load the dashboard. Please try again.");
+      setPayload(body);
+    } catch (error) {
       setPayload(null);
-      setError("The board could not be loaded.");
+      setError(requestErrorMessage(error, "We couldn’t load the dashboard. Please try again."));
     } finally {
       setPending(false);
     }
@@ -86,7 +82,7 @@ export function DashboardBoard({
   if (error && !payload) {
     return (
       <div className="rounded-2xl border border-stone-200 bg-white p-6">
-        <p className="text-sm text-stone-700">{error}</p>
+        <p role="alert" className="text-sm text-stone-700">{error}</p>
         <Button className="mt-4" onClick={() => void load()}>
           Retry
         </Button>

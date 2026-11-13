@@ -14,6 +14,10 @@ Start with [docs/architecture/ventures.md](docs/architecture/ventures.md). Short
 
 Pampered Soul is not an events-only app. Events live under `/experiences/events`; spa bookings, calendar, guests, and CRM sit beside them. Details: [docs/architecture/pampered-soul.md](docs/architecture/pampered-soul.md).
 
+### Pampered Soul error handling
+
+Pampered Soul business rules use `PublicError` from `apps/web/lib/experiences/errors.ts` for deliberately user-facing messages. Its API handlers use `errorResponse` to translate validation, database, and payment failures without returning raw diagnostics. Client forms use the generic `requestJson` / `requestErrorMessage` helpers in `apps/web/lib/http.ts`; only API messages explicitly marked `publicError: true` are displayed. Unexpected failures use action-specific fallbacks. Keep diagnostic codes on the server without logging guest contacts, card data, or secrets. Payment failures must not claim that no charge occurred or automatically resubmit a purchase. Page-loading error boundaries cover the owner desk, public invites, and service bookings.
+
 ## Read this
 
 | Document | What it settles |

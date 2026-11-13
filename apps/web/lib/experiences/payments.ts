@@ -3,6 +3,7 @@
 import { createHash, randomBytes } from "node:crypto";
 
 import { z } from "zod";
+import { PublicError } from "@/lib/experiences/errors";
 
 export const cardPaymentSchema = z.object({
   cardholderName: z.string().trim().min(2, "Cardholder name is required.").max(120),
@@ -37,7 +38,7 @@ export async function chargeTicketPayment(input: {
   card?: CardPaymentInput | null;
 }): Promise<ChargeResult> {
   if (input.amountCents < 0) {
-    throw new Error("Ticket total cannot be negative.");
+    throw new PublicError("The ticket price is invalid. Contact the organizer for help.");
   }
   if (input.amountCents === 0) {
     return {
@@ -54,12 +55,12 @@ export async function chargeTicketPayment(input: {
   }
 
   if (!input.card) {
-    throw new Error("Payment is required for paid tickets.");
+    throw new PublicError("Payment is required for paid tickets. Enter your card details.");
   }
 
   const card = cardPaymentSchema.parse(input.card);
   const number = digitsOnly(card.cardNumber);
-  if (!luhnValid(number)) throw new Error("That card number is invalid.");
+  if (!luhnValid(number)) throw new PublicError("Enter a valid card number.");
   assertNotExpired(card.expMonth, card.expYear);
 
   const brand = detectBrand(number);
@@ -131,7 +132,7 @@ async function chargeWithStripe(input: {
   });
 
   if (intent.status !== "succeeded") {
-    throw new Error(`Payment was not completed (${intent.status}).`);
+    throw new PublicError("Your payment could not be completed. Check your payment status or contact the organizer before trying again.");
   }
 
   return {
@@ -153,12 +154,12 @@ function chargeDemo(input: {
 }): ChargeResult {
   // Decline classic Stripe test decline cards in demo so failures are exercisable.
   if (input.number === "4000000000000002") {
-    throw new Error("Your card was declined.");
+    throw new PublicError("Your card was declined. Try another card or contact your bank.");
   }
   if (!/^4\d{12,18}$/.test(input.number) && !/^5[1-5]\d{14}$/.test(input.number)) {
-    throw new Error("Demo checkout accepts Visa or Mastercard test numbers (e.g. 4242 4242 4242 4242).");
+    throw new PublicError("Demo checkout accepts Visa or Mastercard test numbers (e.g. 4242 4242 4242 4242).");
   }
-  if (input.cvc === "000") throw new Error("Your card was declined.");
+  if (input.cvc === "000") throw new PublicError("Your card was declined. Try another card or contact your bank.");
 
   const paymentRef = `pay_demo_${createHash("sha256")
     .update(`${input.last4}:${input.amountCents}:${randomBytes(8).toString("hex")}`)
@@ -198,7 +199,7 @@ function luhnValid(number: string) {
 function assertNotExpired(month: number, year: number) {
   const now = new Date();
   const exp = new Date(Date.UTC(year, month, 0, 23, 59, 59));
-  if (exp < now) throw new Error("That card is expired.");
+  if (exp < now) throw new PublicError("Your card has expired. Use another card.");
 }
 
 function detectBrand(number: string) {

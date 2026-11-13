@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { buildMonthGrid } from "@/lib/experiences/calendar";
 import type { CalendarItem } from "@/lib/experiences/calendar";
 import { cn } from "@/lib/utils";
+import { RequestError, requestErrorMessage, requestJson } from "@/lib/http";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -54,14 +55,11 @@ export function CalendarBoard() {
     setPending(true);
     setError(null);
     try {
-      const response = await fetch(`/api/experiences/calendar?year=${nextYear}&month=${nextMonth}`);
-      const body = await response.json().catch(() => null);
-      if (!response.ok) {
-        throw new Error(typeof body?.error === "string" ? body.error : "Could not load calendar.");
-      }
-      setItems(body.items as CalendarItem[]);
+      const body = await requestJson<{ items: CalendarItem[] }>(`/api/experiences/calendar?year=${nextYear}&month=${nextMonth}`, {}, "We couldn’t load the calendar. Please try again.");
+      if (!Array.isArray(body.items)) throw new RequestError("We couldn’t load the calendar. Please try again.");
+      setItems(body.items);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not load calendar.");
+      setError(requestErrorMessage(err, "We couldn’t load the calendar. Please try again."));
       setItems([]);
     } finally {
       setPending(false);
@@ -103,7 +101,12 @@ export function CalendarBoard() {
         </div>
       </div>
 
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? (
+        <div className="space-y-2">
+          <p role="alert" className="text-sm text-red-700">{error}</p>
+          <Button type="button" variant="outline" disabled={pending} onClick={() => void load()}>Try again</Button>
+        </div>
+      ) : null}
       {pending ? <p className="text-sm text-slate-600">Loading calendar…</p> : null}
 
       <div className="overflow-hidden rounded-3xl border border-slate-900/10 bg-white/90">

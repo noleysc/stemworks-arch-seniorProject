@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { formatTicketPrice } from "@/lib/experiences/catalog";
+import { requestErrorMessage, requestJson } from "@/lib/http";
 
 type Vendor = {
   businessKey: string;
@@ -62,7 +63,7 @@ export function RsvpForm({
     setPending(true);
     setError(null);
     try {
-      const response = await fetch(`/api/experiences/events/${slug}/rsvp`, {
+      const payload = await requestJson<NonNullable<typeof receipt>>(`/api/experiences/events/${slug}/rsvp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -88,9 +89,9 @@ export function RsvpForm({
               }
             : {}),
         }),
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error ?? "Could not get tickets.");
+      }, totalCents > 0
+        ? "We couldn’t complete your ticket purchase. Check your payment status or contact the organizer before trying again."
+        : "We couldn’t confirm your free tickets. Check your registration with the organizer before trying again.");
       setReceipt({
         confirmationCode: payload.confirmationCode,
         amountPaidCents: payload.amountPaidCents,
@@ -101,7 +102,7 @@ export function RsvpForm({
       });
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "The desk could not be reached.");
+      setError(requestErrorMessage(err, "We couldn’t confirm your tickets. Contact the organizer for help.", totalCents > 0));
     } finally {
       setPending(false);
     }
@@ -247,7 +248,7 @@ export function RsvpForm({
         </label>
       </fieldset>
 
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
       <button
         type="submit"
         disabled={pending || !selected || selected.remaining <= 0}
