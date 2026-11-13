@@ -33,6 +33,7 @@ model Venture {
 
   materials Material[]
   skus      Sku[]
+  batches   Batch[]
   customers Customer[]
   orders    Order[]
   events    ExperienceEvent[]
@@ -125,6 +126,8 @@ model MaterialPurchase {
   costPerUnitCents   Int
   supplierOrderRef   String?
   createdAt          DateTime @default(now())
+
+  @@index([materialId, receivedOn])
 }
 
 model InventoryLevel {
@@ -162,8 +165,69 @@ model Sku {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   lineItems        OrderLineItem[]
+  batches          Batch[]
+  lineage          SkuBatchLineage[]
 
   @@unique([ventureId, code])
+}
+
+/// One pour / make session. Units stay tied to this code for recall.
+model Batch {
+  id              String   @id @default(cuid())
+  ventureId       String
+  venture         Venture  @relation(fields: [ventureId], references: [id])
+  skuId           String
+  sku             Sku      @relation(fields: [skuId], references: [id])
+  code            String
+  status          String   @default("in_production")
+  pouredOn        String
+  unitsPoured     Int
+  unitsPassedQc   Int      @default(0)
+  unitsRejected   Int      @default(0)
+  yieldPercent    Float?
+  defectReason    String?
+  notes           String?
+  recalledAt      DateTime?
+  recallReason    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  materials       BatchMaterial[]
+  lineage         SkuBatchLineage[]
+
+  @@unique([ventureId, code])
+  @@index([ventureId, status, pouredOn])
+  @@index([skuId, status])
+}
+
+model BatchMaterial {
+  id               String   @id @default(cuid())
+  batchId          String
+  batch            Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  materialId       String
+  materialName     String
+  quantityUsed     Int
+  costPerUnitCents Int
+  totalCostCents   Int
+  purchaseLotsJson String   @default("[]")
+
+  @@index([batchId])
+  @@index([materialId])
+}
+
+/// Finished units added from a released batch — the recall join key.
+model SkuBatchLineage {
+  id              String   @id @default(cuid())
+  skuId           String
+  sku             Sku      @relation(fields: [skuId], references: [id])
+  batchId         String
+  batch           Batch    @relation(fields: [batchId], references: [id])
+  unitsAdded      Int
+  unitsRemaining  Int
+  cogsPerUnitCents Int
+  releasedAt      DateTime @default(now())
+
+  @@unique([skuId, batchId])
+  @@index([batchId])
 }
 
 model Customer {

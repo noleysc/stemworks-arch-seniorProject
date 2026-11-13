@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils";
 const links = [
   { href: "/jade", label: "Today" },
   { href: "/jade/materials", label: "Materials" },
-  { href: "/jade/skus", label: "SKUs" },
+  { href: "/jade/products", label: "Products" },
+  { href: "/jade/batches", label: "Batches" },
   { href: "/jade/orders", label: "Orders" },
   { href: "/experiences", label: "Experiences" },
   { href: "/dashboard?tenant=diaz_ventures", label: "Dashboard" },
@@ -30,7 +31,11 @@ export function JadeNav() {
           {links.map((link) => {
             const active = link.href.startsWith("/dashboard")
               ? pathname.startsWith("/dashboard")
-              : pathname === link.href;
+              : link.href === "/jade/products"
+                ? pathname.startsWith("/jade/products") || pathname.startsWith("/jade/skus")
+                : link.href === "/jade"
+                  ? pathname === "/jade"
+                  : pathname === link.href || pathname.startsWith(`${link.href}/`);
             return (
               <Link
                 key={link.href}
