@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { SpaMenuPicker } from "@/components/experiences/spa-menu-picker";
+import { TimePicker } from "@/components/experiences/time-picker";
 import { requestErrorMessage, requestJson } from "@/lib/http";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -177,9 +178,7 @@ export function PlannerForm() {
             <Field label="Date" htmlFor="startsOn">
               <Input id="startsOn" name="startsOn" type="date" required />
             </Field>
-            <Field label="Start time" htmlFor="startsAtLabel">
-              <Input id="startsAtLabel" name="startsAtLabel" required placeholder="5:00 PM" />
-            </Field>
+            <TimePicker id="startsAtLabel" name="startsAtLabel" disabled={pending} />
           </div>
           <Field label="Location" htmlFor="location">
             <Input id="location" name="location" required defaultValue={DEFAULT_EVENT_LOCATION} />
