@@ -78,7 +78,7 @@ test("ticket purchase charges card and grants marketing consent only for that ve
   assert.equal(result.ticketQuantity, 2);
   assert.equal(result.amountPaidCents, 13000);
   assert.equal(result.paymentLast4, "4242");
-  assert.match(result.confirmationCode, /^PS-\d{4}-\d{4}$/);
+  assert.match(result.confirmationCode, /^PS-\d{4}-[A-Z0-9]+$/);
 
   const registration = await prisma.eventRegistration.findUniqueOrThrow({
     where: { id: result.registrationId },
@@ -165,4 +165,61 @@ test("revoking marketing consent strips contact channels from that business CRM 
   assert.equal(haven.length, 1);
   assert.equal(haven[0].email, "blake@example.com");
   assert.equal(haven[0].phone, "239-555-0111");
+});
+
+test("confirmation codes stay unique across events", async () => {
+  const first = await createOwnerEvent({
+    title: "Code uniqueness night A",
+    summary: "First event.",
+    location: "16313 S Tamiami Trail, Fort Myers, FL 33908",
+    startsOn: "2026-12-19",
+    startsAtLabel: "5:00 PM",
+    capacity: 10,
+    publish: true,
+    tiers: [{ label: "General", price: 40, quantityAvailable: 10 }],
+  });
+  const second = await createOwnerEvent({
+    title: "Code uniqueness night B",
+    summary: "Second event.",
+    location: "16313 S Tamiami Trail, Fort Myers, FL 33908",
+    startsOn: "2026-12-20",
+    startsAtLabel: "5:00 PM",
+    capacity: 10,
+    publish: true,
+    tiers: [{ label: "General", price: 40, quantityAvailable: 10 }],
+  });
+
+  const a = await submitRsvp(first.slug, {
+    fullName: "Guest A",
+    email: "code-a@example.com",
+    phone: "239-555-0200",
+    tierKey: "general",
+    ticketQuantity: 1,
+    showOnGuestWall: false,
+    networkOptIn: false,
+    vendorOptIns: {},
+    payment: { ...demoPayment, cardholderName: "Guest A" },
+  });
+  const b = await submitRsvp(second.slug, {
+    fullName: "Guest B",
+    email: "code-b@example.com",
+    phone: "239-555-0201",
+    tierKey: "general",
+    ticketQuantity: 1,
+    showOnGuestWall: false,
+    networkOptIn: false,
+    vendorOptIns: {},
+    payment: { ...demoPayment, cardholderName: "Guest B" },
+  });
+
+  assert.notEqual(a.confirmationCode, b.confirmationCode);
+
+  await prisma.vendorConsent.deleteMany({
+    where: { vendor: { eventId: { in: [first.id, second.id] } } },
+  });
+  await prisma.eventRegistration.deleteMany({ where: { eventId: { in: [first.id, second.id] } } });
+  await prisma.ticketTier.deleteMany({ where: { eventId: { in: [first.id, second.id] } } });
+  await prisma.eventVendor.deleteMany({ where: { eventId: { in: [first.id, second.id] } } });
+  await prisma.experienceEvent.deleteMany({ where: { id: { in: [first.id, second.id] } } });
+  await prisma.guestProfile.deleteMany({ where: { email: { in: ["code-a@example.com", "code-b@example.com"] } } });
 });

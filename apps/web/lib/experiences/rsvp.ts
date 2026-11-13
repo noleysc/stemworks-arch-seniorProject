@@ -122,40 +122,31 @@ async function purchaseTickets(
     card: input.payment,
   });
 
-  const confirmationCode = await nextConfirmationCode(event.id);
-
-  const registrationData = {
-    status: "confirmed" as const,
-    partySize: input.ticketQuantity,
-    ticketQuantity: input.ticketQuantity,
-    amountDueCents,
-    amountPaidCents: charge.amountCents,
-    confirmationCode,
-    paymentRef: charge.paymentRef,
-    paymentStatus: "paid",
-    paymentBrand: charge.brand,
-    paymentLast4: charge.last4,
-    paidAt: charge.paidAt,
-    tierId: tier.id,
-    showOnGuestWall: input.showOnGuestWall,
-    wallName: wallFirstName(input.fullName),
-    guestNote: emptyToNull(input.guestNote),
-    notes: emptyToNull(input.notes),
-    checkedInAt: null,
-  };
-
-  const registration = existing
-    ? await prisma.eventRegistration.update({
-        where: { id: existing.id },
-        data: registrationData,
-      })
-    : await prisma.eventRegistration.create({
-        data: {
-          eventId: event.id,
-          guestId: guest.id,
-          ...registrationData,
-        },
-      });
+  const registration = await saveRegistrationWithUniqueCode({
+    existingId: existing?.id ?? null,
+    eventId: event.id,
+    guestId: guest.id,
+    build: (confirmationCode) => ({
+      status: "confirmed" as const,
+      partySize: input.ticketQuantity,
+      ticketQuantity: input.ticketQuantity,
+      amountDueCents,
+      amountPaidCents: charge.amountCents,
+      confirmationCode,
+      paymentRef: charge.paymentRef,
+      paymentStatus: "paid",
+      paymentBrand: charge.brand,
+      paymentLast4: charge.last4,
+      paidAt: charge.paidAt,
+      tierId: tier.id,
+      showOnGuestWall: input.showOnGuestWall,
+      wallName: wallFirstName(input.fullName),
+      guestNote: emptyToNull(input.guestNote),
+      notes: emptyToNull(input.notes),
+      checkedInAt: null,
+    }),
+  });
+  const confirmationCode = registration.confirmationCode!;
 
   for (const vendor of event.vendors) {
     const granted = Boolean(input.vendorOptIns[vendor.businessKey]);
@@ -321,10 +312,84 @@ async function upsertCrmContact(input: {
   });
 }
 
-async function nextConfirmationCode(eventId: string) {
-  const count = await prisma.eventRegistration.count({ where: { eventId } });
-  const seq = String(count + 1).padStart(4, "0");
-  return `PS-${new Date().getUTCFullYear()}-${seq}`;
+/** Globally unique. confirmationCode is unique across all events, not per event. */
+async function nextConfirmationCode() {
+  const year = new Date().getUTCFullYear();
+  const total = await prisma.eventRegistration.count();
+
+  for (let offset = 0; offset < 32; offset += 1) {
+    const seq = String(total + 1 + offset).padStart(4, "0");
+    const code = `PS-${year}-${seq}`;
+    const taken = await prisma.eventRegistration.findUnique({ where: { confirmationCode: code } });
+    if (!taken) return code;
+  }
+
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const suffix = Math.floor(Math.random() * 1_000_000)
+      .toString()
+      .padStart(6, "0");
+    const code = `PS-${year}-${suffix}`;
+    const taken = await prisma.eventRegistration.findUnique({ where: { confirmationCode: code } });
+    if (!taken) return code;
+  }
+
+  return `PS-${year}-${Date.now().toString(36).toUpperCase()}`;
+}
+
+async function saveRegistrationWithUniqueCode(input: {
+  existingId: string | null;
+  eventId: string;
+  guestId: string;
+  build: (confirmationCode: string) => {
+    status: "confirmed";
+    partySize: number;
+    ticketQuantity: number;
+    amountDueCents: number;
+    amountPaidCents: number;
+    confirmationCode: string;
+    paymentRef: string;
+    paymentStatus: string;
+    paymentBrand: string;
+    paymentLast4: string;
+    paidAt: Date;
+    tierId: string;
+    showOnGuestWall: boolean;
+    wallName: string;
+    guestNote: string | null;
+    notes: string | null;
+    checkedInAt: null;
+  };
+}) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const confirmationCode = await nextConfirmationCode();
+    const data = input.build(confirmationCode);
+    try {
+      if (input.existingId) {
+        return await prisma.eventRegistration.update({
+          where: { id: input.existingId },
+          data,
+        });
+      }
+      return await prisma.eventRegistration.create({
+        data: {
+          eventId: input.eventId,
+          guestId: input.guestId,
+          ...data,
+        },
+      });
+    } catch (error) {
+      lastError = error;
+      const code =
+        error && typeof error === "object" && "code" in error
+          ? String((error as { code?: string }).code)
+          : "";
+      if (code !== "P2002") throw error;
+    }
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Could not assign a unique confirmation code.");
 }
 
 function emptyToNull(value: string | undefined) {
