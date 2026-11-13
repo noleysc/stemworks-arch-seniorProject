@@ -7,29 +7,9 @@ import { wallFirstName } from "@/lib/experiences/catalog";
 import { cardPaymentSchema, chargeTicketPayment, paymentMode } from "@/lib/experiences/payments";
 import { ensurePamperedEvents } from "@/lib/tenancy";
 import { PublicError } from "@/lib/experiences/errors";
+import { registrationDetailsSchema } from "@/lib/experiences/checkout-input";
 
-const phoneSchema = z
-  .string()
-  .trim()
-  .min(7, "Phone number is required.")
-  .max(40)
-  .regex(/^[0-9+().\-\s]+$/, "Enter a valid phone number.");
-
-export const rsvpInputSchema = z.object({
-  fullName: z.string().trim().min(1, "Name is required.").max(160),
-  email: z.string().trim().email("A valid email is required.").max(200),
-  phone: phoneSchema,
-  tierKey: z.string().trim().min(1, "Choose a ticket."),
-  ticketQuantity: z.coerce.number().int().min(1).max(8).default(1),
-  notes: z.string().trim().max(2000).optional().or(z.literal("")),
-  guestNote: z.string().trim().max(120).optional().or(z.literal("")),
-  showOnGuestWall: z.boolean().default(true),
-  networkOptIn: z.boolean().default(false),
-  /**
-   * businessKey → marketing consent.
-   * true means the guest grants that business marketing consent (email + SMS).
-   */
-  vendorOptIns: z.record(z.string(), z.boolean()).default({}),
+export const rsvpInputSchema = registrationDetailsSchema.extend({
   /** Required when the ticket total is greater than $0. Omitted for free tickets. */
   payment: cardPaymentSchema.optional(),
 });
