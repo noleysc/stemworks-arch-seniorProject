@@ -1,5 +1,7 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
+import { Suspense } from "react";
+
 import { CalendarBoard } from "@/components/experiences/calendar-board";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +16,9 @@ export default function ExperiencesCalendarPage() {
           See ticketed invites, individual service bookings, and booked clients on one month view.
         </p>
       </div>
-      <CalendarBoard />
+      <Suspense fallback={<p className="text-sm text-slate-600">Loading calendar…</p>}>
+        <CalendarBoard />
+      </Suspense>
     </div>
   );
 }
