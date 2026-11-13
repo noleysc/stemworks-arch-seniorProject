@@ -22,7 +22,7 @@ The Stemworks dashboard composes this venture through the product port:
 - Batches, FIFO consumption into pours, QC release, and SKU lineage (next product slice)
 - Candle Atelier sessions (`atelier` module)
 - Craftybase, Square, or Shopify adapters
-- Login and Postgres RLS (same gate as the Luminary Hotel desk)
+- Login and Postgres RLS (same gate as the rentals desk)
 
 ## Tenant boundary
 
