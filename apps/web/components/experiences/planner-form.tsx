@@ -211,7 +211,7 @@ export function PlannerForm() {
                       current.map((row) => (row.localId === tier.localId ? { ...row, label: event.target.value } : row)),
                     )
                   }
-                  placeholder="General admission"
+                  placeholder="Ticket Name"
                 />
                 <Input
                   value={tier.price}
@@ -231,7 +231,7 @@ export function PlannerForm() {
                       ),
                     )
                   }
-                  placeholder="What this ticket includes"
+                  placeholder="Ticket Description"
                 />
                 <Input
                   value={tier.quantityAvailable}
@@ -242,7 +242,7 @@ export function PlannerForm() {
                       ),
                     )
                   }
-                  placeholder="Quantity"
+                  placeholder="Total Tickets Available"
                 />
                 {tiers.length > 1 ? (
                   <button
