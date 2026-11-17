@@ -9,15 +9,15 @@ datasource db {
 }
 
 model Tenant {
-  id        String     @id @default(cuid())
-  key       String     @unique
-  name      String
-  planTier  String     @default("internal")
-  isActive  Boolean    @default(true)
-  createdAt DateTime   @default(now())
-  ventures  Venture[]
+  id         String          @id @default(cuid())
+  key        String          @unique
+  name       String
+  planTier   String          @default("internal")
+  isActive   Boolean         @default(true)
+  createdAt  DateTime        @default(now())
+  ventures   Venture[]
   properties Property[]
-  todos     DashboardTodo[]
+  todos      DashboardTodo[]
 }
 
 model Venture {
@@ -32,14 +32,15 @@ model Venture {
   statusLabel String
   createdAt   DateTime @default(now())
 
-  materials Material[]
-  skus      Sku[]
-  batches   Batch[]
-  customers Customer[]
-  orders    Order[]
-  events    ExperienceEvent[]
-  crmContacts BusinessCrmContact[]
+  materials    Material[]
+  skus         Sku[]
+  batches      Batch[]
+  customers    Customer[]
+  orders       Order[]
+  events       ExperienceEvent[]
+  crmContacts  BusinessCrmContact[]
   appointments ServiceAppointment[]
+  memberships  UserMembership[]
 
   @@unique([tenantId, key])
   @@unique([tenantId, prefixCode])
@@ -96,37 +97,37 @@ model Booking {
 }
 
 model Material {
-  id            String   @id @default(cuid())
-  ventureId     String
-  venture       Venture  @relation(fields: [ventureId], references: [id])
-  name          String
-  category      String
-  unit          String
-  supplier      String?
-  supplierSku   String?
-  reorderPoint  Int      @default(0)
-  leadTimeDays  Int      @default(7)
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  purchases     MaterialPurchase[]
-  level         InventoryLevel?
-  movements     InventoryMovement[]
+  id           String              @id @default(cuid())
+  ventureId    String
+  venture      Venture             @relation(fields: [ventureId], references: [id])
+  name         String
+  category     String
+  unit         String
+  supplier     String?
+  supplierSku  String?
+  reorderPoint Int                 @default(0)
+  leadTimeDays Int                 @default(7)
+  isActive     Boolean             @default(true)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  purchases    MaterialPurchase[]
+  level        InventoryLevel?
+  movements    InventoryMovement[]
 
   @@index([ventureId, name])
 }
 
 model MaterialPurchase {
-  id                 String   @id @default(cuid())
-  materialId         String
-  material           Material @relation(fields: [materialId], references: [id])
-  receivedOn         String
-  quantityReceived   Int
-  quantityRemaining  Int
-  totalCostCents     Int
-  costPerUnitCents   Int
-  supplierOrderRef   String?
-  createdAt          DateTime @default(now())
+  id                String   @id @default(cuid())
+  materialId        String
+  material          Material @relation(fields: [materialId], references: [id])
+  receivedOn        String
+  quantityReceived  Int
+  quantityRemaining Int
+  totalCostCents    Int
+  costPerUnitCents  Int
+  supplierOrderRef  String?
+  createdAt         DateTime @default(now())
 
   @@index([materialId, receivedOn])
 }
@@ -139,61 +140,61 @@ model InventoryLevel {
 }
 
 model InventoryMovement {
-  id           String   @id @default(cuid())
-  materialId   String
-  material     Material @relation(fields: [materialId], references: [id])
-  kind         String
-  quantity     Int
-  referenceId  String?
-  note         String?
-  createdAt    DateTime @default(now())
+  id          String   @id @default(cuid())
+  materialId  String
+  material    Material @relation(fields: [materialId], references: [id])
+  kind        String
+  quantity    Int
+  referenceId String?
+  note        String?
+  createdAt   DateTime @default(now())
 
   @@index([materialId, createdAt])
 }
 
 model Sku {
-  id               String   @id @default(cuid())
-  ventureId        String
-  venture          Venture  @relation(fields: [ventureId], references: [id])
-  code             String
-  name             String
-  retailCents      Int
-  wholesaleCents   Int
-  eventCents       Int
-  unitsOnHand      Int      @default(0)
-  unitsAllocated   Int      @default(0)
-  isActive         Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  lineItems        OrderLineItem[]
-  batches          Batch[]
-  lineage          SkuBatchLineage[]
+  id             String            @id @default(cuid())
+  ventureId      String
+  venture        Venture           @relation(fields: [ventureId], references: [id])
+  code           String
+  name           String
+  retailCents    Int
+  wholesaleCents Int
+  eventCents     Int
+  unitsOnHand    Int               @default(0)
+  unitsAllocated Int               @default(0)
+  isActive       Boolean           @default(true)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  lineItems      OrderLineItem[]
+  batches        Batch[]
+  lineage        SkuBatchLineage[]
 
   @@unique([ventureId, code])
 }
 
 /// One pour / make session. Units stay tied to this code for recall.
 model Batch {
-  id              String   @id @default(cuid())
-  ventureId       String
-  venture         Venture  @relation(fields: [ventureId], references: [id])
-  skuId           String
-  sku             Sku      @relation(fields: [skuId], references: [id])
-  code            String
-  status          String   @default("in_production")
-  pouredOn        String
-  unitsPoured     Int
-  unitsPassedQc   Int      @default(0)
-  unitsRejected   Int      @default(0)
-  yieldPercent    Float?
-  defectReason    String?
-  notes           String?
-  recalledAt      DateTime?
-  recallReason    String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  materials       BatchMaterial[]
-  lineage         SkuBatchLineage[]
+  id            String            @id @default(cuid())
+  ventureId     String
+  venture       Venture           @relation(fields: [ventureId], references: [id])
+  skuId         String
+  sku           Sku               @relation(fields: [skuId], references: [id])
+  code          String
+  status        String            @default("in_production")
+  pouredOn      String
+  unitsPoured   Int
+  unitsPassedQc Int               @default(0)
+  unitsRejected Int               @default(0)
+  yieldPercent  Float?
+  defectReason  String?
+  notes         String?
+  recalledAt    DateTime?
+  recallReason  String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  materials     BatchMaterial[]
+  lineage       SkuBatchLineage[]
 
   @@unique([ventureId, code])
   @@index([ventureId, status, pouredOn])
@@ -201,15 +202,15 @@ model Batch {
 }
 
 model BatchMaterial {
-  id               String   @id @default(cuid())
+  id               String @id @default(cuid())
   batchId          String
-  batch            Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  batch            Batch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
   materialId       String
   materialName     String
   quantityUsed     Int
   costPerUnitCents Int
   totalCostCents   Int
-  purchaseLotsJson String   @default("[]")
+  purchaseLotsJson String @default("[]")
 
   @@index([batchId])
   @@index([materialId])
@@ -217,15 +218,15 @@ model BatchMaterial {
 
 /// Finished units added from a released batch — the recall join key.
 model SkuBatchLineage {
-  id              String   @id @default(cuid())
-  skuId           String
-  sku             Sku      @relation(fields: [skuId], references: [id])
-  batchId         String
-  batch           Batch    @relation(fields: [batchId], references: [id])
-  unitsAdded      Int
-  unitsRemaining  Int
+  id               String   @id @default(cuid())
+  skuId            String
+  sku              Sku      @relation(fields: [skuId], references: [id])
+  batchId          String
+  batch            Batch    @relation(fields: [batchId], references: [id])
+  unitsAdded       Int
+  unitsRemaining   Int
   cogsPerUnitCents Int
-  releasedAt      DateTime @default(now())
+  releasedAt       DateTime @default(now())
 
   @@unique([skuId, batchId])
   @@index([batchId])
@@ -245,19 +246,19 @@ model Customer {
 }
 
 model Order {
-  id             String   @id @default(cuid())
+  id             String          @id @default(cuid())
   ventureId      String
-  venture        Venture  @relation(fields: [ventureId], references: [id])
+  venture        Venture         @relation(fields: [ventureId], references: [id])
   code           String
   customerId     String?
-  customer       Customer? @relation(fields: [customerId], references: [id])
+  customer       Customer?       @relation(fields: [customerId], references: [id])
   customerName   String
   channel        String
   status         String
   netAmountCents Int
   notes          String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
   lineItems      OrderLineItem[]
 
   @@unique([ventureId, code])
@@ -265,30 +266,30 @@ model Order {
 }
 
 model OrderLineItem {
-  id              String @id @default(cuid())
-  orderId         String
-  order           Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  skuId           String
-  sku             Sku    @relation(fields: [skuId], references: [id])
-  quantity        Int
-  unitPriceCents  Int
-  lineTotalCents  Int
+  id             String @id @default(cuid())
+  orderId        String
+  order          Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  skuId          String
+  sku            Sku    @relation(fields: [skuId], references: [id])
+  quantity       Int
+  unitPriceCents Int
+  lineTotalCents Int
 }
 
 /// Experiences + CRM (PRD pilot). Private CRM and per-vendor consent live here.
 model GuestProfile {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  fullName     String
-  phone        String?
-  networkOptIn Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String               @id @default(cuid())
+  email         String               @unique
+  fullName      String
+  phone         String?
+  networkOptIn  Boolean              @default(false)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
   registrations EventRegistration[]
-  consents     VendorConsent[]
-  crmContacts  BusinessCrmContact[]
-  audits       ConsentAudit[]
-  appointments ServiceAppointment[]
+  consents      VendorConsent[]
+  crmContacts   BusinessCrmContact[]
+  audits        ConsentAudit[]
+  appointments  ServiceAppointment[]
 }
 
 /// Individual spa/service booking (not a ticketed invite).
@@ -332,10 +333,10 @@ model DashboardTodo {
 }
 
 model ExperienceEvent {
-  id               String   @id @default(cuid())
+  id               String               @id @default(cuid())
   ventureId        String
-  venture          Venture  @relation(fields: [ventureId], references: [id])
-  slug             String   @unique
+  venture          Venture              @relation(fields: [ventureId], references: [id])
+  slug             String               @unique
   title            String
   summary          String
   location         String
@@ -343,13 +344,13 @@ model ExperienceEvent {
   endsOn           String?
   startsAtLabel    String?
   capacity         Int
-  ticketPriceCents Int      @default(0)
-  status           String   @default("draft")
+  ticketPriceCents Int                  @default(0)
+  status           String               @default("draft")
   disclosureText   String
-  hostDisplayName  String   @default("Jade Experiences")
-  coverTone        String   @default("slate")
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  hostDisplayName  String               @default("Jade Experiences")
+  coverTone        String               @default("slate")
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
   vendors          EventVendor[]
   tiers            TicketTier[]
   itineraryItems   EventItineraryItem[]
@@ -379,31 +380,31 @@ model EventItineraryItem {
 }
 
 model TicketTier {
-  id               String          @id @default(cuid())
-  eventId          String
-  event            ExperienceEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  key              String
-  label            String
-  description      String
-  priceCents       Int
+  id                String              @id @default(cuid())
+  eventId           String
+  event             ExperienceEvent     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  key               String
+  label             String
+  description       String
+  priceCents        Int
   quantityAvailable Int
-  sortOrder        Int             @default(0)
-  isActive         Boolean         @default(true)
-  registrations    EventRegistration[]
+  sortOrder         Int                 @default(0)
+  isActive          Boolean             @default(true)
+  registrations     EventRegistration[]
 
   @@unique([eventId, key])
 }
 
 model EventVendor {
-  id           String          @id @default(cuid())
-  eventId      String
-  event        ExperienceEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  businessKey  String
-  displayName  String
-  roleLabel    String
-  sortOrder    Int             @default(0)
-  consents     VendorConsent[]
-  crmContacts  BusinessCrmContact[]
+  id          String               @id @default(cuid())
+  eventId     String
+  event       ExperienceEvent      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  businessKey String
+  displayName String
+  roleLabel   String
+  sortOrder   Int                  @default(0)
+  consents    VendorConsent[]
+  crmContacts BusinessCrmContact[]
 
   @@unique([eventId, businessKey])
 }
@@ -495,4 +496,17 @@ model ConsentAudit {
 
   @@index([guestId, createdAt])
   @@index([businessKey, createdAt])
+}
+
+model UserMembership {
+  id         String   @id @default(cuid())
+  authUserId String
+  ventureId  String
+  venture    Venture  @relation(fields: [ventureId], references: [id])
+  role       String   @default("staff")
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@unique([authUserId, ventureId])
+  @@index([ventureId])
 }
