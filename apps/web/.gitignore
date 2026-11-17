@@ -38,3 +38,7 @@ next-env.d.ts
 # local booking database
 /prisma/dev.db
 /prisma/dev.db-journal
+
+# Supabase database credentials and local environment variables
+.env
+.env.local
