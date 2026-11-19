@@ -13,7 +13,7 @@ export default async function GuestsPage() {
     return (
       <p className="text-sm text-slate-600">
         No event yet.{" "}
-        <Link className="underline" href="/experiences/new">
+        <Link className="underline" href="/thepamperedsoul/new">
           Plan one
         </Link>{" "}
         and publish it first.

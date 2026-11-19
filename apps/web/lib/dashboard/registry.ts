@@ -15,7 +15,7 @@ export const TENANT_REGISTRY: Record<string, TenantDefinition> = {
     key: "luminary",
     name: "Luminary Hotel & Co.",
     timezone: "America/New_York",
-    deskHref: "/",
+    deskHref: "/luminary",
     ventures: [
       { key: "rooms", name: "Luminary Rooms", colorToken: "rooms", module: "hotel", hotelSlice: "rooms" },
       { key: "dining", name: "Luminary Dining", colorToken: "dining", module: "hotel", hotelSlice: "dining" },
@@ -49,7 +49,7 @@ export const TENANT_REGISTRY: Record<string, TenantDefinition> = {
     key: "pampered_soul",
     name: "The Pampered Soul",
     timezone: "America/New_York",
-    deskHref: "/experiences",
+    deskHref: "/thepamperedsoul",
     ventures: [
       {
         key: "pampered_events",

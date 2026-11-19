@@ -39,24 +39,24 @@ export default async function PamperedSoulHomePage() {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <HubCard
-          href="/experiences/events"
+          href="/thepamperedsoul/events"
           title="Events"
           body="Ticketed invites, publish, and guest checkout links."
           meta={`${openInvites.length} open`}
         />
         <HubCard
-          href="/experiences/bookings"
+          href="/thepamperedsoul/bookings"
           title="Spa bookings"
           body="Individual services clients book for themselves."
           meta={`${appointments.length} on file`}
         />
         <HubCard
-          href="/experiences/calendar"
+          href="/thepamperedsoul/calendar"
           title="Schedule"
           body="Invites, appointments, and booked guests on one calendar."
         />
         <HubCard
-          href="/experiences/crm"
+          href="/thepamperedsoul/crm"
           title="CRM & guests"
           body="Check-in, consented contacts, and scorecard."
           meta="Guests · CRM · Scorecard"
@@ -81,7 +81,7 @@ export default async function PamperedSoulHomePage() {
         <div className="rounded-3xl border border-slate-900/10 bg-white/90 p-6">
           <div className="flex items-end justify-between gap-3">
             <h2 className="font-display text-2xl">Next invite</h2>
-            <Link href="/experiences/events" className="text-sm underline underline-offset-4">
+            <Link href="/thepamperedsoul/events" className="text-sm underline underline-offset-4">
               All events
             </Link>
           </div>
@@ -94,13 +94,13 @@ export default async function PamperedSoulHomePage() {
               </p>
               <div className="flex flex-wrap gap-2 pt-2">
                 <Link
-                  href={`/experiences/${nextEvent.slug}`}
+                  href={`/thepamperedsoul/${nextEvent.slug}`}
                   className="rounded-full bg-slate-950 px-3 py-1.5 text-sm text-[#eef2f6]"
                 >
                   Open invite
                 </Link>
                 <Link
-                  href="/experiences/new"
+                  href="/thepamperedsoul/new"
                   className="rounded-full border border-slate-900/15 px-3 py-1.5 text-sm"
                 >
                   Create invite
@@ -110,7 +110,7 @@ export default async function PamperedSoulHomePage() {
           ) : (
             <p className="mt-4 text-sm text-slate-600">
               No invites yet.{" "}
-              <Link href="/experiences/new" className="underline underline-offset-4">
+              <Link href="/thepamperedsoul/new" className="underline underline-offset-4">
                 Create a ticketed invite
               </Link>{" "}
               when you need an event night.
@@ -121,7 +121,7 @@ export default async function PamperedSoulHomePage() {
         <div className="rounded-3xl border border-slate-900/10 bg-white/90 p-6">
           <div className="flex items-end justify-between gap-3">
             <h2 className="font-display text-2xl">Upcoming services</h2>
-            <Link href="/experiences/bookings" className="text-sm underline underline-offset-4">
+            <Link href="/thepamperedsoul/bookings" className="text-sm underline underline-offset-4">
               All bookings
             </Link>
           </div>

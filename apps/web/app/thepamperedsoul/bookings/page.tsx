@@ -31,7 +31,7 @@ export default async function ServiceBookingsPage() {
             Open client booking
           </Link>
           <Link
-            href="/experiences/calendar"
+            href="/thepamperedsoul/calendar"
             className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-[#eef2f6]"
           >
             Calendar

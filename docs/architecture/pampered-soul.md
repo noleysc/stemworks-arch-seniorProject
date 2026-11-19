@@ -10,13 +10,13 @@ Tenant: `pampered_soul`. Database venture key: `pampered_events` (kept for stabl
 
 | Area | What the owner does | Routes |
 | --- | --- | --- |
-| Today | See open invites, upcoming bookings, and shortcuts | `/experiences` |
-| Events | Create and publish ticketed invites | `/experiences/events`, `/experiences/new`, `/experiences/[slug]` |
-| Schedule | Month view of invites, spa bookings, and guests | `/experiences/calendar` |
-| Spa services | Individual appointments booked by clients | `/experiences/bookings`, public `/book` |
-| Guests | Check-in for ticketed nights | `/experiences/guests` |
-| CRM | Consented marketing contacts only | `/experiences/crm` |
-| Scorecard | Ticket revenue and consent counts | `/experiences/scorecard` |
+| Today | See open invites, upcoming bookings, and shortcuts | `/thepamperedsoul` |
+| Events | Create and publish ticketed invites | `/thepamperedsoul/events`, `/thepamperedsoul/new`, `/thepamperedsoul/[slug]` |
+| Schedule | Month view of invites, spa bookings, and guests | `/thepamperedsoul/calendar` |
+| Spa services | Individual appointments booked by clients | `/thepamperedsoul/bookings`, public `/book` |
+| Guests | Check-in for ticketed nights | `/thepamperedsoul/guests` |
+| CRM | Consented marketing contacts only | `/thepamperedsoul/crm` |
+| Scorecard | Ticket revenue and consent counts | `/thepamperedsoul/scorecard` |
 | Dashboard | Founder board for this tenant | `/dashboard?tenant=pampered_soul` |
 
 Guest surfaces stay chrome-free:

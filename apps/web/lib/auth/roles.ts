@@ -46,9 +46,10 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
     canOperateDesk: true,
     nav: [
       { href: "/dashboard", label: "Command board", description: "Confirmed, Potential, attention" },
-      { href: "/", label: "Luminary rentals", description: "Hotel desk" },
-      { href: "/jade", label: "Jade Flowers", description: "Product ops" },
-      { href: "/experiences", label: "Pampered Soul", description: "Spa business desk" },
+      { href: "/", label: "Desks", description: "Luminary · Jade · Pampered Soul" },
+      { href: "/luminary", label: "Luminary", description: "Hotel rentals desk" },
+      { href: "/jade", label: "Jade", description: "Product ops desk" },
+      { href: "/thepamperedsoul", label: "The Pampered Soul", description: "Spa business desk" },
     ],
   },
   employee: {
@@ -62,9 +63,9 @@ export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
     canOperateDesk: true,
     nav: [
       { href: "/dashboard", label: "Today", description: "Shift overview" },
-      { href: "/experiences/calendar", label: "Schedule", description: "Invites and appointments" },
-      { href: "/experiences/guests", label: "Check-in", description: "Ticketed guests" },
-      { href: "/experiences/bookings", label: "Bookings", description: "Spa appointments" },
+      { href: "/thepamperedsoul/calendar", label: "Schedule", description: "Invites and appointments" },
+      { href: "/thepamperedsoul/guests", label: "Check-in", description: "Ticketed guests" },
+      { href: "/thepamperedsoul/bookings", label: "Bookings", description: "Spa appointments" },
       { href: "/jade/batches", label: "Batches", description: "Product floor" },
     ],
   },
@@ -124,11 +125,9 @@ export function usesAppShell(pathname: string): boolean {
     pathname.startsWith("/portal") ||
     pathname.startsWith("/vendor") ||
     pathname === "/" ||
-    pathname.startsWith("/rooms") ||
-    pathname.startsWith("/restaurant") ||
-    pathname.startsWith("/import") ||
+    pathname.startsWith("/luminary") ||
     pathname.startsWith("/jade") ||
-    pathname.startsWith("/experiences")
+    pathname.startsWith("/thepamperedsoul")
   );
 }
 
@@ -139,14 +138,15 @@ export function roleAllowsPath(role: AppRole, pathname: string): boolean {
   }
   if (role === "owner") return true;
   if (role === "employee") {
-    if (pathname.startsWith("/experiences/new")) return false;
-    if (pathname.startsWith("/experiences/crm")) return false;
-    if (pathname.startsWith("/experiences/scorecard")) return false;
+    if (pathname.startsWith("/thepamperedsoul/new")) return false;
+    if (pathname.startsWith("/thepamperedsoul/crm")) return false;
+    if (pathname.startsWith("/thepamperedsoul/scorecard")) return false;
     return (
       pathname.startsWith("/dashboard") ||
-      pathname.startsWith("/experiences") ||
+      pathname.startsWith("/thepamperedsoul") ||
       pathname.startsWith("/jade") ||
-      pathname === "/"
+      pathname === "/" ||
+      pathname.startsWith("/luminary")
     );
   }
   if (role === "customer") {

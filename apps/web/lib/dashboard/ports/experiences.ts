@@ -22,7 +22,7 @@ export async function experiencesPort(businessDate: string): Promise<VenturePort
       topItems: [],
       attention: [],
       milestones: [],
-      detailHref: "/experiences",
+      detailHref: "/thepamperedsoul",
     };
   }
   const cents = projectExperienceCents(scorecard);
@@ -77,6 +77,6 @@ export async function experiencesPort(businessDate: string): Promise<VenturePort
     topItems,
     attention,
     milestones,
-    detailHref: "/experiences",
+    detailHref: "/thepamperedsoul",
   };
 }

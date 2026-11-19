@@ -48,7 +48,7 @@ export async function listCalendarItems(from: string, to: string): Promise<Calen
       timeLabel: event.startsAtLabel,
       title: event.title,
       detail: `${event.ticketCount}/${event.capacity} tickets · ${event.statusLabel}`,
-      href: `/experiences/${event.slug}`,
+      href: `/thepamperedsoul/${event.slug}`,
       status: event.status,
     });
   }
@@ -61,7 +61,7 @@ export async function listCalendarItems(from: string, to: string): Promise<Calen
       timeLabel: appointment.startsAtLabel,
       title: appointment.serviceTitle,
       detail: `${appointment.clientName}${appointment.confirmationCode ? ` · ${appointment.confirmationCode}` : ""}`,
-      href: "/experiences/bookings",
+      href: "/thepamperedsoul/bookings",
       status: appointment.status,
     });
   }
@@ -74,7 +74,7 @@ export async function listCalendarItems(from: string, to: string): Promise<Calen
       timeLabel: registration.event.startsAtLabel,
       title: registration.guest.fullName,
       detail: `${registration.event.title}${registration.tier ? ` · ${registration.tier.label}` : ""} · ${registration.ticketQuantity} ticket${registration.ticketQuantity === 1 ? "" : "s"}`,
-      href: `/experiences/${registration.event.slug}`,
+      href: `/thepamperedsoul/${registration.event.slug}`,
       status: registration.status,
     });
   }

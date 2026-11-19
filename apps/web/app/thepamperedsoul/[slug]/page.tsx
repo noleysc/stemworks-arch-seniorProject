@@ -19,7 +19,7 @@ export default async function ExperienceEditorPage({ params }: { params: { slug:
     <div className="space-y-8">
       <div className="max-w-2xl">
         <p className="text-sm text-slate-600">
-          <Link href="/experiences/events" className="underline">
+          <Link href="/thepamperedsoul/events" className="underline">
             Invites
           </Link>{" "}
           · ticketed invite creator · {event.statusLabel}

@@ -146,7 +146,7 @@ export function PlannerForm() {
             })),
         }),
       }, "We couldn’t save your invite. Please try again.");
-      router.push(`/experiences/${payload.event.slug}`);
+      router.push(`/thepamperedsoul/${payload.event.slug}`);
       router.refresh();
     } catch (err) {
       setError(requestErrorMessage(err, "We couldn’t save your invite. Please try again."));

@@ -24,7 +24,7 @@ export async function hotelPort(
       topItems: [],
       attention: [],
       milestones: [],
-      detailHref: "/",
+      detailHref: "/luminary",
     };
   }
 
@@ -100,7 +100,7 @@ export async function hotelPort(
     topItems,
     attention,
     milestones,
-    detailHref: slice === "rooms" ? "/rooms" : "/restaurant",
+    detailHref: slice === "rooms" ? "/luminary/rooms" : "/luminary/restaurant",
   };
 }
 

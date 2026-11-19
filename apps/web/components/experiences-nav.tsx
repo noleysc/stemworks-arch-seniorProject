@@ -10,29 +10,29 @@ import type { AppRole } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
 
 const allLinks = [
-  { href: "/experiences", label: "Today", match: "exact" as const, roles: ["owner", "employee"] as AppRole[] },
-  { href: "/experiences/events", label: "Events", match: "events" as const, roles: ["owner", "employee"] as AppRole[] },
-  { href: "/experiences/new", label: "Create invite", match: "prefix" as const, roles: ["owner"] as AppRole[] },
-  { href: "/experiences/calendar", label: "Calendar", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
-  { href: "/experiences/bookings", label: "Bookings", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
-  { href: "/experiences/guests", label: "Guests", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
-  { href: "/experiences/crm", label: "CRM", match: "prefix" as const, roles: ["owner"] as AppRole[] },
-  { href: "/experiences/scorecard", label: "Scorecard", match: "prefix" as const, roles: ["owner"] as AppRole[] },
+  { href: "/thepamperedsoul", label: "Today", match: "exact" as const, roles: ["owner", "employee"] as AppRole[] },
+  { href: "/thepamperedsoul/events", label: "Events", match: "events" as const, roles: ["owner", "employee"] as AppRole[] },
+  { href: "/thepamperedsoul/new", label: "Create invite", match: "prefix" as const, roles: ["owner"] as AppRole[] },
+  { href: "/thepamperedsoul/calendar", label: "Calendar", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
+  { href: "/thepamperedsoul/bookings", label: "Bookings", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
+  { href: "/thepamperedsoul/guests", label: "Guests", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
+  { href: "/thepamperedsoul/crm", label: "CRM", match: "prefix" as const, roles: ["owner"] as AppRole[] },
+  { href: "/thepamperedsoul/scorecard", label: "Scorecard", match: "prefix" as const, roles: ["owner"] as AppRole[] },
 ];
 
 function isActive(pathname: string, link: (typeof allLinks)[number]) {
-  if (link.match === "exact") return pathname === "/experiences";
+  if (link.match === "exact") return pathname === "/thepamperedsoul";
   if (link.match === "events") {
     return (
-      pathname === "/experiences/events" ||
-      pathname === "/experiences/new" ||
-      (pathname.startsWith("/experiences/") &&
-        !pathname.startsWith("/experiences/calendar") &&
-        !pathname.startsWith("/experiences/bookings") &&
-        !pathname.startsWith("/experiences/guests") &&
-        !pathname.startsWith("/experiences/crm") &&
-        !pathname.startsWith("/experiences/scorecard") &&
-        pathname !== "/experiences")
+      pathname === "/thepamperedsoul/events" ||
+      pathname === "/thepamperedsoul/new" ||
+      (pathname.startsWith("/thepamperedsoul/") &&
+        !pathname.startsWith("/thepamperedsoul/calendar") &&
+        !pathname.startsWith("/thepamperedsoul/bookings") &&
+        !pathname.startsWith("/thepamperedsoul/guests") &&
+        !pathname.startsWith("/thepamperedsoul/crm") &&
+        !pathname.startsWith("/thepamperedsoul/scorecard") &&
+        pathname !== "/thepamperedsoul")
     );
   }
   return pathname === link.href || pathname.startsWith(`${link.href}/`);

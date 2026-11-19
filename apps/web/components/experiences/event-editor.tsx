@@ -198,7 +198,7 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
     <div className="space-y-8">
       <div className="flex flex-wrap gap-3">
         <Link
-          href={`/experiences/${event.slug}/preview`}
+          href={`/thepamperedsoul/${event.slug}/preview`}
           className="rounded-full border border-slate-900/15 px-4 py-2 text-sm text-slate-900"
         >
           Preview guest invite

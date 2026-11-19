@@ -11,7 +11,7 @@ export default async function ScorecardPage() {
     return (
       <p className="text-sm text-slate-600">
         No event to score yet.{" "}
-        <a className="underline" href="/experiences/new">
+        <a className="underline" href="/thepamperedsoul/new">
           Plan one
         </a>
         .

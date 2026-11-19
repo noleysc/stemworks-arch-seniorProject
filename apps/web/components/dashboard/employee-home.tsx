@@ -22,9 +22,9 @@ export async function EmployeeHome() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <OpsCard href="/experiences/guests" title="Check-in" body="Ticketed guests for tonight’s invites." meta={`${openEvents.length} open invites`} />
-        <OpsCard href="/experiences/calendar" title="Schedule" body="Invites and spa appointments on one calendar." />
-        <OpsCard href="/experiences/bookings" title="Bookings" body="Individual spa services on the books." meta={`${appointments.length} on file`} />
+        <OpsCard href="/thepamperedsoul/guests" title="Check-in" body="Ticketed guests for tonight’s invites." meta={`${openEvents.length} open invites`} />
+        <OpsCard href="/thepamperedsoul/calendar" title="Schedule" body="Invites and spa appointments on one calendar." />
+        <OpsCard href="/thepamperedsoul/bookings" title="Bookings" body="Individual spa services on the books." meta={`${appointments.length} on file`} />
       </div>
 
       <section className="grid gap-4 lg:grid-cols-2">
@@ -42,7 +42,7 @@ export async function EmployeeHome() {
                       {event.startsAtLabel ?? formatDate(event.startsOn)} · {event.ticketCount}/{event.capacity} tickets
                     </p>
                   </div>
-                  <Link href="/experiences/guests" className="shrink-0 underline underline-offset-4">
+                  <Link href="/thepamperedsoul/guests" className="shrink-0 underline underline-offset-4">
                     Check-in
                   </Link>
                 </li>

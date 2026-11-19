@@ -31,7 +31,7 @@ Luminary Gatherings stays on the `hotel` module. Experiences never writes Lumina
 - Organizer venture: `pampered_events` (prefix `PS`)
 - Events are owner-authored (no canned Jade Haven holiday seed)
 - Public RSVP: `/e/{slug}` (guest view)
-- Operator desk: `/experiences` (planner view)
+- Operator desk: `/thepamperedsoul` (planner view)
 
 ## Data rules
 

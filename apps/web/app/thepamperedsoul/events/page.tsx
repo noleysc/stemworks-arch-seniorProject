@@ -25,7 +25,7 @@ export default async function PamperedEventsPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl">
           <p className="text-sm text-slate-600">
-            <Link href="/experiences" className="underline underline-offset-4">
+            <Link href="/thepamperedsoul" className="underline underline-offset-4">
               {venture.name}
             </Link>{" "}
             · Events · prefix {venture.prefixCode}
@@ -37,7 +37,7 @@ export default async function PamperedEventsPage() {
           </p>
         </div>
         <Link
-          href="/experiences/new"
+          href="/thepamperedsoul/new"
           className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-[#eef2f6]"
         >
           Create invite
@@ -54,7 +54,7 @@ export default async function PamperedEventsPage() {
             link people can buy tickets on.
           </p>
           <Link
-            href="/experiences/new"
+            href="/thepamperedsoul/new"
             className="mt-5 inline-flex rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-[#eef2f6]"
           >
             Create your first invite
@@ -87,7 +87,7 @@ export default async function PamperedEventsPage() {
               </div>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
-                  href={`/experiences/${event.slug}`}
+                  href={`/thepamperedsoul/${event.slug}`}
                   className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-[#eef2f6]"
                 >
                   Edit invite
@@ -102,7 +102,7 @@ export default async function PamperedEventsPage() {
                   </Link>
                 ) : null}
                 <Link
-                  href="/experiences/guests"
+                  href="/thepamperedsoul/guests"
                   className="rounded-full border border-slate-900/15 px-4 py-2 text-sm text-slate-900"
                 >
                   Guest list

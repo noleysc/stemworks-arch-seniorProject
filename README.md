@@ -21,11 +21,11 @@ Start with [docs/architecture/ventures.md](docs/architecture/ventures.md). Short
 
 | Tenant | Desk | What it is |
 | --- | --- | --- |
-| Luminary Hotel & Co. | `/` | Rentals + dining collection |
+| Luminary Hotel & Co. | `/luminary` | Rentals + dining collection |
 | Diaz Ventures LLC | `/jade` | Jade Flowers product ops (materials, batches, orders) |
-| The Pampered Soul | `/experiences` | Spa **business desk** — services, schedule, CRM, and ticketed events |
+| The Pampered Soul | `/thepamperedsoul` | Spa **business desk** — services, schedule, CRM, and ticketed events |
 
-Pampered Soul is not an events-only app. Events live under `/experiences/events`; spa bookings, calendar, guests, and CRM sit beside them. Details: [docs/architecture/pampered-soul.md](docs/architecture/pampered-soul.md).
+`/` is only the desk picker. The three desks stay separate. Pampered Soul events live under `/thepamperedsoul/events`. Details: [docs/architecture/pampered-soul.md](docs/architecture/pampered-soul.md).
 
 ### Pampered Soul error handling
 
@@ -61,22 +61,25 @@ Open **http://localhost:43123**
 
 | URL | What it is |
 | --- | --- |
+| `/` | Desk picker (Luminary · Jade · The Pampered Soul) |
 | `/dashboard` | Founder board (`?tenant=luminary`, `diaz_ventures`, or `pampered_soul`) |
-| `/` | Luminary rental desk |
+| `/luminary` | Luminary rentals desk |
+| `/luminary/rooms` | Rental list |
+| `/luminary/restaurant` | Dining reservations |
 | `/jade` | Jade Flowers product desk |
 | `/jade/products` | Finished goods + pour a batch of 6 or 10 |
 | `/jade/batches` | Batch release to inventory and recall tracking |
-| `/experiences` | Pampered Soul business hub |
-| `/experiences/events` | Ticketed invites |
-| `/experiences/calendar` | Schedule |
-| `/experiences/bookings` | Spa appointments |
+| `/thepamperedsoul` | Pampered Soul business hub |
+| `/thepamperedsoul/events` | Ticketed invites |
+| `/thepamperedsoul/calendar` | Schedule |
+| `/thepamperedsoul/bookings` | Spa appointments |
 | `/book` | Client books one spa service |
 | `/e/{slug}` | Guest ticket checkout only |
 
 ### Pampered Soul demo
 
-1. Open `/experiences` — business hub.
-2. Create an invite under Events (`/experiences/new`), publish, open `/e/{slug}`.
+1. Open `/thepamperedsoul` — business hub.
+2. Create an invite under Events (`/thepamperedsoul/new`), publish, open `/e/{slug}`.
 3. Paid demo card: `4242 4242 4242 4242` (or use a $0 tier — no card fields).
 4. Book a service at `/book`; see it on Calendar and Bookings.
 
