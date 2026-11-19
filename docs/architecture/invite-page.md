@@ -2,16 +2,18 @@
 
 Confidential. Diaz Ventures LLC · Stemworks LLC · 2026.
 
-Two surfaces, two jobs:
+Invites are one area of the Pampered Soul **business desk**. For the full desk map see [pampered-soul.md](pampered-soul.md).
+
+Two invite surfaces, two jobs:
 
 | Surface | Who | Route |
 | --- | --- | --- |
-| **Ticketed invite creator** | Pampered Soul owner | `/experiences`, `/experiences/new`, `/experiences/[slug]` |
+| **Ticketed invite creator** | Pampered Soul owner | `/experiences/events`, `/experiences/new`, `/experiences/[slug]` |
 | **Guest checkout invite** | Anyone with the share link | `/e/{slug}` |
 
-They do not share chrome. Creator nav, CRM, scorecard, and edit controls stay on `/experiences/*`. The public invite has no planner header and is read-only except ticket checkout.
+They do not share chrome. Owner nav, CRM, scorecard, and edit controls stay on `/experiences/*`. The public invite has no planner header and is read-only except ticket checkout.
 
-The owner product is a **ticketed invite creator**: compose invite copy, set ticket tiers, optionally attach spa-menu treatments, publish, share `/e/{slug}`. UX for guests is modeled on Partiful. Tickets, marketing consent, and private CRM follow [experiences-crm.md](experiences-crm.md).
+The owner creates a **ticketed invite**: compose invite copy, set ticket tiers, optionally attach spa-menu treatments, publish, share `/e/{slug}`. UX for guests is modeled on Partiful. Tickets, marketing consent, and private CRM follow [experiences-crm.md](experiences-crm.md).
 
 ## Who hosts
 
@@ -54,7 +56,8 @@ Buying a ticket is not marketing consent. A vendor checkbox is.
 
 | Route | Job |
 | --- | --- |
-| `/experiences` | Invite list + share link |
+| `/experiences` | Pampered Soul business hub |
+| `/experiences/events` | Invite list + share link |
 | `/experiences/new` | Create ticketed invite (copy, tiers, spa menu) |
 | `/experiences/[slug]` | Edit invite copy and tiers, publish / unpublish / cancel, copy guest link |
 | `/experiences/[slug]/preview` | Owner preview of the guest invite (drafts included; checkout locked) |

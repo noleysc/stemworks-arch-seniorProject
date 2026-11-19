@@ -2,36 +2,34 @@
 
 Stemworks is a multi-tenant operating dashboard owned by Diaz Ventures LLC. Ventures plug into one board through module ports. Tenants never sum into each other.
 
-Running slices in `apps/web`:
+## Ventures (teammate map)
 
-- **Dashboard** — `/dashboard` — tenant switcher, Confirmed / Potential, attention, venture cards, timeline
-- **Rentals** — `/` — rental aggregate across booking sources (website + Airbnb + later sources)
-- **Jade Flowers** — `/jade` — materials, products, batches (6/10 pours + recall), and orders on Diaz Ventures
-- **The Pampered Soul** — `/experiences` ticketed invite creator, `/experiences/calendar` schedule, `/book` individual service booking, and `/e/{slug}` guest checkout.
+Start with [docs/architecture/ventures.md](docs/architecture/ventures.md). Short version:
 
-The architecture documents below still govern what gets built next.
+| Tenant | Desk | What it is |
+| --- | --- | --- |
+| Luminary Hotel & Co. | `/` | Rentals + dining collection |
+| Diaz Ventures LLC | `/jade` | Jade Flowers product ops (materials, batches, orders) |
+| The Pampered Soul | `/experiences` | Spa **business desk** — services, schedule, CRM, and ticketed events |
+
+Pampered Soul is not an events-only app. Events live under `/experiences/events`; spa bookings, calendar, guests, and CRM sit beside them. Details: [docs/architecture/pampered-soul.md](docs/architecture/pampered-soul.md).
 
 ## Read this
 
-Start with [docs/architecture/README.md](docs/architecture/README.md). It is the map: what must stay a separate module, how the process is shaped, and what is built first.
-
 | Document | What it settles |
 | --- | --- |
+| [docs/architecture/ventures.md](docs/architecture/ventures.md) | Tenants, desks, routes for teammates |
 | [docs/architecture/README.md](docs/architecture/README.md) | Boundaries, shape, phase gates |
 | [docs/architecture/luminary.md](docs/architecture/luminary.md) | Luminary Hotel & Co. property contract |
-| [docs/architecture/jade-flowers.md](docs/architecture/jade-flowers.md) | Jade Flowers product slice on Diaz Ventures |
-| [docs/architecture/experiences-crm.md](docs/architecture/experiences-crm.md) | Event + CRM PRD mapped onto Stemworks |
-| [docs/architecture/invite-page.md](docs/architecture/invite-page.md) | Owner planner vs guest invite surfaces |
-| [docs/architecture/architecture-questions.md](docs/architecture/architecture-questions.md) | Questions to settle before expanding Experiences |
-| [docs/architecture/competitive-differentiation.md](docs/architecture/competitive-differentiation.md) | Per-vendor consent and other competitor gaps |
-| [docs/architecture/modules.md](docs/architecture/modules.md) | Aggregates, ports, which venture enables which module |
-| [docs/architecture/security.md](docs/architecture/security.md) | Authentication, row-level security, ledger, secrets, CI |
-| [docs/architecture/dashboard.md](docs/architecture/dashboard.md) | The four zones and where Phase 1 numbers come from |
-| [docs/architecture/spec-gaps.md](docs/architecture/spec-gaps.md) | Spec omissions and the decision recorded for each |
-| [docs/team/next-steps.md](docs/team/next-steps.md) | Next slice for frontend, backend, and dashboard |
-| [docs/team/TODO.md](docs/team/TODO.md) | To-do list for Nolan, Esmir, Ryan, and Henry |
-
-The sources reconciled here are the Technical Specification v1.0 (April 2026), the Dashboard Specification, and the Native Module Client Definitions. Where those documents disagree on calendar phase, the architecture isolates the module and does not invent a schedule.
+| [docs/architecture/jade-flowers.md](docs/architecture/jade-flowers.md) | Jade Flowers product slice |
+| [docs/architecture/pampered-soul.md](docs/architecture/pampered-soul.md) | Pampered Soul spa business desk |
+| [docs/architecture/invite-page.md](docs/architecture/invite-page.md) | Owner planner vs guest invite |
+| [docs/architecture/experiences-crm.md](docs/architecture/experiences-crm.md) | Consent + CRM rules |
+| [docs/architecture/modules.md](docs/architecture/modules.md) | Aggregates and ports |
+| [docs/architecture/dashboard.md](docs/architecture/dashboard.md) | Founder board zones |
+| [docs/architecture/security.md](docs/architecture/security.md) | Auth, RLS, secrets |
+| [docs/architecture/supabase.md](docs/architecture/supabase.md) | Hosted Postgres wiring |
+| [docs/team/TODO.md](docs/team/TODO.md) | Nolan, Esmir, Ryan, Henry tasks |
 
 ## Run the desks
 
@@ -46,36 +44,27 @@ Open **http://localhost:43123**
 
 | URL | What it is |
 | --- | --- |
-| `/dashboard` | Scalable command board. `?tenant=luminary`, `diaz_ventures`, or `pampered_soul` |
+| `/dashboard` | Founder board (`?tenant=luminary`, `diaz_ventures`, or `pampered_soul`) |
 | `/` | Luminary rental desk |
 | `/jade` | Jade Flowers product desk |
-| `/jade/products` | Finished goods + pour a batch of 6 or 10 |
-| `/jade/batches` | Batch release to inventory and recall tracking |
-| `/experiences` | Pampered Soul **ticketed invite creator** (list + share links) |
-| `/experiences/new` | Create invite: copy, ticket tiers, spa menu, publish |
-| `/experiences/calendar` | Month calendar of invites, service bookings, and ticketed guests |
-| `/experiences/bookings` | Individual spa service appointments |
-| `/book` | **Client** page to book one spa service |
-| `/e/{slug}` | **Guest checkout** only (no creator chrome) |
-| `/dashboard` | Command board + per-tenant to-do list |
+| `/experiences` | Pampered Soul business hub |
+| `/experiences/events` | Ticketed invites |
+| `/experiences/calendar` | Schedule |
+| `/experiences/bookings` | Spa appointments |
+| `/book` | Client books one spa service |
+| `/e/{slug}` | Guest ticket checkout only |
 
-### Ticketed invite demo
+### Pampered Soul demo
 
-1. Start the app with the commands above.
-2. Open `/experiences/new` — create a ticketed invite (ticket types required; spa treatments optional).
-3. Leave **Publish guest checkout now** checked, submit, then copy the guest link from the invite page.
-4. Open `/e/{slug}`. Pick a tier, enter **email + phone**, pay with demo card **`4242 4242 4242 4242`**, any future expiry, CVC `123`.
-5. Optionally check vendor marketing consent boxes.
-6. Owner views: `/experiences`, `/experiences/{slug}`, `/experiences/guests`, `/experiences/crm`, `/experiences/scorecard`.
-
-Without `STRIPE_SECRET_KEY`, checkout runs in demo mode (Visa test cards only). Add Stripe keys in `.env` to charge live/test Stripe.
+1. Open `/experiences` — business hub.
+2. Create an invite under Events (`/experiences/new`), publish, open `/e/{slug}`.
+3. Paid demo card: `4242 4242 4242 4242` (or use a $0 tier — no card fields).
+4. Book a service at `/book`; see it on Calendar and Bookings.
 
 ## Supabase
 
-Hosted project: [`kcskzamqbpzxlfpqisib`](https://supabase.com/dashboard/project/kcskzamqbpzxlfpqisib). Repo layout for the GitHub integration is in [`supabase/`](supabase/). Setup steps: [docs/architecture/supabase.md](docs/architecture/supabase.md).
+Cloud project: [kcskzamqbpzxlfpqisib](https://supabase.com/dashboard/project/kcskzamqbpzxlfpqisib). Wiring notes: [docs/architecture/supabase.md](docs/architecture/supabase.md). Local desks still use SQLite until Postgres cutover.
 
-Local desks still use SQLite until the Postgres cutover. Put the project URL and keys in `apps/web/.env` from `.env.example`.
-
-Candle Atelier, Event Production, Jade Haven pipeline, Postgres RLS, and live Craftybase / Marriott adapters are later slices. Stemworks does not replace the hotel's property management system.
+Candle Atelier, Jade Experiences series, Jade Haven pipeline, Postgres RLS, and live Craftybase / Marriott adapters are later slices. Stemworks does not replace the hotel property management system.
 
 Copyright Diaz Ventures LLC. All rights reserved. See [LICENSE](LICENSE).

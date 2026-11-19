@@ -1,49 +1,74 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 import { NextResponse } from "next/server";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+
+import {
+  getSupabaseAnonKey,
+  getSupabaseUrl,
+  isSupabaseConfigured,
+} from "@/lib/supabase/env";
 
 export const dynamic = "force-dynamic";
 
-/** Confirms the Stemworks desk can reach project kcskzamqbpzxlfpqisib. */
+const PROJECT = "stemworks-dev";
+
 export async function GET() {
-  if (!isSupabaseConfigured()) {
+  const url = getSupabaseUrl();
+  const anonKey = getSupabaseAnonKey();
+
+  if (!isSupabaseConfigured() || !url || !anonKey) {
     return NextResponse.json(
       {
         ok: false,
-        project: null,
-        error: "Supabase env vars are not set. Copy apps/web/.env.example into .env.local.",
+        project: PROJECT,
+        url: url || null,
+        auth: "unconfigured",
+        detail:
+          "NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set in apps/web/.env.local",
       },
       { status: 503 },
     );
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const projectRef = new URL(url).hostname.split(".")[0];
-
   try {
-    const authRes = await fetch(`${url}/auth/v1/health`, {
+    const response = await fetch(`${url.replace(/\/$/, "")}/auth/v1/health`, {
       headers: {
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        apikey: anonKey,
+        Authorization: `Bearer ${anonKey}`,
       },
       cache: "no-store",
     });
-    const authBody = authRes.ok ? await authRes.json().catch(() => null) : null;
 
-    return NextResponse.json({
-      ok: authRes.ok,
-      project: projectRef,
-      url,
-      auth: authRes.ok ? "reachable" : "error",
-      detail: authRes.ok ? authBody : await authRes.text(),
-    });
-  } catch (err) {
+    const detail = await response.text();
+    let auth: unknown = detail;
+    try {
+      auth = JSON.parse(detail);
+    } catch {
+      // keep raw text
+    }
+
+    return NextResponse.json(
+      {
+        ok: response.ok,
+        project: PROJECT,
+        url,
+        auth,
+        detail: response.ok
+          ? "Supabase Auth health check succeeded"
+          : `Auth health returned HTTP ${response.status}`,
+      },
+      { status: response.ok ? 200 : 502 },
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown fetch error";
     return NextResponse.json(
       {
         ok: false,
-        project: projectRef,
+        project: PROJECT,
         url,
-        error: err instanceof Error ? err.message : "unknown error",
+        auth: null,
+        detail: message,
       },
       { status: 502 },
     );

@@ -1,26 +1,45 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 import { createClient } from "@supabase/supabase-js";
+
 import {
   getSupabaseAnonKey,
   getSupabaseServiceRoleKey,
   getSupabaseUrl,
 } from "./env";
 
-/** Anon client for server routes that respect RLS. */
 export function createSupabaseServerClient() {
-  return createClient(getSupabaseUrl(), getSupabaseAnonKey(), {
-    auth: { persistSession: false, autoRefreshToken: false },
+  const url = getSupabaseUrl();
+  const anonKey = getSupabaseAnonKey();
+
+  if (!url || !anonKey) {
+    throw new Error(
+      "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+    );
+  }
+
+  return createClient(url, anonKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
   });
 }
 
-/** Service-role client. Server only. Bypasses RLS — use sparingly. */
 export function createSupabaseServiceClient() {
-  const key = getSupabaseServiceRoleKey();
-  if (!key) {
-    throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set");
+  const url = getSupabaseUrl();
+  const serviceRoleKey = getSupabaseServiceRoleKey();
+
+  if (!url || !serviceRoleKey) {
+    throw new Error(
+      "Supabase service role is not configured. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.",
+    );
   }
-  return createClient(getSupabaseUrl(), key, {
-    auth: { persistSession: false, autoRefreshToken: false },
+
+  return createClient(url, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
   });
 }

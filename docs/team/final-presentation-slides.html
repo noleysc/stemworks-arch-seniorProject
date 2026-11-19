@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stemworks — Final Presentation</title>
+  <style>
+    :root {
+      --bg: #f7f5f1;
+      --card: #ffffff;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #d6d3d1;
+      --accent: #0f766e;
+      --accent-soft: #ccfbf1;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: #111;
+      color: var(--ink);
+    }
+    .deck {
+      height: 100%;
+      overflow: hidden;
+    }
+    .slide {
+      display: none;
+      height: 100%;
+      padding: 3.5rem 4.5rem 4.5rem;
+      background: var(--bg);
+      position: relative;
+    }
+    .slide.active { display: flex; flex-direction: column; }
+    .eyebrow {
+      font-size: 0.85rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+    h1 {
+      font-size: 3rem;
+      line-height: 1.1;
+      margin: 0 0 0.75rem;
+      font-weight: 700;
+    }
+    h2 {
+      font-size: 2.35rem;
+      line-height: 1.15;
+      margin: 0 0 1.5rem;
+      font-weight: 700;
+    }
+    .sub {
+      font-size: 1.25rem;
+      color: var(--muted);
+      margin: 0 0 2rem;
+      max-width: 42rem;
+      line-height: 1.45;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 2rem;
+      flex: 1;
+      min-height: 0;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      max-width: 52rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      padding: 1.25rem 1.4rem;
+    }
+    .card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1.15rem;
+    }
+    .card p, .card li {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+    .card ul {
+      margin: 0.5rem 0 0;
+      padding-left: 1.1rem;
+      color: var(--muted);
+    }
+    .role {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .role strong { font-size: 1.15rem; }
+    .role span { color: var(--muted); font-size: 0.98rem; }
+    .lead-tag {
+      display: inline-block;
+      margin-top: 0.35rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--accent-soft);
+      color: var(--accent);
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      font-weight: 600;
+      width: fit-content;
+    }
+    .footer {
+      position: absolute;
+      left: 4.5rem;
+      right: 4.5rem;
+      bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .bar {
+      display: flex;
+      gap: 0.5rem;
+      margin: 1.5rem 0 0.75rem;
+      max-width: 48rem;
+    }
+    .bar .seg {
+      flex: 1;
+      text-align: center;
+      padding: 0.85rem 0.5rem;
+      border-radius: 0.75rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--muted);
+    }
+    .bar .seg.done {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .bar .seg.now {
+      background: #134e4a;
+      border-color: #134e4a;
+      color: white;
+    }
+    .bar .seg.next {
+      background: var(--accent-soft);
+      border-color: #99f6e4;
+      color: #115e59;
+    }
+    .diagram {
+      width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 1rem;
+      border: 1px solid var(--line);
+      background: white;
+    }
+    .hint {
+      position: fixed;
+      bottom: 0.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #a8a29e;
+      font-size: 0.8rem;
+      z-index: 5;
+    }
+    @media print {
+      .hint { display: none; }
+      .slide {
+        display: flex !important;
+        page-break-after: always;
+        height: 100vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck" id="deck">
+    <section class="slide active" data-slide="1">
+      <div class="eyebrow">CEN 4934 · Team 18 · Final presentation</div>
+      <h1>Stemworks</h1>
+      <p class="sub">One operating dashboard for Diaz Ventures businesses—built so each venture stays separate, clear, and ready to grow.</p>
+      <div class="grid-2">
+        <div>
+          <div class="card" style="margin-bottom:1rem;">
+            <h3>Industry sponsor</h3>
+            <p>Diaz Ventures LLC</p>
+            <p style="margin-top:0.35rem;">Project contact: Samantha Diaz</p>
+          </div>
+          <div class="card">
+            <h3>Course project</h3>
+            <p>STEMWORKS Dashboard for Jade Flowers and related Diaz Ventures ventures</p>
+          </div>
+        </div>
+        <div class="grid-4">
+          <div class="card role">
+            <strong>Nolan Stilwell-Carroll</strong>
+            <span>Team Lead · architecture &amp; acceptance</span>
+            <div class="lead-tag">Team lead</div>
+          </div>
+          <div class="card role">
+            <strong>Henry Ramirez</strong>
+            <span>Backend · data &amp; APIs</span>
+          </div>
+          <div class="card role">
+            <strong>Esmir Ramirez Fulcar</strong>
+            <span>Dashboard · command board UI</span>
+          </div>
+          <div class="card role">
+            <strong>Ryan Lorentzen</strong>
+            <span>Frontend · desks &amp; forms</span>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Stemworks</span><span>1 / 4</span></div>
+    </section>
+
+    <section class="slide" data-slide="2">
+      <div class="eyebrow">Where the product is going</div>
+      <h2>The complete project</h2>
+      <p class="sub">By the end of next semester, Stemworks should be a hosted web platform owners can use every day—not just a classroom prototype.</p>
+      <div class="grid-2">
+        <div class="grid-3" style="grid-template-columns:1fr; align-content:start;">
+          <div class="card">
+            <h3>One board for the founder</h3>
+            <p>See money in motion, what needs attention, and how each venture is doing—without mixing businesses together.</p>
+          </div>
+          <div class="card">
+            <h3>Working desks for each venture</h3>
+            <p>Rentals collection, product operations for Jade Flowers, and ticketed experiences for Pampered Soul—all feeding the same system.</p>
+          </div>
+          <div class="card">
+            <h3>Ready for real use</h3>
+            <p>Hosted online, connected to a shared database, with a clear handoff path for Diaz Ventures to maintain after the course.</p>
+          </div>
+        </div>
+        <div>
+          <img class="diagram" src="assets/stemworks-overview-diagram.jpg" alt="Stemworks dashboard above venture desks" />
+          <div class="card" style="margin-top:1rem;">
+            <h3>Long-term shape</h3>
+            <p>Ventures plug into Stemworks through separate modules. Outside tools (payments, booking channels, inventory systems) connect when needed. Stemworks does not replace a hotel reservation system.</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>Stemworks</span><span>2 / 4</span></div>
+    </section>
+
+    <section class="slide" data-slide="3">
+      <div class="eyebrow">Progress today</div>
+      <h2>Where we are now</h2>
+      <p class="sub">Core desks are running on GitHub main. We are in delivery hardening—demo polish, documentation, and the path to hosted use.</p>
+      <div class="bar">
+        <div class="seg done">Architecture</div>
+        <div class="seg done">Rentals desk</div>
+        <div class="seg done">Dashboard</div>
+        <div class="seg done">Jade Flowers</div>
+        <div class="seg done">Pampered Soul</div>
+        <div class="seg now">Demo &amp; handoff</div>
+        <div class="seg next">Hosted closeout</div>
+      </div>
+      <div class="grid-3" style="margin-top:1.5rem;">
+        <div class="card">
+          <h3>Working today</h3>
+          <ul>
+            <li>Founder dashboard with tenant views</li>
+            <li>Jade materials, products, batches, recall</li>
+            <li>Pampered Soul invites, booking, calendar</li>
+            <li>Rentals collection desk</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>In progress</h3>
+          <ul>
+            <li>Presentation demo script</li>
+            <li>Partner-facing runbook</li>
+            <li>Stable demo data for live walkthrough</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Next semester / closeout</h3>
+          <ul>
+            <li>Hosted deployment path</li>
+            <li>Shared database cutover</li>
+            <li>Access control and maintenance handoff</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer"><span>Stemworks</span><span>3 / 4</span></div>
+    </section>
+
+    <section class="slide" data-slide="4">
+      <div class="eyebrow">How we run the project</div>
+      <h2>Project management plan</h2>
+      <div class="grid-3" style="flex:1; align-content:start; margin-top:0.5rem;">
+        <div class="card">
+          <h3>Meeting schedule</h3>
+          <ul>
+            <li>Weekly team sync to set the next slice</li>
+            <li>Short mid-week check-in on blockers</li>
+            <li>Sponsor updates when a desk is ready to show</li>
+            <li>Pre-demo dry run before presentation day</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Timeline</h3>
+          <ul>
+            <li>Iterative slices, not one big release</li>
+            <li>Earlier sprints: desks and dashboard</li>
+            <li>Current sprint: demo, docs, hardening</li>
+            <li>Next: hosted delivery and handoff</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Handling issues</h3>
+          <ul>
+            <li>Clear owners: lead, backend, dashboard, frontend</li>
+            <li>Peer review before work lands on main</li>
+            <li>Automated checks before a slice is accepted</li>
+            <li>Escalate stack or scope changes to the sponsor</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card" style="margin-top:1.25rem; max-width:52rem;">
+        <h3>Risks we already plan for</h3>
+        <p>Outside service changes, keeping businesses’ data separate, and demo reliability on presentation day. We keep a backup recording, freeze features before the talk, and treat architecture rules as the guardrail when something unexpected appears.</p>
+      </div>
+      <div class="footer"><span>Stemworks</span><span>4 / 4</span></div>
+    </section>
+  </div>
+  <div class="hint">Arrow keys or click to change slides · press F for fullscreen</div>
+  <script>
+    const slides = [...document.querySelectorAll('.slide')];
+    let i = 0;
+    function show(n) {
+      i = (n + slides.length) % slides.length;
+      slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+    }
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); show(i + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); show(i - 1); }
+      if (e.key === 'f' || e.key === 'F') {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+        else document.exitFullscreen?.();
+      }
+    });
+    document.getElementById('deck').addEventListener('click', () => show(i + 1));
+  </script>
+</body>
+</html>

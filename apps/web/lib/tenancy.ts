@@ -47,14 +47,18 @@ export const JADE_HAVEN = {
   statusLabel: "Pre-revenue · Development phase",
 } as const;
 
-export const PAMPERED_EVENTS = {
+/** DB key stays `pampered_events` for stable prefixes; display is the spa business. */
+export const PAMPERED_SOUL = {
   key: "pampered_events",
-  name: "Pampered Soul Events",
-  type: "event_production",
+  name: "The Pampered Soul",
+  type: "wellness_hospitality",
   prefixCode: "PS",
   colorToken: "experiences",
-  statusLabel: "Invite planner",
+  statusLabel: "Spa & experiences desk",
 } as const;
+
+/** @deprecated Use PAMPERED_SOUL — kept for older imports. */
+export const PAMPERED_EVENTS = PAMPERED_SOUL;
 
 export async function ensureTenant(key: keyof typeof TENANTS) {
   const seed = TENANTS[key];
@@ -102,6 +106,11 @@ export async function ensureJadeHaven() {
   return ensureVenture("diaz", JADE_HAVEN);
 }
 
+export async function ensurePamperedSoul() {
+  return ensureVenture("pampered", PAMPERED_SOUL);
+}
+
+/** @deprecated Use ensurePamperedSoul. */
 export async function ensurePamperedEvents() {
-  return ensureVenture("pampered", PAMPERED_EVENTS);
+  return ensurePamperedSoul();
 }

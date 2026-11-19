@@ -12,15 +12,19 @@ Phase numbers in the sources do not match. This architecture does not pick a cal
 
 Companion documents:
 
-- [luminary.md](luminary.md) — the first build, Luminary Hotel & Co.
+- [ventures.md](ventures.md) — **start here for teammates** — tenants, desks, and routes
+- [luminary.md](luminary.md) — Luminary Hotel & Co. rentals contract
+- [jade-flowers.md](jade-flowers.md) — Jade Flowers product desk on Diaz Ventures
+- [pampered-soul.md](pampered-soul.md) — Pampered Soul spa business desk (events included)
 - [modules.md](modules.md) — aggregates, ports, and which venture enables which module
 - [security.md](security.md) — authentication, row-level security, ledger, secrets, logging, CI
 - [dashboard.md](dashboard.md) — the four zones, filter rules, and Phase 1 data sources
 - [spec-gaps.md](spec-gaps.md) — places a field list omitted a column the prose requires, and the decision recorded for each
-- [experiences-crm.md](experiences-crm.md) — Event + CRM PRD (spa / holiday pilot) mapped to Stemworks
-- [invite-page.md](invite-page.md) — owner planner vs guest invite for The Pampered Soul
+- [experiences-crm.md](experiences-crm.md) — Event + CRM PRD mapped to Stemworks
+- [invite-page.md](invite-page.md) — owner planner vs guest invite surfaces
 - [architecture-questions.md](architecture-questions.md) — decisions still required for that pilot
 - [competitive-differentiation.md](competitive-differentiation.md) — what we refuse to copy from Eventbrite / Partiful / Square / HoneyBook
+- [supabase.md](supabase.md) — hosted Postgres project wiring
 
 ## System
 
@@ -42,6 +46,8 @@ Diaz Ventures ventures, specified and not seeded into the Luminary tenant:
 | Jade Experiences | `event_production` | `JE` | Cultural series. Event Production contract only. |
 | Jade Haven | `wellness_hospitality` | `JH` | Pre-open wellness property. Hospitality pipeline contract only. |
 | Stemworks | `software` | `SW` | The product's own pipeline, not the platform kernel. |
+
+Third tenant — The Pampered Soul (`pampered_soul`) — runs its own spa business desk. Ticketed events are one line of business there, not a separate Stemworks product. See [pampered-soul.md](pampered-soul.md) and [ventures.md](ventures.md).
 
 `DV` stays the Diaz parent prefix. It is not a Luminary prefix and not a venture prefix. The Stemworks venture is not a place to store another tenant's data, and it is not the code that runs the API.
 
@@ -200,6 +206,6 @@ The kernel ships with all of the following. [security.md](security.md) is the im
 - Licensing price tiers do not change the tenant model. `plan_tier` is already `internal | starter | professional | enterprise`.
 - Whether Haven holds health records is an attorney decision. No health table is created before that decision. If the answer is yes, those records go in a separate classified store, not in the hospitality tables.
 
-## Non-goals of this repository pass
+## This repository
 
-This tree is the architecture. It does not contain the Next.js app, the Express API, or the Prisma schema. Implementation follows these documents in the phase order above.
+The living desk is `apps/web` (Next.js, Prisma). Architecture docs in this folder are the contract teammates follow. Start with [ventures.md](ventures.md) for tenants and routes, then the venture file for the desk you are changing. Express packages and full RLS remain later phase gates above — the desk already ships the three tenant surfaces.
