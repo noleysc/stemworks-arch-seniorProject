@@ -92,9 +92,6 @@ export function LoginGate() {
                 )}
               >
                 <span className="block text-sm font-medium">{item.label}</span>
-                <span className={cn("mt-1 block text-xs", role === item.key ? "text-stone-300" : "text-stone-500")}>
-                  {item.persona}
-                </span>
               </button>
             ))}
           </div>
