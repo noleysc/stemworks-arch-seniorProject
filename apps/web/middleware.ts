@@ -2,8 +2,8 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 
-import { homeForRole, roleAllowsPath } from "@/lib/auth/roles";
-import { parseSessionCookie } from "@/lib/auth/session";
+import { appOwnerAllowsPath, homeForRole, isPublicPath, roleAllowsPath } from "@/lib/auth/roles";
+import { homeForSession, parseSessionCookie } from "@/lib/auth/session";
 
 /** Old paths → three named desks. */
 const LEGACY_REWRITES: Array<{ from: RegExp; to: (match: RegExpMatchArray) => string }> = [
@@ -12,6 +12,14 @@ const LEGACY_REWRITES: Array<{ from: RegExp; to: (match: RegExpMatchArray) => st
   { from: /^\/restaurant(\/.*)?$/, to: (m) => `/luminary/restaurant${m[1] ?? ""}` },
   { from: /^\/import(\/.*)?$/, to: (m) => `/luminary/import${m[1] ?? ""}` },
 ];
+
+function redirectTo(request: NextRequest, home: string) {
+  const url = request.nextUrl.clone();
+  const [path, query] = home.split("?");
+  url.pathname = path;
+  url.search = query ? `?${query}` : "";
+  return NextResponse.redirect(url);
+}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -30,16 +38,24 @@ export function middleware(request: NextRequest) {
   const sessionRaw = request.cookies.get("stemworks_session")?.value;
   const legacyRole = request.cookies.get("stemworks_role")?.value;
   const state = parseSessionCookie(sessionRaw ?? legacyRole);
-  const role = state.roles[state.activeVenture];
 
-  if (!roleAllowsPath(role, pathname, state.activeVenture)) {
-    if (pathname === "/") return NextResponse.next();
-    const home = homeForRole(role, state.activeVenture);
-    const url = request.nextUrl.clone();
-    const [path, query] = home.split("?");
-    url.pathname = path;
-    url.search = query ? `?${query}` : "";
-    return NextResponse.redirect(url);
+  if (!state.signedIn) {
+    if (isPublicPath(pathname)) return NextResponse.next();
+    return redirectTo(request, "/");
+  }
+
+  // Locked venture users: `/` is login only — send them home. Sign out returns them here.
+  if (!state.appOwner && pathname === "/") {
+    return redirectTo(request, homeForRole(state.role, state.activeVenture));
+  }
+
+  if (state.appOwner) {
+    if (appOwnerAllowsPath(pathname)) return NextResponse.next();
+    return redirectTo(request, homeForSession(state));
+  }
+
+  if (!roleAllowsPath(state.role, pathname, state.activeVenture)) {
+    return redirectTo(request, homeForRole(state.role, state.activeVenture));
   }
 
   return NextResponse.next();

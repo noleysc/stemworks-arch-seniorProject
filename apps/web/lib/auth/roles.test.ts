@@ -4,9 +4,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  appOwnerAllowsPath,
+  getAppOwnerDefinition,
   getRole,
   homeForRole,
   isAppRole,
+  isPublicPath,
   roleAllowsPath,
   usesAppShell,
 } from "@/lib/auth/roles";
@@ -23,40 +26,59 @@ test("demo roles map to product language per venture", () => {
   assert.equal(getRole("owner", "luminary").persona, "Alex Rivera");
   assert.equal(getRole("owner", "pampered_soul").persona, "Morgan Spa");
   assert.equal(getRole("vendor", "diaz_ventures").persona, "Wax & Wick Supply");
+  assert.equal(getAppOwnerDefinition("luminary").persona, "Stemworks Owner");
   assert.equal(homeForRole("customer", "pampered_soul"), "/portal?venture=pampered_soul");
   assert.equal(homeForRole("vendor", "luminary"), "/vendor?venture=luminary");
   assert.equal(homeForRole("employee", "diaz_ventures"), "/jade");
 });
 
-test("session cookie keeps a distinct role per venture", () => {
-  const state = parseSessionCookie(
+test("session cookie locks a venture role or grants app ownership", () => {
+  assert.equal(parseSessionCookie(undefined).signedIn, false);
+
+  const locked = parseSessionCookie(
     JSON.stringify({
-      activeVenture: "jade",
-      roles: { luminary: "owner", diaz_ventures: "employee", pampered_soul: "vendor" },
+      signedIn: true,
+      appOwner: false,
+      activeVenture: "diaz_ventures",
+      role: "employee",
     }),
   );
-  // invalid activeVenture falls back
-  assert.equal(state.activeVenture, "pampered_soul");
-  const ok = parseSessionCookie(
+  assert.equal(locked.signedIn, true);
+  assert.equal(locked.appOwner, false);
+  assert.equal(locked.activeVenture, "diaz_ventures");
+  assert.equal(locked.role, "employee");
+
+  const owner = parseSessionCookie(
     JSON.stringify({
-      activeVenture: "diaz_ventures",
+      signedIn: true,
+      appOwner: true,
+      activeVenture: "luminary",
+      role: "owner",
+    }),
+  );
+  assert.equal(owner.appOwner, true);
+  assert.equal(owner.role, "owner");
+
+  // Legacy multi-role cookie becomes a locked session
+  const legacy = parseSessionCookie(
+    JSON.stringify({
+      activeVenture: "pampered_soul",
       roles: { luminary: "customer", diaz_ventures: "employee", pampered_soul: "vendor" },
     }),
   );
-  assert.equal(ok.activeVenture, "diaz_ventures");
-  assert.equal(ok.roles.luminary, "customer");
-  assert.equal(ok.roles.diaz_ventures, "employee");
-  assert.equal(ok.roles.pampered_soul, "vendor");
+  assert.equal(legacy.signedIn, true);
+  assert.equal(legacy.appOwner, false);
+  assert.equal(legacy.role, "vendor");
+  assert.equal(legacy.activeVenture, "pampered_soul");
 });
 
-test("shell and path gates keep roles inside their venture", () => {
+test("path gates lock venture roles and open all desks for app ownership", () => {
+  assert.equal(usesAppShell("/"), false);
   assert.equal(usesAppShell("/e/consent-test-night"), false);
   assert.equal(usesAppShell("/book"), false);
   assert.equal(usesAppShell("/dashboard"), true);
-  assert.equal(usesAppShell("/portal"), true);
-  assert.equal(usesAppShell("/luminary"), true);
-  assert.equal(usesAppShell("/jade"), true);
-  assert.equal(usesAppShell("/thepamperedsoul"), true);
+  assert.equal(isPublicPath("/"), true);
+  assert.equal(isPublicPath("/luminary"), false);
 
   assert.equal(roleAllowsPath("customer", "/portal", "pampered_soul"), true);
   assert.equal(roleAllowsPath("customer", "/thepamperedsoul", "pampered_soul"), false);
@@ -66,10 +88,10 @@ test("shell and path gates keep roles inside their venture", () => {
   assert.equal(roleAllowsPath("employee", "/thepamperedsoul/guests", "pampered_soul"), true);
   assert.equal(roleAllowsPath("employee", "/jade/batches", "diaz_ventures"), true);
   assert.equal(roleAllowsPath("employee", "/jade/batches", "pampered_soul"), false);
-  assert.equal(roleAllowsPath("employee", "/luminary/rooms", "luminary"), true);
-  assert.equal(roleAllowsPath("employee", "/thepamperedsoul/new", "pampered_soul"), false);
-  assert.equal(roleAllowsPath("employee", "/thepamperedsoul/crm", "pampered_soul"), false);
-
   assert.equal(roleAllowsPath("owner", "/luminary", "diaz_ventures"), false);
-  assert.equal(roleAllowsPath("owner", "/jade", "diaz_ventures"), true);
+
+  assert.equal(appOwnerAllowsPath("/luminary"), true);
+  assert.equal(appOwnerAllowsPath("/jade/batches"), true);
+  assert.equal(appOwnerAllowsPath("/thepamperedsoul/crm"), true);
+  assert.equal(appOwnerAllowsPath("/dashboard"), true);
 });

@@ -4,14 +4,14 @@ Stemworks is a multi-tenant operating dashboard owned by Diaz Ventures LLC. Vent
 
 ## Roles (dashboard shell)
 
-Each venture has its own owner, employees, customers, and vendors. The demo shell stores a per-venture role in `stemworks_session` (legacy `stemworks_role` kept in sync). Switching desks switches venture identity — roles never cross tenants.
+Sign in at `/`: choose a venture, then a role. That login is **locked** to the venture until you sign out. Each venture has its own owner, employees, customers, and vendors.
 
-| Role | Home (per active venture) | What they see |
+**Stemworks app ownership** is the exception — it can open every venture desk and board.
+
+| Identity | Home | What they see |
 | --- | --- | --- |
-| Owner | `/dashboard?tenant=…` | That venture’s command board + desk |
-| Employee | `/luminary`, `/jade`, or `/thepamperedsoul` | Floor ops for that venture only |
-| Customer | `/portal?venture=…` | That venture’s guest/shopper portal |
-| Vendor | `/vendor?venture=…` | That venture’s partner desk |
+| Venture owner / employee / customer / vendor | That venture’s home | Only that venture |
+| Stemworks app owner | `/` | Every desk and command board |
 
 Details: [docs/architecture/roles-frontend.md](docs/architecture/roles-frontend.md).
 
@@ -61,7 +61,7 @@ Open **http://localhost:43123**
 
 | URL | What it is |
 | --- | --- |
-| `/` | Desk picker (Luminary · Jade · The Pampered Soul) |
+| `/` | Sign-in gate (venture + role, or Stemworks app owner) |
 | `/dashboard` | Founder board (`?tenant=luminary`, `diaz_ventures`, or `pampered_soul`) |
 | `/luminary` | Luminary rentals desk |
 | `/luminary/rooms` | Rental list |

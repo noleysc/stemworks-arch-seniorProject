@@ -5,8 +5,17 @@ import { getDemoSession } from "@/lib/auth/session";
 
 export function AppChrome({ children }: { children: React.ReactNode }) {
   const session = getDemoSession();
+  if (!session.signedIn) {
+    return <>{children}</>;
+  }
   return (
-    <AppShell role={session.role} venture={session.activeVenture} definition={session.definition}>
+    <AppShell
+      role={session.role}
+      venture={session.activeVenture}
+      definition={session.definition}
+      appOwner={session.appOwner}
+      locked={session.locked}
+    >
       {children}
     </AppShell>
   );

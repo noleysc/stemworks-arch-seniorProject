@@ -5,7 +5,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { RoleSwitcher } from "@/components/shell/role-switcher";
+import { SessionPanel } from "@/components/shell/session-panel";
 import type { AppRole, RoleDefinition } from "@/lib/auth/roles";
 import { usesAppShell } from "@/lib/auth/roles";
 import type { VentureKey } from "@/lib/auth/ventures";
@@ -15,11 +15,15 @@ export function AppShell({
   role,
   venture,
   definition,
+  appOwner,
+  locked,
   children,
 }: {
   role: AppRole;
   venture: VentureKey;
   definition: RoleDefinition;
+  appOwner: boolean;
+  locked: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -34,7 +38,9 @@ export function AppShell({
         <aside className="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r border-stone-900/10 bg-white/80 px-4 py-5 backdrop-blur md:flex">
           <Link href={definition.homeHref} className="block px-1">
             <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-stone-500">Stemworks</p>
-            <p className="mt-1 font-display text-2xl leading-none text-stone-950">{definition.ventureName}</p>
+            <p className="mt-1 font-display text-2xl leading-none text-stone-950">
+              {appOwner ? "All ventures" : definition.ventureName}
+            </p>
           </Link>
           <div className="mt-5 rounded-2xl border border-stone-900/10 bg-stone-50/80 p-3">
             <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Signed in as</p>
@@ -69,7 +75,14 @@ export function AppShell({
             })}
           </nav>
           <div className="mt-4 border-t border-stone-200 pt-4">
-            <RoleSwitcher role={role} venture={venture} />
+            <SessionPanel
+              role={role}
+              venture={venture}
+              appOwner={appOwner}
+              locked={locked}
+              persona={definition.persona}
+              ventureName={definition.ventureName}
+            />
           </div>
         </aside>
 
@@ -77,7 +90,9 @@ export function AppShell({
           <header className="sticky top-0 z-20 border-b border-stone-900/10 bg-white/85 px-4 py-3 backdrop-blur md:hidden">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-stone-500">{definition.ventureName}</p>
+                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-stone-500">
+                  {definition.ventureName}
+                </p>
                 <p className="font-display text-xl leading-none text-stone-950">
                   {definition.persona} · {definition.label}
                 </p>
@@ -108,7 +123,14 @@ export function AppShell({
               })}
             </nav>
             <div className="mt-3">
-              <RoleSwitcher role={role} venture={venture} />
+              <SessionPanel
+                role={role}
+                venture={venture}
+                appOwner={appOwner}
+                locked={locked}
+                persona={definition.persona}
+                ventureName={definition.ventureName}
+              />
             </div>
           </header>
           <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">{children}</main>

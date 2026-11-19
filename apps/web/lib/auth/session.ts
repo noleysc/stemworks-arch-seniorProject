@@ -7,61 +7,87 @@ import {
   DEFAULT_VENTURE,
   ROLE_COOKIE,
   SESSION_COOKIE,
+  getAppOwnerDefinition,
   getRole,
   isAppRole,
   type AppRole,
   type RoleDefinition,
 } from "@/lib/auth/roles";
-import { VENTURE_KEYS, isVentureKey, type VentureKey } from "@/lib/auth/ventures";
+import { isVentureKey, type VentureKey } from "@/lib/auth/ventures";
 
 export { ROLE_COOKIE, SESSION_COOKIE };
 
+/**
+ * Demo auth state.
+ * - signedIn false → login gate only
+ * - appOwner true → Stemworks ownership; can view every venture
+ * - otherwise locked to activeVenture + role until sign-out
+ */
 export type DemoSessionState = {
+  signedIn: boolean;
+  appOwner: boolean;
   activeVenture: VentureKey;
-  roles: Record<VentureKey, AppRole>;
+  role: AppRole;
 };
 
 export type DemoSession = DemoSessionState & {
-  role: AppRole;
+  locked: boolean;
   definition: RoleDefinition;
 };
 
-function defaultRoles(): Record<VentureKey, AppRole> {
+export function anonymousSession(): DemoSessionState {
   return {
-    luminary: DEFAULT_ROLE,
-    diaz_ventures: DEFAULT_ROLE,
-    pampered_soul: DEFAULT_ROLE,
+    signedIn: false,
+    appOwner: false,
+    activeVenture: DEFAULT_VENTURE,
+    role: DEFAULT_ROLE,
   };
 }
 
 export function parseSessionCookie(raw: string | undefined): DemoSessionState {
-  const roles = defaultRoles();
-  if (!raw) {
-    return { activeVenture: DEFAULT_VENTURE, roles };
-  }
+  if (!raw) return anonymousSession();
   try {
     const parsed = JSON.parse(raw) as {
+      signedIn?: boolean;
+      appOwner?: boolean;
       activeVenture?: string;
-      roles?: Record<string, string>;
       role?: string;
+      roles?: Record<string, string>;
     };
+
+    // Legacy multi-role cookie → treat as locked into active venture
+    if (parsed.roles && parsed.signedIn === undefined) {
+      const activeVenture = isVentureKey(parsed.activeVenture) ? parsed.activeVenture : DEFAULT_VENTURE;
+      const legacyRole = parsed.roles[activeVenture];
+      return {
+        signedIn: true,
+        appOwner: false,
+        activeVenture,
+        role: isAppRole(legacyRole) ? legacyRole : DEFAULT_ROLE,
+      };
+    }
+
     const activeVenture = isVentureKey(parsed.activeVenture) ? parsed.activeVenture : DEFAULT_VENTURE;
-    for (const key of VENTURE_KEYS) {
-      const value = parsed.roles?.[key];
-      if (isAppRole(value)) roles[key] = value;
-    }
-    // Legacy single-role cookie body support
-    if (isAppRole(parsed.role) && !parsed.roles) {
-      for (const key of VENTURE_KEYS) roles[key] = parsed.role;
-    }
-    return { activeVenture, roles };
+    const role = isAppRole(parsed.role) ? parsed.role : DEFAULT_ROLE;
+    const appOwner = parsed.appOwner === true;
+    const signedIn = parsed.signedIn === true || appOwner;
+
+    return {
+      signedIn,
+      appOwner,
+      activeVenture,
+      role: appOwner ? "owner" : role,
+    };
   } catch {
     if (isAppRole(raw)) {
-      const roles = defaultRoles();
-      for (const key of VENTURE_KEYS) roles[key] = raw;
-      return { activeVenture: DEFAULT_VENTURE, roles };
+      return {
+        signedIn: true,
+        appOwner: false,
+        activeVenture: DEFAULT_VENTURE,
+        role: raw,
+      };
     }
-    return { activeVenture: DEFAULT_VENTURE, roles };
+    return anonymousSession();
   }
 }
 
@@ -76,18 +102,25 @@ export function readSessionFromCookieStore(store: {
 
 export function getDemoSession(): DemoSession {
   const state = readSessionFromCookieStore(cookies());
-  const role = state.roles[state.activeVenture];
+  const definition = state.appOwner
+    ? getAppOwnerDefinition(state.activeVenture)
+    : getRole(state.role, state.activeVenture);
   return {
     ...state,
-    role,
-    definition: getRole(role, state.activeVenture),
+    locked: state.signedIn && !state.appOwner,
+    definition,
   };
 }
 
 export function sessionCookieOptions(state: DemoSessionState) {
   return {
     name: SESSION_COOKIE,
-    value: JSON.stringify(state),
+    value: JSON.stringify({
+      signedIn: state.signedIn,
+      appOwner: state.appOwner,
+      activeVenture: state.activeVenture,
+      role: state.appOwner ? "owner" : state.role,
+    }),
     httpOnly: false,
     sameSite: "lax" as const,
     path: "/",
@@ -96,7 +129,6 @@ export function sessionCookieOptions(state: DemoSessionState) {
 }
 
 export function roleCookieOptions(role: AppRole) {
-  // Keep legacy cookie in sync for older readers.
   return {
     name: ROLE_COOKIE,
     value: role,
@@ -105,4 +137,10 @@ export function roleCookieOptions(role: AppRole) {
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
   };
+}
+
+export function homeForSession(state: DemoSessionState): string {
+  if (!state.signedIn) return "/";
+  if (state.appOwner) return "/";
+  return getRole(state.role, state.activeVenture).homeHref;
 }

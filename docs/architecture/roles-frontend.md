@@ -2,46 +2,66 @@
 
 Confidential. Diaz Ventures LLC · Stemworks LLC · 2026.
 
-The Stemworks web desk ships a **dashboard-like shell** with four demo roles **per venture**. Luminary, Jade Flowers, and The Pampered Soul each keep their own owner, employees, customers, and vendors. Real auth (JWT, refresh cookies, RLS) is still the architecture target in [security.md](security.md). Until that lands, the shell uses a `stemworks_session` cookie (with legacy `stemworks_role` kept in sync) so teammates can preview each surface.
+Demo auth is a two-step gate: **choose a venture → sign in as a role → stay locked**. The only identity that can browse every venture is **Stemworks app ownership**.
+
+Real auth (JWT, refresh cookies, RLS) remains the architecture target in [security.md](security.md). Until that lands, the shell uses `stemworks_session` (legacy `stemworks_role` kept in sync).
+
+## Login flow
+
+1. Open `/` while signed out.
+2. Select a venture (Luminary, Jade, or Pampered Soul).
+3. Select a role (owner / employee / customer / vendor) and enter.
+4. You are **locked** to that venture + role until **Sign out**.
+5. Or choose **Enter as Stemworks app owner** to view every desk and board.
+
+Public surfaces stay open without login: `/book`, `/e/{slug}`.
 
 ## Session shape
 
 ```json
 {
+  "signedIn": true,
+  "appOwner": false,
   "activeVenture": "pampered_soul",
-  "roles": {
-    "luminary": "owner",
-    "diaz_ventures": "employee",
-    "pampered_soul": "vendor"
-  }
+  "role": "employee"
 }
 ```
 
-Switching venture loads that venture’s stored role. Switching role updates only the active venture.
+| Field | Meaning |
+| --- | --- |
+| `signedIn` | Cookie is an active demo login |
+| `appOwner` | Stemworks app ownership — can open every venture |
+| `activeVenture` | Locked venture (or the venture the app owner is viewing) |
+| `role` | Venture role; app owners always act as `owner` while browsing |
 
-## Roles (within one venture)
+## Roles (within one locked venture)
 
-| UI role | Kernel hint | Home | Sees |
-| --- | --- | --- | --- |
-| Owner | `owner` | `/dashboard?tenant=…` for that venture | That venture’s command board + desk |
-| Employee | `manager` / `associate` | Venture desk (`/luminary`, `/jade`, `/thepamperedsoul`) | Floor ops for that venture only — no parent P&L |
-| Customer | `client` | `/portal?venture=…` | That venture’s guest/shopper surface |
-| Vendor | partner | `/vendor?venture=…` | That venture’s partner desk (Pampered demo: Jade Haven) |
+| UI role | Home | Sees |
+| --- | --- | --- |
+| Owner | `/dashboard?tenant=…` | That venture’s command board + desk |
+| Employee | Venture desk | Floor ops for that venture only |
+| Customer | `/portal?venture=…` | That venture’s guest/shopper portal |
+| Vendor | `/vendor?venture=…` | That venture’s partner desk |
 
-Demo personas differ by venture (e.g. Luminary owner Alex Rivera vs Pampered owner Morgan Spa).
+## App ownership
+
+- Persona: **Stemworks Owner**
+- Home: `/` multi-desk hub
+- Can switch the active venture and open any desk/board
+- Does **not** replace per-venture owners; those remain locked when entered via normal login
 
 ## Rules
 
-- Guest checkout `/e/{slug}` and `/book` stay chrome-free and belong to Pampered Soul.
-- Middleware redirects a role away from paths outside its active venture.
-- Opening a desk from `/` posts the venture switch, then navigates.
+- Middleware sends unsigned users to `/` (except public guest paths).
+- Locked users hitting `/` are sent to their role home.
+- Locked users cannot switch venture without signing out.
 - Hiding a nav item is not authorization — API handlers must still enforce roles when auth ships.
-- Pampered Soul vendor demo defaults to Jade Haven (`jade_haven`).
 
 ## Code
 
 - Venture map: `apps/web/lib/auth/ventures.ts`
 - Role map: `apps/web/lib/auth/roles.ts`
 - Cookie session: `apps/web/lib/auth/session.ts`
-- Switcher API: `POST /api/v1/session/role` with `{ role?, venture? }`
-- Shell: `apps/web/components/shell/app-shell.tsx`
+- Auth API: `POST /api/v1/session/role` with `action`: `login` | `login_app_owner` | `switch_venture` | `logout`
+- Login UI: `apps/web/components/shell/login-gate.tsx`
+- Shell panel: `apps/web/components/shell/session-panel.tsx`

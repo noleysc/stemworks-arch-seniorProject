@@ -1,8 +1,8 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 /**
- * Per-venture demo roles. Each venture (Luminary, Jade, Pampered Soul) has its own
- * owner / employee / customer / vendor identities. Roles never cross tenants.
+ * Per-venture demo roles. Login locks you into one venture + role.
+ * Stemworks app ownership is the only way to browse every venture.
  */
 
 import {
@@ -64,6 +64,8 @@ const PERSONAS: Record<VentureKey, Record<AppRole, string>> = {
   },
 };
 
+export const APP_OWNER_PERSONA = "Stemworks Owner";
+
 export function isAppRole(value: unknown): value is AppRole {
   return typeof value === "string" && (APP_ROLES as readonly string[]).includes(value);
 }
@@ -73,7 +75,6 @@ function ownerNav(venture: VentureKey): NavItem[] {
   return [
     { href: meta.dashboardHref, label: "Command board", description: `${meta.shortName} money + attention` },
     { href: meta.deskHref, label: `${meta.shortName} desk`, description: "Operating surface" },
-    { href: "/", label: "All desks", description: "Switch venture identity" },
   ];
 }
 
@@ -135,7 +136,7 @@ const ROLE_COPY: Record<
   owner: {
     label: "Owner",
     kernelHint: "owner",
-    summary: (name) => `Full ${name} board — money, desks, and settings for this venture only.`,
+    summary: (name) => `Full ${name} board — money, desks, and settings for this venture only. Locked until you sign out.`,
     canSeeMoney: true,
     canEditInvites: true,
     canOperateDesk: true,
@@ -143,7 +144,7 @@ const ROLE_COPY: Record<
   employee: {
     label: "Employee",
     kernelHint: "manager / associate",
-    summary: (name) => `${name} floor ops only. No parent P&L and no other venture.`,
+    summary: (name) => `${name} floor ops only. Locked to this venture until you sign out.`,
     canSeeMoney: false,
     canEditInvites: false,
     canOperateDesk: true,
@@ -151,7 +152,7 @@ const ROLE_COPY: Record<
   customer: {
     label: "Customer",
     kernelHint: "client",
-    summary: (name) => `${name} guest/shopper surface — your bookings and purchases.`,
+    summary: (name) => `${name} guest/shopper surface — locked to this venture.`,
     canSeeMoney: false,
     canEditInvites: false,
     canOperateDesk: false,
@@ -159,7 +160,7 @@ const ROLE_COPY: Record<
   vendor: {
     label: "Vendor",
     kernelHint: "partner",
-    summary: (name) => `${name} partner desk — participation and consented contacts only.`,
+    summary: (name) => `${name} partner desk — locked to this venture’s partners.`,
     canSeeMoney: false,
     canEditInvites: false,
     canOperateDesk: false,
@@ -202,6 +203,34 @@ export function getRole(role: AppRole, venture: VentureKey = DEFAULT_VENTURE): R
   };
 }
 
+/** Stemworks app ownership — browse every venture as owner of the active desk. */
+export function getAppOwnerDefinition(venture: VentureKey = DEFAULT_VENTURE): RoleDefinition {
+  const meta = getVenture(venture);
+  const desks = listVentures().map((item) => ({
+    href: item.deskHref,
+    label: item.shortName,
+    description: item.name,
+  }));
+  return {
+    key: "owner",
+    label: "App owner",
+    kernelHint: "stemworks_owner",
+    summary: `Stemworks ownership — view every venture. Currently looking at ${meta.shortName}.`,
+    homeHref: "/",
+    nav: [
+      { href: "/", label: "All desks", description: "Pick any venture" },
+      ...desks,
+      { href: meta.dashboardHref, label: "Command board", description: `${meta.shortName} money + attention` },
+    ],
+    canSeeMoney: true,
+    canEditInvites: true,
+    canOperateDesk: true,
+    ventureKey: venture,
+    ventureName: meta.name,
+    persona: APP_OWNER_PERSONA,
+  };
+}
+
 export function listRoles(venture: VentureKey = DEFAULT_VENTURE): RoleDefinition[] {
   return APP_ROLES.map((key) => getRole(key, venture));
 }
@@ -211,17 +240,24 @@ export function homeForRole(role: AppRole, venture: VentureKey = DEFAULT_VENTURE
 }
 
 export function usesAppShell(pathname: string): boolean {
+  if (pathname === "/") return false;
   if (pathname.startsWith("/e/")) return false;
   if (pathname === "/book" || pathname.startsWith("/book/")) return false;
   return (
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/portal") ||
     pathname.startsWith("/vendor") ||
-    pathname === "/" ||
     pathname.startsWith("/luminary") ||
     pathname.startsWith("/jade") ||
     pathname.startsWith("/thepamperedsoul")
   );
+}
+
+export function isPublicPath(pathname: string): boolean {
+  if (pathname === "/") return true;
+  if (pathname.startsWith("/e/")) return true;
+  if (pathname === "/book" || pathname.startsWith("/book/")) return true;
+  return false;
 }
 
 export function roleAllowsPath(role: AppRole, pathname: string, venture: VentureKey): boolean {
@@ -232,7 +268,6 @@ export function roleAllowsPath(role: AppRole, pathname: string, venture: Venture
 
   const pathVenture = ventureFromPathname(pathname);
   if (pathVenture && pathVenture !== venture) {
-    // Desk picker and dashboard query stay allowed for owners switching context via UI only when same venture.
     return false;
   }
 
@@ -272,6 +307,18 @@ export function roleAllowsPath(role: AppRole, pathname: string, venture: Venture
   }
 
   return false;
+}
+
+export function appOwnerAllowsPath(pathname: string): boolean {
+  if (isPublicPath(pathname)) return true;
+  return (
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/portal") ||
+    pathname.startsWith("/vendor") ||
+    pathname.startsWith("/luminary") ||
+    pathname.startsWith("/jade") ||
+    pathname.startsWith("/thepamperedsoul")
+  );
 }
 
 export function listVentureOptions() {
