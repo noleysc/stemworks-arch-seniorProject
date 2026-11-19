@@ -35,17 +35,28 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Explicit logout URL clears demo cookies and opens the Sign in gate.
+  if (pathname === "/login" && request.nextUrl.searchParams.get("logout") === "1") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.search = "";
+    const response = NextResponse.redirect(url);
+    response.cookies.set("stemworks_session", "", { path: "/", maxAge: 0 });
+    response.cookies.set("stemworks_role", "", { path: "/", maxAge: 0 });
+    return response;
+  }
+
   const sessionRaw = request.cookies.get("stemworks_session")?.value;
   const legacyRole = request.cookies.get("stemworks_role")?.value;
   const state = parseSessionCookie(sessionRaw ?? legacyRole);
 
   if (!state.signedIn) {
     if (isPublicPath(pathname)) return NextResponse.next();
-    return redirectTo(request, "/");
+    return redirectTo(request, "/login");
   }
 
-  // Locked venture users: `/` is login only — send them home. Sign out returns them here.
-  if (!state.appOwner && pathname === "/") {
+  // Locked venture users: `/` is the app-owner hub only — send them home. Use /login?logout=1 to leave.
+  if (!state.appOwner && (pathname === "/" || pathname === "/login")) {
     return redirectTo(request, homeForRole(state.role, state.activeVenture));
   }
 

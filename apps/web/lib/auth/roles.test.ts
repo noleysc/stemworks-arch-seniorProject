@@ -59,17 +59,15 @@ test("session cookie locks a venture role or grants app ownership", () => {
   assert.equal(owner.appOwner, true);
   assert.equal(owner.role, "owner");
 
-  // Legacy multi-role cookie becomes a locked session
+  // Legacy multi-role / bare-role cookies do not auto-login — show Sign in again
   const legacy = parseSessionCookie(
     JSON.stringify({
       activeVenture: "pampered_soul",
       roles: { luminary: "customer", diaz_ventures: "employee", pampered_soul: "vendor" },
     }),
   );
-  assert.equal(legacy.signedIn, true);
-  assert.equal(legacy.appOwner, false);
-  assert.equal(legacy.role, "vendor");
-  assert.equal(legacy.activeVenture, "pampered_soul");
+  assert.equal(legacy.signedIn, false);
+  assert.equal(parseSessionCookie("owner").signedIn, false);
 });
 
 test("path gates lock venture roles and open all desks for app ownership", () => {

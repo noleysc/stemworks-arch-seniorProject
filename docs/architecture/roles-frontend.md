@@ -8,11 +8,13 @@ Real auth (JWT, refresh cookies, RLS) remains the architecture target in [securi
 
 ## Login flow
 
-1. Open `/` while signed out.
+1. Open `/login` while signed out (or `/` — it redirects there).
 2. Select a venture (Luminary, Jade, or Pampered Soul).
 3. Select a role (owner / employee / customer / vendor) and enter.
 4. You are **locked** to that venture + role until **Sign out**.
 5. Or choose **Enter as Stemworks app owner** to view every desk and board.
+
+Stuck on a desk with no Sign in? Open `/login?logout=1` to clear the demo cookie.
 
 Public surfaces stay open without login: `/book`, `/e/{slug}`.
 

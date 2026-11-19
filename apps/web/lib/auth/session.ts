@@ -55,16 +55,10 @@ export function parseSessionCookie(raw: string | undefined): DemoSessionState {
       roles?: Record<string, string>;
     };
 
-    // Legacy multi-role cookie → treat as locked into active venture
-    if (parsed.roles && parsed.signedIn === undefined) {
-      const activeVenture = isVentureKey(parsed.activeVenture) ? parsed.activeVenture : DEFAULT_VENTURE;
-      const legacyRole = parsed.roles[activeVenture];
-      return {
-        signedIn: true,
-        appOwner: false,
-        activeVenture,
-        role: isAppRole(legacyRole) ? legacyRole : DEFAULT_ROLE,
-      };
+    // Pre-lock cookies (roles map / bare role string) must not auto-enter a desk —
+    // send people through the Sign in gate again.
+    if (parsed.signedIn !== true && parsed.appOwner !== true) {
+      return anonymousSession();
     }
 
     const activeVenture = isVentureKey(parsed.activeVenture) ? parsed.activeVenture : DEFAULT_VENTURE;
@@ -79,14 +73,7 @@ export function parseSessionCookie(raw: string | undefined): DemoSessionState {
       role: appOwner ? "owner" : role,
     };
   } catch {
-    if (isAppRole(raw)) {
-      return {
-        signedIn: true,
-        appOwner: false,
-        activeVenture: DEFAULT_VENTURE,
-        role: raw,
-      };
-    }
+    // Legacy bare role cookie (e.g. stemworks_role=owner) → not signed in
     return anonymousSession();
   }
 }
@@ -140,7 +127,7 @@ export function roleCookieOptions(role: AppRole) {
 }
 
 export function homeForSession(state: DemoSessionState): string {
-  if (!state.signedIn) return "/";
+  if (!state.signedIn) return "/login";
   if (state.appOwner) return "/";
   return getRole(state.role, state.activeVenture).homeHref;
 }

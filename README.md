@@ -61,7 +61,8 @@ Open **http://localhost:43123**
 
 | URL | What it is |
 | --- | --- |
-| `/` | Sign-in gate (venture + role, or Stemworks app owner) |
+| `/login` | Sign-in gate (venture + role, or Stemworks app owner). Use `/login?logout=1` to clear a stuck session. |
+| `/` | App-owner desk hub (or redirects to `/login`) |
 | `/dashboard` | Founder board (`?tenant=luminary`, `diaz_ventures`, or `pampered_soul`) |
 | `/luminary` | Luminary rentals desk |
 | `/luminary/rooms` | Rental list |

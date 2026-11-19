@@ -100,7 +100,7 @@ export async function POST(request: Request) {
   const action = body.action ?? (body.role || body.venture ? "login" : undefined);
 
   if (action === "logout") {
-    const response = NextResponse.json({ ok: true, homeHref: "/" });
+    const response = NextResponse.json({ ok: true, homeHref: "/login" });
     clearSession(response);
     return response;
   }
@@ -171,7 +171,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE() {
-  const response = NextResponse.json({ ok: true, homeHref: "/" });
+  const response = NextResponse.json({ ok: true, homeHref: "/login" });
   clearSession(response);
   return response;
 }

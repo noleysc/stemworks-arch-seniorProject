@@ -1,7 +1,8 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
+import { redirect } from "next/navigation";
+
 import { AppOwnerHub } from "@/components/shell/app-owner-hub";
-import { LoginGate } from "@/components/shell/login-gate";
 import { SessionPanel } from "@/components/shell/session-panel";
 import { getDemoSession } from "@/lib/auth/session";
 
@@ -11,11 +12,7 @@ export default function RootPage() {
   const session = getDemoSession();
 
   if (!session.signedIn) {
-    return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#f5f0e8,_#eef2f6_45%,_#e7ebe8)]">
-        <LoginGate />
-      </div>
-    );
+    redirect("/login");
   }
 
   if (session.appOwner) {
@@ -39,9 +36,5 @@ export default function RootPage() {
   }
 
   // Locked users are redirected by middleware; keep a safe fallback.
-  return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#f5f0e8,_#eef2f6_45%,_#e7ebe8)]">
-      <LoginGate />
-    </div>
-  );
+  redirect(session.definition.homeHref);
 }

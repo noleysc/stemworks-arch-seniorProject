@@ -241,6 +241,7 @@ export function homeForRole(role: AppRole, venture: VentureKey = DEFAULT_VENTURE
 
 export function usesAppShell(pathname: string): boolean {
   if (pathname === "/") return false;
+  if (pathname === "/login" || pathname.startsWith("/login/")) return false;
   if (pathname.startsWith("/e/")) return false;
   if (pathname === "/book" || pathname.startsWith("/book/")) return false;
   return (
@@ -255,6 +256,7 @@ export function usesAppShell(pathname: string): boolean {
 
 export function isPublicPath(pathname: string): boolean {
   if (pathname === "/") return true;
+  if (pathname === "/login" || pathname.startsWith("/login/")) return true;
   if (pathname.startsWith("/e/")) return true;
   if (pathname === "/book" || pathname.startsWith("/book/")) return true;
   return false;

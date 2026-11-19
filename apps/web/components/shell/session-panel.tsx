@@ -29,7 +29,7 @@ export function SessionPanel({
   const [error, setError] = useState<string | null>(null);
   const ventures = listVentures();
 
-  async function post(body: Record<string, unknown>, fallbackHref = "/") {
+  async function post(body: Record<string, unknown>, fallbackHref = "/login") {
     setError(null);
     const response = await fetch("/api/v1/session/role", {
       method: "POST",
@@ -39,7 +39,7 @@ export function SessionPanel({
     const payload = (await response.json()) as { homeHref?: string; error?: string };
     if (!response.ok) throw new Error(payload.error || "Could not update session.");
     startTransition(() => {
-      router.push(payload.homeHref || fallbackHref);
+      router.push(body.action === "logout" ? "/login" : payload.homeHref || fallbackHref);
       router.refresh();
     });
   }
