@@ -22,17 +22,26 @@ export async function CustomerHome() {
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Link
           href="/book"
           className="rounded-2xl border border-stone-900/10 bg-white/90 p-5 transition hover:border-stone-900/30"
         >
-          <p className="font-display text-2xl">Book a spa service</p>
-          <p className="mt-2 text-sm leading-6 text-stone-600">Pick a treatment and time for yourself.</p>
+          <p className="font-display text-2xl text-stone-950">Book a spa service</p>
+          <p className="mt-2 text-sm leading-6 text-stone-800">Pick a treatment and time for yourself.</p>
+        </Link>
+        <Link
+          href="/book?loop=1"
+          className="rounded-2xl border border-stone-900/10 bg-white/90 p-5 transition hover:border-stone-900/30"
+        >
+          <p className="font-display text-2xl text-stone-950">Lobby display</p>
+          <p className="mt-2 text-sm leading-6 text-stone-800">
+            Kiosk loop that rotates services and resets after each booking.
+          </p>
         </Link>
         <div className="rounded-2xl border border-stone-900/10 bg-white/90 p-5">
-          <p className="font-display text-2xl">Open ticket nights</p>
-          <p className="mt-2 text-sm leading-6 text-stone-600">
+          <p className="font-display text-2xl text-stone-950">Open ticket nights</p>
+          <p className="mt-2 text-sm leading-6 text-stone-800">
             {openInvites.length === 0
               ? "No public invites are open right now."
               : `${openInvites.length} invite${openInvites.length === 1 ? "" : "s"} you can join.`}

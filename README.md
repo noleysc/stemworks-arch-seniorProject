@@ -74,6 +74,7 @@ Open **http://localhost:43123**
 | `/thepamperedsoul/calendar` | Schedule |
 | `/thepamperedsoul/bookings` | Spa appointments |
 | `/book` | Client books one spa service |
+| `/book?loop=1` | Lobby/kiosk loop for continuous display |
 | `/e/{slug}` | Guest ticket checkout only |
 
 ### Pampered Soul demo

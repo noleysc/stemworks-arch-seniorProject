@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +29,10 @@ const TIME_OPTIONS = [
   "6:00 PM",
 ];
 
-export function ServiceBookForm() {
+const LOOP_ROTATE_MS = 7000;
+const LOOP_RESET_MS = 12000;
+
+export function ServiceBookForm({ loop = false }: { loop?: boolean }) {
   const groups = useMemo(() => spaServicesByCategory(), []);
   const bookable = useMemo(
     () => groups.flatMap((group) => group.services.filter((service) => service.menuPriceCents != null)),
@@ -38,6 +41,8 @@ export function ServiceBookForm() {
   const [serviceKey, setServiceKey] = useState(bookable[0]?.key ?? "");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pauseRotate, setPauseRotate] = useState(false);
+  const [resetIn, setResetIn] = useState<number | null>(null);
   const [receipt, setReceipt] = useState<{
     confirmationCode: string | null;
     serviceTitle: string;
@@ -47,26 +52,62 @@ export function ServiceBookForm() {
 
   const selected = bookable.find((service) => service.key === serviceKey) ?? bookable[0];
 
+  useEffect(() => {
+    if (!loop || receipt || pauseRotate || bookable.length < 2) return;
+    const timer = window.setInterval(() => {
+      setServiceKey((current) => {
+        const index = Math.max(0, bookable.findIndex((service) => service.key === current));
+        return bookable[(index + 1) % bookable.length]?.key ?? current;
+      });
+    }, LOOP_ROTATE_MS);
+    return () => window.clearInterval(timer);
+  }, [loop, receipt, pauseRotate, bookable]);
+
+  useEffect(() => {
+    if (!loop || !receipt) {
+      setResetIn(null);
+      return;
+    }
+    const started = Date.now();
+    setResetIn(Math.ceil(LOOP_RESET_MS / 1000));
+    const tick = window.setInterval(() => {
+      const left = Math.max(0, Math.ceil((LOOP_RESET_MS - (Date.now() - started)) / 1000));
+      setResetIn(left);
+      if (left <= 0) {
+        setReceipt(null);
+        setError(null);
+        setPauseRotate(false);
+        setResetIn(null);
+      }
+    }, 250);
+    return () => window.clearInterval(tick);
+  }, [loop, receipt]);
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     setPending(true);
     setError(null);
+    setPauseRotate(true);
     try {
-      const payload = await requestJson<{ appointment: NonNullable<typeof receipt> }>("/api/experiences/appointments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          serviceKey,
-          appointmentOn: form.get("appointmentOn"),
-          startsAtLabel: form.get("startsAtLabel"),
-          clientName: form.get("clientName"),
-          clientEmail: form.get("clientEmail"),
-          clientPhone: form.get("clientPhone"),
-          notes: form.get("notes"),
-        }),
-      }, "We couldn’t confirm your appointment. Check your bookings or contact the spa before trying again.");
+      const payload = await requestJson<{ appointment: NonNullable<typeof receipt> }>(
+        "/api/experiences/appointments",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            serviceKey,
+            appointmentOn: form.get("appointmentOn"),
+            startsAtLabel: form.get("startsAtLabel"),
+            clientName: form.get("clientName"),
+            clientEmail: form.get("clientEmail"),
+            clientPhone: form.get("clientPhone"),
+            notes: form.get("notes"),
+          }),
+        },
+        "We couldn’t confirm your appointment. Check your bookings or contact the spa before trying again.",
+      );
       setReceipt({
         confirmationCode: payload.appointment.confirmationCode,
         serviceTitle: payload.appointment.serviceTitle,
@@ -75,9 +116,15 @@ export function ServiceBookForm() {
       });
       formElement.reset();
     } catch (err) {
-      setError(err instanceof TypeError
-        ? "We lost the connection while booking. Check your bookings or contact the spa before trying again."
-        : requestErrorMessage(err, "We couldn’t confirm your appointment. Check your bookings or contact the spa before trying again."));
+      setError(
+        err instanceof TypeError
+          ? "We lost the connection while booking. Check your bookings or contact the spa before trying again."
+          : requestErrorMessage(
+              err,
+              "We couldn’t confirm your appointment. Check your bookings or contact the spa before trying again.",
+            ),
+      );
+      setPauseRotate(false);
     } finally {
       setPending(false);
     }
@@ -85,35 +132,45 @@ export function ServiceBookForm() {
 
   if (receipt) {
     return (
-      <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-6 text-slate-100 backdrop-blur">
-        <p className="text-[11px] uppercase tracking-[0.2em] text-amber-100/80">Booked</p>
-        <h2 className="mt-2 font-display text-3xl text-white">You’re on the book</h2>
-        <p className="mt-3 text-sm leading-6 text-slate-300">
+      <div className="rounded-[1.75rem] border border-slate-900/15 bg-white p-6 text-slate-950 shadow-sm">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-slate-700">Booked</p>
+        <h2 className="mt-2 font-display text-3xl text-slate-950">You’re on the book</h2>
+        <p className="mt-3 text-sm leading-6 text-slate-800">
           {receipt.serviceTitle} · {receipt.appointmentOn} · {receipt.startsAtLabel}
         </p>
         {receipt.confirmationCode ? (
-          <p className="mt-4 font-mono text-lg text-amber-100">{receipt.confirmationCode}</p>
+          <p className="mt-4 font-mono text-lg font-semibold text-slate-950">{receipt.confirmationCode}</p>
         ) : null}
-        <Button
-          type="button"
-          className="mt-6"
-          variant="outline"
-          onClick={() => setReceipt(null)}
-        >
-          Book another service
-        </Button>
+        {loop && resetIn != null ? (
+          <p className="mt-4 text-sm font-medium text-slate-700">Next guest in {resetIn}s…</p>
+        ) : (
+          <Button type="button" className="mt-6" variant="outline" onClick={() => setReceipt(null)}>
+            Book another service
+          </Button>
+        )}
       </div>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form
+      onSubmit={onSubmit}
+      onFocusCapture={() => setPauseRotate(true)}
+      className="space-y-6 rounded-[1.75rem] border border-slate-900/10 bg-white p-5 text-slate-950 shadow-sm sm:p-6"
+    >
       <section className="space-y-3">
-        <h2 className="font-display text-2xl text-white">Choose a service</h2>
+        <div className="flex items-end justify-between gap-3">
+          <h2 className="font-display text-2xl text-slate-950">Choose a service</h2>
+          {loop ? (
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-700">
+              {pauseRotate ? "Paused" : "Rotating"}
+            </p>
+          ) : null}
+        </div>
         <div className="grid gap-3">
           {groups.map((group) => (
             <div key={group.key} className="space-y-2">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">{group.label}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">{group.label}</p>
               <ul className="grid gap-2">
                 {group.services
                   .filter((service) => service.menuPriceCents != null)
@@ -122,7 +179,10 @@ export function ServiceBookForm() {
                       key={service.key}
                       service={service}
                       selected={service.key === selected?.key}
-                      onSelect={() => setServiceKey(service.key)}
+                      onSelect={() => {
+                        setServiceKey(service.key);
+                        setPauseRotate(true);
+                      }}
                     />
                   ))}
               </ul>
@@ -131,16 +191,16 @@ export function ServiceBookForm() {
         </div>
       </section>
 
-      <section className="grid gap-4 rounded-[1.75rem] border border-white/10 bg-white/5 p-5 sm:grid-cols-2">
+      <section className="grid gap-4 rounded-[1.5rem] border border-slate-900/10 bg-slate-50 p-5 sm:grid-cols-2">
         <Field label="Date" htmlFor="appointmentOn">
-          <Input id="appointmentOn" name="appointmentOn" type="date" required className="bg-white/90" />
+          <Input id="appointmentOn" name="appointmentOn" type="date" required className="bg-white text-slate-950" />
         </Field>
         <Field label="Time" htmlFor="startsAtLabel">
           <select
             id="startsAtLabel"
             name="startsAtLabel"
             required
-            className="flex h-10 w-full rounded-md border border-input bg-white/90 px-3 text-sm"
+            className="flex h-10 w-full rounded-md border border-input bg-white px-3 text-sm text-slate-950"
             defaultValue="10:00 AM"
           >
             {TIME_OPTIONS.map((time) => (
@@ -151,17 +211,22 @@ export function ServiceBookForm() {
           </select>
         </Field>
         <Field label="Your name" htmlFor="clientName">
-          <Input id="clientName" name="clientName" required className="bg-white/90" />
+          <Input id="clientName" name="clientName" required className="bg-white text-slate-950" />
         </Field>
         <Field label="Phone" htmlFor="clientPhone">
-          <Input id="clientPhone" name="clientPhone" required className="bg-white/90" />
+          <Input id="clientPhone" name="clientPhone" required className="bg-white text-slate-950" />
         </Field>
         <Field label="Email" htmlFor="clientEmail">
-          <Input id="clientEmail" name="clientEmail" type="email" required className="bg-white/90 sm:col-span-2" />
+          <Input id="clientEmail" name="clientEmail" type="email" required className="bg-white text-slate-950 sm:col-span-2" />
         </Field>
         <div className="sm:col-span-2">
           <Field label="Notes (optional)" htmlFor="notes">
-            <Textarea id="notes" name="notes" className="bg-white/90" placeholder="Pressure preference, focus areas…" />
+            <Textarea
+              id="notes"
+              name="notes"
+              className="bg-white text-slate-950"
+              placeholder="Pressure preference, focus areas…"
+            />
           </Field>
         </div>
       </section>
@@ -171,13 +236,13 @@ export function ServiceBookForm() {
           {pending ? "Booking…" : selected ? `Book · ${formatMenuPrice(selected.menuPriceCents)}` : "Book"}
         </Button>
         {selected ? (
-          <p className="text-sm text-slate-300">
+          <p className="text-sm font-medium text-slate-800">
             {[formatDuration(selected.durationMinutes), formatMenuPrice(selected.menuPriceCents)]
               .filter(Boolean)
               .join(" · ")}
           </p>
         ) : null}
-        {error ? <p role="alert" className="w-full text-sm text-red-300">{error}</p> : null}
+        {error ? <p role="alert" className="w-full text-sm font-medium text-red-800">{error}</p> : null}
       </div>
     </form>
   );
@@ -197,16 +262,21 @@ function ServiceOption({
       type="button"
       onClick={onSelect}
       className={`rounded-2xl border px-4 py-3 text-left transition ${
-        selected ? "border-amber-200/60 bg-amber-200/10" : "border-white/10 bg-black/20 hover:border-white/25"
+        selected
+          ? "border-slate-950 bg-slate-950 text-white"
+          : "border-slate-900/15 bg-white text-slate-950 hover:border-slate-900/40"
       }`}
     >
-      <p className="font-medium text-white">
+      <p className={`font-semibold ${selected ? "text-white" : "text-slate-950"}`}>
         {service.emoji ? `${service.emoji} ` : ""}
         {service.title}
       </p>
-      <p className="mt-1 text-sm text-slate-300">
+      <p className={`mt-1 text-sm ${selected ? "text-slate-200" : "text-slate-700"}`}>
         {[formatDuration(service.durationMinutes), formatMenuPrice(service.menuPriceCents)].filter(Boolean).join(" · ")}
       </p>
+      {selected && service.detail ? (
+        <p className={`mt-2 text-sm leading-5 ${selected ? "text-slate-200" : "text-slate-700"}`}>{service.detail}</p>
+      ) : null}
     </button>
   );
 }
@@ -222,7 +292,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={htmlFor} className="text-slate-200">
+      <Label htmlFor={htmlFor} className="font-medium text-slate-800">
         {label}
       </Label>
       {children}
