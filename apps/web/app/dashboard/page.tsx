@@ -1,65 +1,43 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { DashboardBoard } from "@/components/dashboard/dashboard-board";
 import { EmployeeHome } from "@/components/dashboard/employee-home";
 import { getDemoSession } from "@/lib/auth/session";
-import { getTenant, listTenants } from "@/lib/dashboard/registry";
+import { getTenant } from "@/lib/dashboard/registry";
 
 export const dynamic = "force-dynamic";
 
-export default function DashboardPage({
-  searchParams,
-}: {
-  searchParams: { tenant?: string };
-}) {
-  const { role, definition } = getDemoSession();
-  if (role === "customer") redirect("/portal");
-  if (role === "vendor") redirect("/vendor");
+export default function DashboardPage() {
+  const { role, definition, activeVenture } = getDemoSession();
+  if (role === "customer") redirect(definition.homeHref);
+  if (role === "vendor") redirect(definition.homeHref);
 
   if (role === "employee") {
     return <EmployeeHome />;
   }
 
-  const tenants = listTenants();
-  const tenantKey = tenants.some((tenant) => tenant.key === searchParams.tenant)
-    ? (searchParams.tenant as string)
-    : "luminary";
-  const tenant = getTenant(tenantKey)!;
+  // Owner board is scoped to the active venture identity — switch venture in the sidebar to open another.
+  const tenant = getTenant(activeVenture);
+  if (!tenant) redirect(definition.homeHref);
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Owner · {definition.label}</p>
-          <h1 className="mt-1 font-display text-4xl">Command board</h1>
-          <p className="mt-2 text-sm leading-6 text-stone-600">
-            One board per tenant. Ventures plug in through module ports. Switch demo role in the sidebar to preview
-            employee, customer, and vendor desks.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {tenants.map((item) => (
-            <Link
-              key={item.key}
-              href={`/dashboard?tenant=${item.key}`}
-              className={
-                item.key === tenantKey
-                  ? "rounded-full bg-stone-950 px-3 py-1.5 text-sm text-white"
-                  : "rounded-full bg-white px-3 py-1.5 text-sm text-stone-600 ring-1 ring-stone-200"
-              }
-            >
-              {item.name}
-            </Link>
-          ))}
-        </div>
+      <div className="max-w-2xl">
+        <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
+          Owner · {definition.persona} · {definition.ventureName}
+        </p>
+        <h1 className="mt-1 font-display text-4xl">Command board</h1>
+        <p className="mt-2 text-sm leading-6 text-stone-600">
+          Money and attention for {definition.ventureName} only. Employees, guests, and vendors of this venture are
+          separate identities — switch venture in the sidebar to step into another desk’s owner.
+        </p>
       </div>
       <Suspense fallback={<p className="text-sm text-stone-500">Loading the board.</p>}>
         <DashboardBoard
-          tenantKey={tenantKey}
+          tenantKey={activeVenture}
           ventureOptions={tenant.ventures.map((venture) => ({ key: venture.key, name: venture.name }))}
         />
       </Suspense>

@@ -2,21 +2,62 @@
 
 import Link from "next/link";
 
+import { getDemoSession } from "@/lib/auth/session";
+import type { VentureKey } from "@/lib/auth/ventures";
 import { formatDate } from "@/lib/dates";
 import { listCrmContacts } from "@/lib/experiences/crm";
 import { listExperienceEvents } from "@/lib/experiences/events";
 
-const DEMO_VENDOR_KEY = "jade_haven";
+const DEMO_VENDOR_KEY: Record<VentureKey, string> = {
+  pampered_soul: "jade_haven",
+  luminary: "coastal_av",
+  diaz_ventures: "wax_wick",
+};
 
 export async function VendorHome() {
+  const session = getDemoSession();
+  const venture = session.activeVenture;
+  const businessKey = DEMO_VENDOR_KEY[venture];
+  const { persona, ventureName, vendorLabel } = {
+    persona: session.definition.persona,
+    ventureName: session.definition.ventureName,
+    vendorLabel: session.definition.nav[0]?.label ?? "Partner desk",
+  };
+
+  if (venture !== "pampered_soul") {
+    return (
+      <div className="space-y-6">
+        <div className="max-w-2xl">
+          <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
+            Vendor · {ventureName}
+          </p>
+          <h1 className="mt-1 font-display text-4xl text-stone-950">{persona}</h1>
+          <p className="mt-2 text-sm leading-6 text-stone-600">
+            {vendorLabel} for {ventureName} only. This partner identity does not see Pampered Soul invite nights or other
+            venture CRMs.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-stone-900/10 bg-white/90 p-5">
+          <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Demo partner key</p>
+          <p className="mt-2 font-display text-3xl text-stone-950">{businessKey}</p>
+          <p className="mt-2 text-sm text-stone-600">
+            {venture === "luminary"
+              ? "Outlet and AV partners attach to Luminary events when that feed is wired."
+              : "Supply partners attach to Jade purchase orders when that feed is wired."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const [events, contacts] = await Promise.all([
     listExperienceEvents(),
-    listCrmContacts(DEMO_VENDOR_KEY),
+    listCrmContacts(businessKey),
   ]);
 
   const participating = events
     .map((event) => {
-      const vendor = event.vendors.find((item) => item.businessKey === DEMO_VENDOR_KEY);
+      const vendor = event.vendors.find((item) => item.businessKey === businessKey);
       return vendor ? { event, vendor } : null;
     })
     .filter((row): row is NonNullable<typeof row> => row !== null);
@@ -24,11 +65,11 @@ export async function VendorHome() {
   return (
     <div className="space-y-6">
       <div className="max-w-2xl">
-        <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Vendor desk</p>
-        <h1 className="mt-1 font-display text-4xl text-stone-950">Jade Haven</h1>
+        <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Vendor · {ventureName}</p>
+        <h1 className="mt-1 font-display text-4xl text-stone-950">{persona}</h1>
         <p className="mt-2 text-sm leading-6 text-stone-600">
-          Participating-business view for invite nights. You see operational presence for every guest; contact channels
-          only when they opted into your marketing.
+          Participating-business view for Pampered Soul invite nights. Operational presence for every guest; contact
+          channels only when they opted into your marketing.
         </p>
       </div>
 
@@ -62,7 +103,7 @@ export async function VendorHome() {
                   </p>
                 </div>
                 <Link
-                  href={`/vendor/events/${event.slug}?business=${DEMO_VENDOR_KEY}`}
+                  href={`/vendor/events/${event.slug}?business=${businessKey}`}
                   className="rounded-full bg-stone-950 px-3 py-1.5 text-sm text-white"
                 >
                   Guest list

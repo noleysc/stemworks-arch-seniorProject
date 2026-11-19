@@ -2,14 +2,8 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 
-import {
-  DEFAULT_ROLE,
-  ROLE_COOKIE,
-  homeForRole,
-  isAppRole,
-  roleAllowsPath,
-  type AppRole,
-} from "@/lib/auth/roles";
+import { homeForRole, roleAllowsPath } from "@/lib/auth/roles";
+import { parseSessionCookie } from "@/lib/auth/session";
 
 /** Old paths → three named desks. */
 const LEGACY_REWRITES: Array<{ from: RegExp; to: (match: RegExpMatchArray) => string }> = [
@@ -33,13 +27,18 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  const raw = request.cookies.get(ROLE_COOKIE)?.value;
-  const role: AppRole = isAppRole(raw) ? raw : DEFAULT_ROLE;
+  const sessionRaw = request.cookies.get("stemworks_session")?.value;
+  const legacyRole = request.cookies.get("stemworks_role")?.value;
+  const state = parseSessionCookie(sessionRaw ?? legacyRole);
+  const role = state.roles[state.activeVenture];
 
-  if (!roleAllowsPath(role, pathname)) {
+  if (!roleAllowsPath(role, pathname, state.activeVenture)) {
+    if (pathname === "/") return NextResponse.next();
+    const home = homeForRole(role, state.activeVenture);
     const url = request.nextUrl.clone();
-    url.pathname = homeForRole(role);
-    url.search = "";
+    const [path, query] = home.split("?");
+    url.pathname = path;
+    url.search = query ? `?${query}` : "";
     return NextResponse.redirect(url);
   }
 
@@ -47,7 +46,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };

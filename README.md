@@ -4,14 +4,14 @@ Stemworks is a multi-tenant operating dashboard owned by Diaz Ventures LLC. Vent
 
 ## Roles (dashboard shell)
 
-The web app uses a dashboard shell with a demo role switcher (cookie until real login):
+Each venture has its own owner, employees, customers, and vendors. The demo shell stores a per-venture role in `stemworks_session` (legacy `stemworks_role` kept in sync). Switching desks switches venture identity — roles never cross tenants.
 
-| Role | Home | What they see |
+| Role | Home (per active venture) | What they see |
 | --- | --- | --- |
-| Owner | `/dashboard` | Command board + all desks |
-| Employee | `/dashboard` | Floor ops (schedule, check-in, bookings) |
-| Customer | `/portal` | Book services + buy tickets |
-| Vendor | `/vendor` | Participating events + opt-ins |
+| Owner | `/dashboard?tenant=…` | That venture’s command board + desk |
+| Employee | `/luminary`, `/jade`, or `/thepamperedsoul` | Floor ops for that venture only |
+| Customer | `/portal?venture=…` | That venture’s guest/shopper portal |
+| Vendor | `/vendor?venture=…` | That venture’s partner desk |
 
 Details: [docs/architecture/roles-frontend.md](docs/architecture/roles-frontend.md).
 

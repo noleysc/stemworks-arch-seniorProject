@@ -2,31 +2,15 @@
 
 import Link from "next/link";
 
-import { listTenants } from "@/lib/dashboard/registry";
+import { VentureDeskLink } from "@/components/shell/venture-desk-link";
+import { getDemoSession } from "@/lib/auth/session";
+import { listVentures } from "@/lib/auth/ventures";
 
-const desks = [
-  {
-    key: "luminary",
-    href: "/luminary",
-    title: "Luminary",
-    body: "Hotel rentals and dining collection for Luminary Hotel & Co.",
-  },
-  {
-    key: "jade",
-    href: "/jade",
-    title: "Jade",
-    body: "Jade Flowers product ops — materials, batches, and orders.",
-  },
-  {
-    key: "thepamperedsoul",
-    href: "/thepamperedsoul",
-    title: "The Pampered Soul",
-    body: "Spa business desk — services, schedule, CRM, and ticketed events.",
-  },
-] as const;
+export const dynamic = "force-dynamic";
 
 export default function DeskHubPage() {
-  const tenants = listTenants();
+  const session = getDemoSession();
+  const ventures = listVentures();
 
   return (
     <div className="space-y-8">
@@ -34,31 +18,40 @@ export default function DeskHubPage() {
         <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Stemworks</p>
         <h1 className="mt-1 font-display text-4xl text-stone-950">Choose a desk</h1>
         <p className="mt-3 text-sm leading-6 text-stone-600">
-          Three venture desks, kept separate. Tenants never sum into each other on the founder board.
+          Each venture keeps its own owner, employees, customers, and vendors. Opening a desk switches you into that
+          venture’s identities — roles never cross tenants.
+        </p>
+        <p className="mt-2 text-sm text-stone-500">
+          Active now: {session.definition.ventureName} · {session.definition.persona} ({session.definition.label})
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        {desks.map((desk) => (
-          <Link
-            key={desk.key}
-            href={desk.href}
-            className="rounded-3xl border border-stone-900/10 bg-white/90 p-6 transition hover:border-stone-900/30"
-          >
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500">{desk.href}</p>
-            <p className="mt-2 font-display text-3xl text-stone-950">{desk.title}</p>
-            <p className="mt-3 text-sm leading-6 text-stone-600">{desk.body}</p>
-          </Link>
+        {ventures.map((venture) => (
+          <VentureDeskLink
+            key={venture.key}
+            venture={venture.key}
+            href={venture.deskHref}
+            pathLabel={venture.deskHref}
+            title={venture.shortName}
+            body={
+              venture.key === "luminary"
+                ? "Hotel rentals and dining — Luminary’s own staff and outlet partners."
+                : venture.key === "diaz_ventures"
+                  ? "Jade Flowers product ops — pour team and supply partners."
+                  : "Spa desk — therapists, guests, and invite-night vendors."
+            }
+          />
         ))}
       </div>
 
       <p className="text-sm text-stone-600">
-        Founder board:{" "}
-        {tenants.map((tenant, index) => (
-          <span key={tenant.key}>
+        Owner boards (after switching into that venture):{" "}
+        {ventures.map((venture, index) => (
+          <span key={venture.key}>
             {index > 0 ? " · " : null}
-            <Link href={`/dashboard?tenant=${tenant.key}`} className="underline underline-offset-4">
-              {tenant.name}
+            <Link href={venture.dashboardHref} className="underline underline-offset-4">
+              {venture.shortName}
             </Link>
           </span>
         ))}

@@ -2,47 +2,98 @@
 
 import { NextResponse } from "next/server";
 
-import { ROLE_COOKIE, isAppRole, listRoles, type AppRole } from "@/lib/auth/roles";
-import { roleCookieOptions } from "@/lib/auth/session";
+import { getRole, homeForRole, isAppRole, listRoles, type AppRole } from "@/lib/auth/roles";
+import {
+  ROLE_COOKIE,
+  SESSION_COOKIE,
+  parseSessionCookie,
+  roleCookieOptions,
+  sessionCookieOptions,
+  type DemoSessionState,
+} from "@/lib/auth/session";
+import { isVentureKey, listVentures, type VentureKey } from "@/lib/auth/ventures";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+function readState(request: Request): DemoSessionState {
+  const cookie = request.headers.get("cookie") ?? "";
+  const sessionMatch = cookie.match(/(?:^|;\s*)stemworks_session=([^;]*)/);
+  const roleMatch = cookie.match(/(?:^|;\s*)stemworks_role=([^;]*)/);
+  const raw = sessionMatch?.[1] ? decodeURIComponent(sessionMatch[1]) : roleMatch?.[1];
+  return parseSessionCookie(raw);
+}
+
+export async function GET(request: Request) {
+  const state = readState(request);
+  const venture = state.activeVenture;
   return NextResponse.json({
-    roles: listRoles().map((role) => ({
-      key: role.key,
-      label: role.label,
-      summary: role.summary,
-      homeHref: role.homeHref,
-      kernelHint: role.kernelHint,
+    activeVenture: venture,
+    role: state.roles[venture],
+    ventures: listVentures(),
+    roles: listRoles(venture).map((item) => ({
+      key: item.key,
+      label: item.label,
+      summary: item.summary,
+      homeHref: item.homeHref,
+      kernelHint: item.kernelHint,
+      persona: item.persona,
+      ventureName: item.ventureName,
     })),
   });
 }
 
 export async function POST(request: Request) {
-  let body: { role?: string } = {};
+  let body: { role?: string; venture?: string; activeVenture?: string } = {};
   try {
-    body = (await request.json()) as { role?: string };
+    body = (await request.json()) as typeof body;
   } catch {
-    return NextResponse.json({ error: "Send a JSON body with a role." }, { status: 400 });
+    return NextResponse.json({ error: "Send a JSON body with role and/or venture." }, { status: 400 });
   }
-  if (!isAppRole(body.role)) {
+
+  const state = readState(request);
+  const nextVenture: VentureKey = isVentureKey(body.venture ?? body.activeVenture)
+    ? ((body.venture ?? body.activeVenture) as VentureKey)
+    : state.activeVenture;
+
+  if (body.role !== undefined && !isAppRole(body.role)) {
     return NextResponse.json({ error: "Choose owner, employee, customer, or vendor." }, { status: 400 });
   }
-  const role = body.role as AppRole;
-  const response = NextResponse.json({ role, homeHref: listRoles().find((item) => item.key === role)!.homeHref });
-  const cookie = roleCookieOptions(role);
-  response.cookies.set(cookie.name, cookie.value, {
-    httpOnly: cookie.httpOnly,
-    sameSite: cookie.sameSite,
-    path: cookie.path,
-    maxAge: cookie.maxAge,
+
+  const nextRole: AppRole = isAppRole(body.role) ? body.role : state.roles[nextVenture];
+  const nextState: DemoSessionState = {
+    activeVenture: nextVenture,
+    roles: { ...state.roles, [nextVenture]: nextRole },
+  };
+
+  const definition = getRole(nextRole, nextVenture);
+  const response = NextResponse.json({
+    role: nextRole,
+    venture: nextVenture,
+    homeHref: homeForRole(nextRole, nextVenture),
+    persona: definition.persona,
+    ventureName: definition.ventureName,
+  });
+
+  const session = sessionCookieOptions(nextState);
+  response.cookies.set(session.name, session.value, {
+    httpOnly: session.httpOnly,
+    sameSite: session.sameSite,
+    path: session.path,
+    maxAge: session.maxAge,
+  });
+  const legacy = roleCookieOptions(nextRole);
+  response.cookies.set(legacy.name, legacy.value, {
+    httpOnly: legacy.httpOnly,
+    sameSite: legacy.sameSite,
+    path: legacy.path,
+    maxAge: legacy.maxAge,
   });
   return response;
 }
 
 export async function DELETE() {
-  const response = NextResponse.json({ role: "owner" });
-  response.cookies.set(ROLE_COOKIE, "owner", { path: "/", maxAge: 0 });
+  const response = NextResponse.json({ ok: true });
+  response.cookies.set(SESSION_COOKIE, "", { path: "/", maxAge: 0 });
+  response.cookies.set(ROLE_COOKIE, "", { path: "/", maxAge: 0 });
   return response;
 }

@@ -8,9 +8,9 @@ import { getDemoSession } from "@/lib/auth/session";
 export const dynamic = "force-dynamic";
 
 export default function VendorPage() {
-  const { role } = getDemoSession();
+  const { role, definition } = getDemoSession();
   if (role !== "vendor" && role !== "owner") {
-    redirect(role === "customer" ? "/portal" : "/dashboard");
+    redirect(definition.homeHref);
   }
   return <VendorHome />;
 }

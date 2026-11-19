@@ -1,16 +1,19 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 /**
- * Frontend demo roles for the Stemworks shell.
- * Architecture kernel roles are owner | manager | associate | client | platform_admin.
- * This UI maps the product language teammates use:
- *   owner → owner
- *   employee → manager / associate operational desk
- *   customer → client
- *   vendor → participating business on an invite (not a kernel role yet)
+ * Per-venture demo roles. Each venture (Luminary, Jade, Pampered Soul) has its own
+ * owner / employee / customer / vendor identities. Roles never cross tenants.
  */
 
+import {
+  type VentureKey,
+  getVenture,
+  listVentures,
+  ventureFromPathname,
+} from "@/lib/auth/ventures";
+
 export const ROLE_COOKIE = "stemworks_role";
+export const SESSION_COOKIE = "stemworks_session";
 
 export const APP_ROLES = ["owner", "employee", "customer", "vendor"] as const;
 
@@ -32,91 +35,181 @@ export type RoleDefinition = {
   canSeeMoney: boolean;
   canEditInvites: boolean;
   canOperateDesk: boolean;
-};
-
-export const ROLE_DEFINITIONS: Record<AppRole, RoleDefinition> = {
-  owner: {
-    key: "owner",
-    label: "Owner",
-    kernelHint: "owner",
-    summary: "Full command board across tenants, ventures, and money.",
-    homeHref: "/dashboard",
-    canSeeMoney: true,
-    canEditInvites: true,
-    canOperateDesk: true,
-    nav: [
-      { href: "/dashboard", label: "Command board", description: "Confirmed, Potential, attention" },
-      { href: "/", label: "Desks", description: "Luminary · Jade · Pampered Soul" },
-      { href: "/luminary", label: "Luminary", description: "Hotel rentals desk" },
-      { href: "/jade", label: "Jade", description: "Product ops desk" },
-      { href: "/thepamperedsoul", label: "The Pampered Soul", description: "Spa business desk" },
-    ],
-  },
-  employee: {
-    key: "employee",
-    label: "Employee",
-    kernelHint: "manager / associate",
-    summary: "Day-to-day operations — schedule, check-in, bookings. No parent P&L.",
-    homeHref: "/dashboard",
-    canSeeMoney: false,
-    canEditInvites: false,
-    canOperateDesk: true,
-    nav: [
-      { href: "/dashboard", label: "Today", description: "Shift overview" },
-      { href: "/thepamperedsoul/calendar", label: "Schedule", description: "Invites and appointments" },
-      { href: "/thepamperedsoul/guests", label: "Check-in", description: "Ticketed guests" },
-      { href: "/thepamperedsoul/bookings", label: "Bookings", description: "Spa appointments" },
-      { href: "/jade/batches", label: "Batches", description: "Product floor" },
-    ],
-  },
-  customer: {
-    key: "customer",
-    label: "Customer",
-    kernelHint: "client",
-    summary: "Book services, buy tickets, and see your own confirmations.",
-    homeHref: "/portal",
-    canSeeMoney: false,
-    canEditInvites: false,
-    canOperateDesk: false,
-    nav: [
-      { href: "/portal", label: "My portal", description: "Tickets and appointments" },
-      { href: "/book", label: "Book a service", description: "Spa appointment" },
-    ],
-  },
-  vendor: {
-    key: "vendor",
-    label: "Vendor",
-    kernelHint: "event participant",
-    summary: "See events you participate in and guests who opted into your marketing.",
-    homeHref: "/vendor",
-    canSeeMoney: false,
-    canEditInvites: false,
-    canOperateDesk: false,
-    nav: [
-      { href: "/vendor", label: "Vendor desk", description: "Participating events" },
-    ],
-  },
+  ventureKey: VentureKey;
+  ventureName: string;
+  persona: string;
 };
 
 export const DEFAULT_ROLE: AppRole = "owner";
+export const DEFAULT_VENTURE: VentureKey = "pampered_soul";
+
+const PERSONAS: Record<VentureKey, Record<AppRole, string>> = {
+  luminary: {
+    owner: "Alex Rivera",
+    employee: "Jordan Lee",
+    customer: "Sam Guest",
+    vendor: "Coastal AV Co.",
+  },
+  diaz_ventures: {
+    owner: "Nolan Diaz",
+    employee: "Casey Pour",
+    customer: "Retail Buyer",
+    vendor: "Wax & Wick Supply",
+  },
+  pampered_soul: {
+    owner: "Morgan Spa",
+    employee: "Riley Desk",
+    customer: "Blake Guest",
+    vendor: "Jade Haven",
+  },
+};
 
 export function isAppRole(value: unknown): value is AppRole {
   return typeof value === "string" && (APP_ROLES as readonly string[]).includes(value);
 }
 
-export function getRole(role: AppRole): RoleDefinition {
-  return ROLE_DEFINITIONS[role];
+function ownerNav(venture: VentureKey): NavItem[] {
+  const meta = getVenture(venture);
+  return [
+    { href: meta.dashboardHref, label: "Command board", description: `${meta.shortName} money + attention` },
+    { href: meta.deskHref, label: `${meta.shortName} desk`, description: "Operating surface" },
+    { href: "/", label: "All desks", description: "Switch venture identity" },
+  ];
 }
 
-export function listRoles(): RoleDefinition[] {
-  return APP_ROLES.map((key) => ROLE_DEFINITIONS[key]);
+function employeeNav(venture: VentureKey): NavItem[] {
+  if (venture === "luminary") {
+    return [
+      { href: "/luminary", label: "Today", description: "Arrivals and covers" },
+      { href: "/luminary/rooms", label: "Rentals", description: "Open stays" },
+      { href: "/luminary/restaurant", label: "Restaurant", description: "Tonight’s book" },
+      { href: "/luminary/import", label: "Collect", description: "Bring files in" },
+    ];
+  }
+  if (venture === "diaz_ventures") {
+    return [
+      { href: "/jade", label: "Today", description: "Product floor" },
+      { href: "/jade/materials", label: "Materials", description: "On-hand stock" },
+      { href: "/jade/batches", label: "Batches", description: "Pour and release" },
+      { href: "/jade/orders", label: "Orders", description: "Open orders" },
+    ];
+  }
+  return [
+    { href: "/thepamperedsoul", label: "Today", description: "Spa desk hub" },
+    { href: "/thepamperedsoul/calendar", label: "Schedule", description: "Invites and appointments" },
+    { href: "/thepamperedsoul/guests", label: "Check-in", description: "Ticketed guests" },
+    { href: "/thepamperedsoul/bookings", label: "Bookings", description: "Spa appointments" },
+  ];
 }
 
-export function homeForRole(role: AppRole): string {
-  return ROLE_DEFINITIONS[role].homeHref;
+function customerNav(venture: VentureKey): NavItem[] {
+  const meta = getVenture(venture);
+  if (venture === "pampered_soul") {
+    return [
+      { href: meta.portalHref, label: "My portal", description: "Tickets and appointments" },
+      { href: "/book", label: "Book a service", description: "Spa appointment" },
+      { href: "/book?loop=1", label: "Lobby display", description: "Kiosk loop" },
+    ];
+  }
+  if (venture === "luminary") {
+    return [
+      { href: meta.portalHref, label: "Guest portal", description: "Your stay and dining" },
+      { href: "/luminary", label: "Property info", description: "Luminary overview" },
+    ];
+  }
+  return [
+    { href: meta.portalHref, label: "Shopper portal", description: "Your Jade orders" },
+    { href: "/jade/products", label: "Products", description: "Finished goods" },
+  ];
 }
 
-/** Destinations that use the dashboard shell (sidebar + role switcher). */
+function vendorNav(venture: VentureKey): NavItem[] {
+  const meta = getVenture(venture);
+  return [{ href: meta.vendorHref, label: meta.vendorLabel, description: `${meta.shortName} partner desk` }];
+}
+
+const ROLE_COPY: Record<
+  AppRole,
+  { label: string; kernelHint: string; summary: (name: string) => string; canSeeMoney: boolean; canEditInvites: boolean; canOperateDesk: boolean }
+> = {
+  owner: {
+    label: "Owner",
+    kernelHint: "owner",
+    summary: (name) => `Full ${name} board — money, desks, and settings for this venture only.`,
+    canSeeMoney: true,
+    canEditInvites: true,
+    canOperateDesk: true,
+  },
+  employee: {
+    label: "Employee",
+    kernelHint: "manager / associate",
+    summary: (name) => `${name} floor ops only. No parent P&L and no other venture.`,
+    canSeeMoney: false,
+    canEditInvites: false,
+    canOperateDesk: true,
+  },
+  customer: {
+    label: "Customer",
+    kernelHint: "client",
+    summary: (name) => `${name} guest/shopper surface — your bookings and purchases.`,
+    canSeeMoney: false,
+    canEditInvites: false,
+    canOperateDesk: false,
+  },
+  vendor: {
+    label: "Vendor",
+    kernelHint: "partner",
+    summary: (name) => `${name} partner desk — participation and consented contacts only.`,
+    canSeeMoney: false,
+    canEditInvites: false,
+    canOperateDesk: false,
+  },
+};
+
+export function getRole(role: AppRole, venture: VentureKey = DEFAULT_VENTURE): RoleDefinition {
+  const meta = getVenture(venture);
+  const copy = ROLE_COPY[role];
+  const nav =
+    role === "owner"
+      ? ownerNav(venture)
+      : role === "employee"
+        ? employeeNav(venture)
+        : role === "customer"
+          ? customerNav(venture)
+          : vendorNav(venture);
+  const homeHref =
+    role === "owner"
+      ? meta.dashboardHref
+      : role === "employee"
+        ? meta.deskHref
+        : role === "customer"
+          ? meta.portalHref
+          : meta.vendorHref;
+
+  return {
+    key: role,
+    label: copy.label,
+    kernelHint: copy.kernelHint,
+    summary: copy.summary(meta.shortName),
+    homeHref,
+    nav,
+    canSeeMoney: copy.canSeeMoney,
+    canEditInvites: copy.canEditInvites && venture === "pampered_soul",
+    canOperateDesk: copy.canOperateDesk,
+    ventureKey: venture,
+    ventureName: meta.name,
+    persona: PERSONAS[venture][role],
+  };
+}
+
+export function listRoles(venture: VentureKey = DEFAULT_VENTURE): RoleDefinition[] {
+  return APP_ROLES.map((key) => getRole(key, venture));
+}
+
+export function homeForRole(role: AppRole, venture: VentureKey = DEFAULT_VENTURE): string {
+  return getRole(role, venture).homeHref;
+}
+
 export function usesAppShell(pathname: string): boolean {
   if (pathname.startsWith("/e/")) return false;
   if (pathname === "/book" || pathname.startsWith("/book/")) return false;
@@ -131,29 +224,56 @@ export function usesAppShell(pathname: string): boolean {
   );
 }
 
-export function roleAllowsPath(role: AppRole, pathname: string): boolean {
-  const def = ROLE_DEFINITIONS[role];
+export function roleAllowsPath(role: AppRole, pathname: string, venture: VentureKey): boolean {
   if (pathname.startsWith("/e/") || pathname === "/book" || pathname.startsWith("/book/")) {
-    return role === "customer" || role === "owner" || role === "employee";
+    return venture === "pampered_soul" && (role === "customer" || role === "owner" || role === "employee");
   }
-  if (role === "owner") return true;
-  if (role === "employee") {
-    if (pathname.startsWith("/thepamperedsoul/new")) return false;
-    if (pathname.startsWith("/thepamperedsoul/crm")) return false;
-    if (pathname.startsWith("/thepamperedsoul/scorecard")) return false;
+  if (pathname === "/") return true;
+
+  const pathVenture = ventureFromPathname(pathname);
+  if (pathVenture && pathVenture !== venture) {
+    // Desk picker and dashboard query stay allowed for owners switching context via UI only when same venture.
+    return false;
+  }
+
+  if (pathname.startsWith("/dashboard")) {
+    return role === "owner" || role === "employee";
+  }
+
+  if (role === "owner") {
     return (
+      pathname.startsWith(getVenture(venture).deskHref) ||
       pathname.startsWith("/dashboard") ||
-      pathname.startsWith("/thepamperedsoul") ||
-      pathname.startsWith("/jade") ||
-      pathname === "/" ||
-      pathname.startsWith("/luminary")
+      pathname.startsWith("/portal") ||
+      pathname.startsWith("/vendor")
     );
   }
-  if (role === "customer") {
-    return pathname.startsWith("/portal") || pathname === "/book" || pathname.startsWith("/book/") || pathname.startsWith("/e/");
+
+  if (role === "employee") {
+    if (venture === "pampered_soul") {
+      if (pathname.startsWith("/thepamperedsoul/new")) return false;
+      if (pathname.startsWith("/thepamperedsoul/crm")) return false;
+      if (pathname.startsWith("/thepamperedsoul/scorecard")) return false;
+    }
+    return pathname.startsWith(getVenture(venture).deskHref) || pathname.startsWith("/dashboard");
   }
+
+  if (role === "customer") {
+    return (
+      pathname.startsWith("/portal") ||
+      (venture === "pampered_soul" && (pathname.startsWith("/book") || pathname.startsWith("/e/"))) ||
+      (venture === "luminary" && pathname.startsWith("/luminary")) ||
+      (venture === "diaz_ventures" && pathname.startsWith("/jade/products"))
+    );
+  }
+
   if (role === "vendor") {
     return pathname.startsWith("/vendor");
   }
-  return def.nav.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
+
+  return false;
+}
+
+export function listVentureOptions() {
+  return listVentures();
 }

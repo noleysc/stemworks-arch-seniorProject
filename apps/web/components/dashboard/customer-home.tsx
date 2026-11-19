@@ -2,42 +2,84 @@
 
 import Link from "next/link";
 
+import { getDemoSession } from "@/lib/auth/session";
 import { formatDate } from "@/lib/dates";
 import { listAppointments } from "@/lib/experiences/appointments";
 import { formatTicketPrice } from "@/lib/experiences/catalog";
 import { listExperienceEvents } from "@/lib/experiences/events";
 
 export async function CustomerHome() {
+  const session = getDemoSession();
+  const { persona, ventureName } = session.definition;
+
+  if (session.activeVenture === "luminary") {
+    return (
+      <div className="space-y-6">
+        <Header
+          venture={ventureName}
+          persona={persona}
+          summary="Your stay and dining at Luminary. Spa tickets and Jade orders live under other venture identities."
+        />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Link href="/luminary" className="rounded-2xl border border-stone-900/10 bg-white/90 p-5 transition hover:border-stone-900/30">
+            <p className="font-display text-2xl text-stone-950">Property info</p>
+            <p className="mt-2 text-sm leading-6 text-stone-800">Hours, dining, and what’s open tonight.</p>
+          </Link>
+          <div className="rounded-2xl border border-stone-900/10 bg-white/90 p-5">
+            <p className="font-display text-2xl text-stone-950">Stay confirmations</p>
+            <p className="mt-2 text-sm leading-6 text-stone-800">
+              Demo guest portal — reservation detail lands here when the hotel API is wired.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (session.activeVenture === "diaz_ventures") {
+    return (
+      <div className="space-y-6">
+        <Header
+          venture={ventureName}
+          persona={persona}
+          summary="Your Jade Flowers purchases and wholesale notes. Spa guests and hotel stays use other venture logins."
+        />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Link href="/jade/products" className="rounded-2xl border border-stone-900/10 bg-white/90 p-5 transition hover:border-stone-900/30">
+            <p className="font-display text-2xl text-stone-950">Products</p>
+            <p className="mt-2 text-sm leading-6 text-stone-800">Browse finished goods from this catalog.</p>
+          </Link>
+          <div className="rounded-2xl border border-stone-900/10 bg-white/90 p-5">
+            <p className="font-display text-2xl text-stone-950">Your orders</p>
+            <p className="mt-2 text-sm leading-6 text-stone-800">
+              Demo shopper portal — order history will attach to this Jade identity.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const [events, appointments] = await Promise.all([listExperienceEvents(), listAppointments()]);
   const openInvites = events.filter((event) => event.status === "open" || event.status === "full");
   const recentAppointments = appointments.slice(0, 5);
 
   return (
     <div className="space-y-6">
-      <div className="max-w-2xl">
-        <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Customer portal</p>
-        <h1 className="mt-1 font-display text-4xl text-stone-950">Your Stemworks</h1>
-        <p className="mt-2 text-sm leading-6 text-stone-600">
-          Book spa services and buy tickets for open nights. Owner tools and CRM stay out of this portal.
-        </p>
-      </div>
+      <Header
+        venture={ventureName}
+        persona={persona}
+        summary="Book spa services and buy tickets for open nights. Owner tools and other ventures stay out of this portal."
+      />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <Link
-          href="/book"
-          className="rounded-2xl border border-stone-900/10 bg-white/90 p-5 transition hover:border-stone-900/30"
-        >
+        <Link href="/book" className="rounded-2xl border border-stone-900/10 bg-white/90 p-5 transition hover:border-stone-900/30">
           <p className="font-display text-2xl text-stone-950">Book a spa service</p>
           <p className="mt-2 text-sm leading-6 text-stone-800">Pick a treatment and time for yourself.</p>
         </Link>
-        <Link
-          href="/book?loop=1"
-          className="rounded-2xl border border-stone-900/10 bg-white/90 p-5 transition hover:border-stone-900/30"
-        >
+        <Link href="/book?loop=1" className="rounded-2xl border border-stone-900/10 bg-white/90 p-5 transition hover:border-stone-900/30">
           <p className="font-display text-2xl text-stone-950">Lobby display</p>
-          <p className="mt-2 text-sm leading-6 text-stone-800">
-            Kiosk loop that rotates services and resets after each booking.
-          </p>
+          <p className="mt-2 text-sm leading-6 text-stone-800">Kiosk loop that rotates services and resets after each booking.</p>
         </Link>
         <div className="rounded-2xl border border-stone-900/10 bg-white/90 p-5">
           <p className="font-display text-2xl text-stone-950">Open ticket nights</p>
@@ -66,10 +108,7 @@ export async function CustomerHome() {
                       {from ? ` · from ${from}` : ""}
                     </p>
                   </div>
-                  <Link
-                    href={`/e/${event.slug}`}
-                    className="rounded-full bg-stone-950 px-3 py-1.5 text-sm text-white"
-                  >
+                  <Link href={`/e/${event.slug}`} className="rounded-full bg-stone-950 px-3 py-1.5 text-sm text-white">
                     Get tickets
                   </Link>
                 </li>
@@ -104,6 +143,24 @@ export async function CustomerHome() {
           </ul>
         )}
       </section>
+    </div>
+  );
+}
+
+function Header({
+  venture,
+  persona,
+  summary,
+}: {
+  venture: string;
+  persona: string;
+  summary: string;
+}) {
+  return (
+    <div className="max-w-2xl">
+      <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Customer · {venture}</p>
+      <h1 className="mt-1 font-display text-4xl text-stone-950">Hello, {persona}</h1>
+      <p className="mt-2 text-sm leading-6 text-stone-600">{summary}</p>
     </div>
   );
 }
