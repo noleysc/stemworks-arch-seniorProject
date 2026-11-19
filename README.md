@@ -51,6 +51,8 @@ Open **http://localhost:43123**
 | `/dashboard` | Founder board (`?tenant=luminary`, `diaz_ventures`, or `pampered_soul`) |
 | `/` | Luminary rental desk |
 | `/jade` | Jade Flowers product desk |
+| `/jade/products` | Finished goods + pour a batch of 6 or 10 |
+| `/jade/batches` | Batch release to inventory and recall tracking |
 | `/experiences` | Pampered Soul business hub |
 | `/experiences/events` | Ticketed invites |
 | `/experiences/calendar` | Schedule |
