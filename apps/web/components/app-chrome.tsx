@@ -1,26 +1,13 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
-"use client";
-
-import { usePathname } from "next/navigation";
-
-import { DeskNav } from "@/components/desk-nav";
+import { AppShell } from "@/components/shell/app-shell";
+import { getDemoSession } from "@/lib/auth/session";
 
 export function AppChrome({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  if (
-    pathname.startsWith("/jade") ||
-    pathname.startsWith("/experiences") ||
-    pathname.startsWith("/e/") ||
-    pathname.startsWith("/book")
-  ) {
-    return <>{children}</>;
-  }
-
+  const { role, definition } = getDemoSession();
   return (
-    <>
-      <DeskNav />
-      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-    </>
+    <AppShell role={role} definition={definition}>
+      {children}
+    </AppShell>
   );
 }

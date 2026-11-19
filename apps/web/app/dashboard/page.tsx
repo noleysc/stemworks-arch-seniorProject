@@ -1,9 +1,12 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { DashboardBoard } from "@/components/dashboard/dashboard-board";
+import { EmployeeHome } from "@/components/dashboard/employee-home";
+import { getDemoSession } from "@/lib/auth/session";
 import { getTenant, listTenants } from "@/lib/dashboard/registry";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +16,14 @@ export default function DashboardPage({
 }: {
   searchParams: { tenant?: string };
 }) {
+  const { role, definition } = getDemoSession();
+  if (role === "customer") redirect("/portal");
+  if (role === "vendor") redirect("/vendor");
+
+  if (role === "employee") {
+    return <EmployeeHome />;
+  }
+
   const tenants = listTenants();
   const tenantKey = tenants.some((tenant) => tenant.key === searchParams.tenant)
     ? (searchParams.tenant as string)
@@ -23,11 +34,11 @@ export default function DashboardPage({
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="max-w-2xl">
-          <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Stemworks</p>
-          <h1 className="mt-1 font-display text-4xl">Dashboard</h1>
+          <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Owner · {definition.label}</p>
+          <h1 className="mt-1 font-display text-4xl">Command board</h1>
           <p className="mt-2 text-sm leading-6 text-stone-600">
-            One board per tenant. Ventures plug in through module ports. Luminary and Diaz Ventures never sum into each
-            other.
+            One board per tenant. Ventures plug in through module ports. Switch demo role in the sidebar to preview
+            employee, customer, and vendor desks.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

@@ -2,6 +2,19 @@
 
 Stemworks is a multi-tenant operating dashboard owned by Diaz Ventures LLC. Ventures plug into one board through module ports. Tenants never sum into each other.
 
+## Roles (dashboard shell)
+
+The web app uses a dashboard shell with a demo role switcher (cookie until real login):
+
+| Role | Home | What they see |
+| --- | --- | --- |
+| Owner | `/dashboard` | Command board + all desks |
+| Employee | `/dashboard` | Floor ops (schedule, check-in, bookings) |
+| Customer | `/portal` | Book services + buy tickets |
+| Vendor | `/vendor` | Participating events + opt-ins |
+
+Details: [docs/architecture/roles-frontend.md](docs/architecture/roles-frontend.md).
+
 ## Ventures (teammate map)
 
 Start with [docs/architecture/ventures.md](docs/architecture/ventures.md). Short version:

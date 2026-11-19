@@ -2,12 +2,12 @@
 
 import { ExperiencesNav } from "@/components/experiences-nav";
 
-/** Pampered Soul owner chrome. Guests use `/e/{slug}` or `/book` — never this layout. */
+/** Pampered Soul owner/employee local nav. Guests use `/e/{slug}` or `/book`. */
 export default function ExperiencesLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#d9e2ec_0%,_#eef2f6_42%,_#f7f8fa_100%)] text-slate-950">
+    <div className="space-y-6">
       <ExperiencesNav />
-      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      {children}
     </div>
   );
 }

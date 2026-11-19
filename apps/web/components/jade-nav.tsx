@@ -13,25 +13,22 @@ const links = [
   { href: "/jade/products", label: "Products" },
   { href: "/jade/batches", label: "Batches" },
   { href: "/jade/orders", label: "Orders" },
-  { href: "/experiences", label: "Pampered Soul" },
-  { href: "/dashboard?tenant=diaz_ventures", label: "Dashboard" },
 ];
 
 export function JadeNav() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-20 border-b border-emerald-900/10 bg-[#f4f7f4]/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
-        <Link href="/jade" className="block">
-          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-emerald-900/60">Stemworks · Diaz Ventures</p>
-          <p className="font-display text-[1.7rem] leading-none text-emerald-950">Jade Flowers</p>
-        </Link>
+    <div className="rounded-2xl border border-emerald-900/10 bg-white/80 p-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-emerald-900/60">Jade Flowers</p>
+          <p className="font-display text-xl leading-none text-emerald-950">Product desk</p>
+        </div>
         <nav className="flex gap-1 overflow-x-auto">
           {links.map((link) => {
-            const active = link.href.startsWith("/dashboard")
-              ? pathname.startsWith("/dashboard")
-              : link.href === "/jade/products"
+            const active =
+              link.href === "/jade/products"
                 ? pathname.startsWith("/jade/products") || pathname.startsWith("/jade/skus")
                 : link.href === "/jade"
                   ? pathname === "/jade"
@@ -51,6 +48,6 @@ export function JadeNav() {
           })}
         </nav>
       </div>
-    </header>
+    </div>
   );
 }

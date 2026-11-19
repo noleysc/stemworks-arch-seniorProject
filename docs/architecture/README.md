@@ -13,6 +13,7 @@ Phase numbers in the sources do not match. This architecture does not pick a cal
 Companion documents:
 
 - [ventures.md](ventures.md) — **start here for teammates** — tenants, desks, and routes
+- [roles-frontend.md](roles-frontend.md) — owner / employee / customer / vendor demo shell
 - [luminary.md](luminary.md) — Luminary Hotel & Co. rentals contract
 - [jade-flowers.md](jade-flowers.md) — Jade Flowers product desk on Diaz Ventures
 - [pampered-soul.md](pampered-soul.md) — Pampered Soul spa business desk (events included)
