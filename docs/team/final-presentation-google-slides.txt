@@ -1,0 +1,96 @@
+STEMWORKS — Final presentation (copy into Google Slides)
+
+Optional diagram for Slide 2: docs/team/assets/stemworks-overview-diagram.jpg
+Optional live deck: docs/team/final-presentation-slides.html (open in browser, arrow keys, F for fullscreen)
+
+
+
+SLIDE 1 — Title
+
+Stemworks
+
+Industry sponsor: Diaz Ventures LLC
+Project contact: Samantha Diaz
+Course: CEN 4934 · Team 18
+STEMWORKS Dashboard for Jade Flowers and related Diaz Ventures ventures
+
+Team
+Nolan Stilwell-Carroll — Team Lead (architecture and acceptance)
+Henry Ramirez — Backend (data and APIs)
+Esmir Ramirez Fulcar — Dashboard (command board UI)
+Ryan Lorentzen — Frontend (desks and forms)
+
+
+
+SLIDE 2 — Complete project (end of next semester)
+
+Title: The complete project
+
+By the end of next semester, Stemworks should be a hosted web platform owners can use every day—not only a classroom prototype.
+
+One board for the founder
+See money in motion, what needs attention, and how each venture is doing—without mixing businesses together.
+
+Working desks for each venture
+Rentals collection, product operations for Jade Flowers, and ticketed experiences for Pampered Soul—all feeding the same system.
+
+Ready for real use
+Hosted online, connected to a shared database, with a clear handoff path for Diaz Ventures to maintain after the course.
+
+Visual: insert stemworks-overview-diagram.jpg (dashboard above the three venture desks)
+
+
+
+SLIDE 3 — Current progress
+
+Title: Where we are now
+
+Core desks are running on GitHub main. We are in demo polish and handoff preparation.
+
+Progress bar (left to right)
+Done: Architecture · Rentals desk · Dashboard · Jade Flowers · Pampered Soul
+Now: Demo and handoff
+Next: Hosted closeout
+
+Working today
+Founder dashboard with tenant views
+Jade materials, products, batches, and recall
+Pampered Soul invites, booking, and calendar
+Rentals collection desk
+
+In progress
+Presentation demo script
+Partner-facing runbook
+Stable demo data for the live walkthrough
+
+Next semester / closeout
+Hosted deployment path
+Shared database cutover
+Access control and maintenance handoff
+
+
+
+SLIDE 4 — Project management plan
+
+Title: How we run the project
+
+Meeting schedule
+Weekly team sync to set the next slice
+Short mid-week check-in on blockers
+Sponsor updates when a desk is ready to show
+Pre-demo dry run before presentation day
+
+Timeline
+Iterative slices, not one big release
+Earlier sprints: desks and dashboard
+Current sprint: demo, docs, hardening
+Next: hosted delivery and handoff
+
+Handling issues
+Clear owners: lead, backend, dashboard, frontend
+Peer review before work lands on main
+Automated checks before a slice is accepted
+Escalate stack or scope changes to the sponsor
+
+Risks we already plan for
+Outside service changes, keeping businesses’ data separate, and demo reliability on presentation day. We keep a backup recording, freeze features before the talk, and treat architecture rules as the guardrail when something unexpected appears.

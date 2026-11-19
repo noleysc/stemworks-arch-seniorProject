@@ -108,30 +108,29 @@ async function purchaseTickets(
     card: amountDueCents > 0 ? input.payment : null,
   });
 
-  const registrationData = {
-    status: "confirmed" as const,
-    partySize: input.ticketQuantity,
-    ticketQuantity: input.ticketQuantity,
-    amountDueCents,
-    amountPaidCents: charge.amountCents,
-    paymentRef: charge.paymentRef,
-    paymentStatus: amountDueCents === 0 ? "comped" : "paid",
-    paymentBrand: charge.last4 ? charge.brand : null,
-    paymentLast4: charge.last4 || null,
-    paidAt: charge.paidAt,
-    tierId: tier.id,
-    showOnGuestWall: input.showOnGuestWall,
-    wallName: wallFirstName(input.fullName),
-    guestNote: emptyToNull(input.guestNote),
-    notes: emptyToNull(input.notes),
-    checkedInAt: null,
-  };
-
   const registration = await saveRegistrationWithUniqueCode({
     existingId: existing?.id ?? null,
     eventId: event.id,
     guestId: guest.id,
-    data: registrationData,
+    build: (confirmationCode) => ({
+      status: "confirmed" as const,
+      partySize: input.ticketQuantity,
+      ticketQuantity: input.ticketQuantity,
+      amountDueCents,
+      amountPaidCents: charge.amountCents,
+      confirmationCode,
+      paymentRef: charge.paymentRef,
+      paymentStatus: amountDueCents === 0 ? "comped" : "paid",
+      paymentBrand: charge.last4 ? charge.brand : null,
+      paymentLast4: charge.last4 || null,
+      paidAt: charge.paidAt,
+      tierId: tier.id,
+      showOnGuestWall: input.showOnGuestWall,
+      wallName: wallFirstName(input.fullName),
+      guestNote: emptyToNull(input.guestNote),
+      notes: emptyToNull(input.notes),
+      checkedInAt: null,
+    }),
   });
   const confirmationCode = registration.confirmationCode!;
 
@@ -299,35 +298,41 @@ async function upsertCrmContact(input: {
   });
 }
 
+/** Globally unique. confirmationCode is unique across all events, not per event. */
 async function nextConfirmationCode() {
   const year = new Date().getUTCFullYear();
   const total = await prisma.eventRegistration.count();
-  let candidate = total + 1;
 
-  for (let i = 0; i < 32; i++) {
-    const code = `PS-${year}-${String(candidate).padStart(4, "0")}`;
-    const taken = await prisma.eventRegistration.findFirst({
-      where: { confirmationCode: code },
-      select: { id: true },
-    });
+  for (let offset = 0; offset < 32; offset += 1) {
+    const seq = String(total + 1 + offset).padStart(4, "0");
+    const code = `PS-${year}-${seq}`;
+    const taken = await prisma.eventRegistration.findUnique({ where: { confirmationCode: code } });
     if (!taken) return code;
-    candidate += 1;
   }
 
-  const suffix = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`.toUpperCase();
-  return `PS-${year}-${suffix}`;
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const suffix = Math.floor(Math.random() * 1_000_000)
+      .toString()
+      .padStart(6, "0");
+    const code = `PS-${year}-${suffix}`;
+    const taken = await prisma.eventRegistration.findUnique({ where: { confirmationCode: code } });
+    if (!taken) return code;
+  }
+
+  return `PS-${year}-${Date.now().toString(36).toUpperCase()}`;
 }
 
 async function saveRegistrationWithUniqueCode(input: {
   existingId: string | null;
   eventId: string;
   guestId: string;
-  data: {
+  build: (confirmationCode: string) => {
     status: "confirmed";
     partySize: number;
     ticketQuantity: number;
     amountDueCents: number;
     amountPaidCents: number;
+    confirmationCode: string;
     paymentRef: string | null;
     paymentStatus: string;
     paymentBrand: string | null;
@@ -341,38 +346,36 @@ async function saveRegistrationWithUniqueCode(input: {
     checkedInAt: null;
   };
 }) {
-  const maxAttempts = 8;
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 6; attempt += 1) {
     const confirmationCode = await nextConfirmationCode();
+    const data = input.build(confirmationCode);
     try {
       if (input.existingId) {
         return await prisma.eventRegistration.update({
           where: { id: input.existingId },
-          data: { ...input.data, confirmationCode },
+          data,
         });
       }
       return await prisma.eventRegistration.create({
         data: {
           eventId: input.eventId,
           guestId: input.guestId,
-          ...input.data,
-          confirmationCode,
+          ...data,
         },
       });
     } catch (error) {
-      if (!isPrismaUniqueConflict(error) || attempt === maxAttempts - 1) throw error;
+      lastError = error;
+      const code =
+        error && typeof error === "object" && "code" in error
+          ? String((error as { code?: string }).code)
+          : "";
+      if (code !== "P2002") throw error;
     }
   }
-  throw new Error("Unable to allocate a unique confirmation code.");
-}
-
-function isPrismaUniqueConflict(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error as { code: unknown }).code === "P2002"
-  );
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Could not assign a unique confirmation code.");
 }
 
 function emptyToNull(value: string | undefined) {

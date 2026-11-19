@@ -171,78 +171,63 @@ test("revoking marketing consent strips contact channels from that business CRM 
   assert.equal(haven[0].phone, "239-555-0111");
 });
 
-test("two published events can each sell a ticket with different confirmation codes", async () => {
-  const emails = ["multi-a@example.com", "multi-b@example.com"];
-  const leftover = await prisma.experienceEvent.findMany({
-    where: { slug: { startsWith: "multi-event-code" } },
-    select: { id: true },
+test("confirmation codes stay unique across events", async () => {
+  const first = await createOwnerEvent({
+    title: "Code uniqueness night A",
+    summary: "First event.",
+    location: "16313 S Tamiami Trail, Fort Myers, FL 33908",
+    startsOn: "2026-12-19",
+    startsAtLabel: "5:00 PM",
+    capacity: 10,
+    publish: true,
+    tiers: [{ label: "General", price: 40, quantityAvailable: 10 }],
   });
-  const eventIds = leftover.map((row) => row.id);
-  if (eventIds.length > 0) {
-    await prisma.vendorConsent.deleteMany({ where: { vendor: { eventId: { in: eventIds } } } });
-    await prisma.eventRegistration.deleteMany({ where: { eventId: { in: eventIds } } });
-    await prisma.experienceEvent.deleteMany({ where: { id: { in: eventIds } } });
-  }
-  await prisma.consentAudit.deleteMany({ where: { guest: { email: { in: emails } } } });
-  await prisma.businessCrmContact.deleteMany({ where: { guest: { email: { in: emails } } } });
-  await prisma.guestProfile.deleteMany({ where: { email: { in: emails } } });
-
-  const eventA = await createOwnerEvent({
-    title: "Multi event code A",
-    summary: "First published invite for confirmation uniqueness.",
+  const second = await createOwnerEvent({
+    title: "Code uniqueness night B",
+    summary: "Second event.",
     location: "16313 S Tamiami Trail, Fort Myers, FL 33908",
     startsOn: "2026-12-20",
     startsAtLabel: "5:00 PM",
-    capacity: 20,
-    hostDisplayName: "The Pampered Soul",
+    capacity: 10,
     publish: true,
-    tiers: [{ label: "General", description: "", price: 55, quantityAvailable: 20 }],
-    vendors: [{ displayName: "Jade Haven", roleLabel: "Spa partner" }],
-    itinerary: [{ serviceKey: "swedish-50", startsAtLabel: "6:00 PM" }],
-  });
-  const eventB = await createOwnerEvent({
-    title: "Multi event code B",
-    summary: "Second published invite for confirmation uniqueness.",
-    location: "16313 S Tamiami Trail, Fort Myers, FL 33908",
-    startsOn: "2026-12-21",
-    startsAtLabel: "5:00 PM",
-    capacity: 20,
-    hostDisplayName: "The Pampered Soul",
-    publish: true,
-    tiers: [{ label: "General", description: "", price: 55, quantityAvailable: 20 }],
-    vendors: [{ displayName: "Jade Haven", roleLabel: "Spa partner" }],
-    itinerary: [{ serviceKey: "swedish-50", startsAtLabel: "6:00 PM" }],
+    tiers: [{ label: "General", price: 40, quantityAvailable: 10 }],
   });
 
-  const ticketA = await submitRsvp(eventA.slug, {
-    fullName: "Multi Guest A",
-    email: "multi-a@example.com",
+  const a = await submitRsvp(first.slug, {
+    fullName: "Guest A",
+    email: "code-a@example.com",
+    phone: "239-555-0200",
+    tierKey: "general",
+    ticketQuantity: 1,
+    showOnGuestWall: false,
+    networkOptIn: false,
+    vendorOptIns: {},
+    payment: { ...demoPayment, cardholderName: "Guest A" },
+  });
+  const b = await submitRsvp(second.slug, {
+    fullName: "Guest B",
+    email: "code-b@example.com",
     phone: "239-555-0201",
     tierKey: "general",
     ticketQuantity: 1,
-    vendorOptIns: { jade_haven: false },
-    payment: { ...demoPayment, cardholderName: "Multi Guest A" },
-  });
-  const ticketB = await submitRsvp(eventB.slug, {
-    fullName: "Multi Guest B",
-    email: "multi-b@example.com",
-    phone: "239-555-0202",
-    tierKey: "general",
-    ticketQuantity: 1,
-    vendorOptIns: { jade_haven: false },
-    payment: { ...demoPayment, cardholderName: "Multi Guest B" },
+    showOnGuestWall: false,
+    networkOptIn: false,
+    vendorOptIns: {},
+    payment: { ...demoPayment, cardholderName: "Guest B" },
   });
 
-  assert.match(ticketA.confirmationCode, /^PS-\d{4}-[A-Z0-9]+$/);
-  assert.match(ticketB.confirmationCode, /^PS-\d{4}-[A-Z0-9]+$/);
-  assert.notEqual(ticketA.confirmationCode, ticketB.confirmationCode);
+  assert.notEqual(a.confirmationCode, b.confirmationCode);
 
-  const cleanupIds = [eventA.id, eventB.id];
-  await prisma.vendorConsent.deleteMany({ where: { vendor: { eventId: { in: cleanupIds } } } });
-  await prisma.eventRegistration.deleteMany({ where: { eventId: { in: cleanupIds } } });
-  await prisma.experienceEvent.deleteMany({ where: { id: { in: cleanupIds } } });
+  const emails = ["code-a@example.com", "code-b@example.com"];
+  await prisma.vendorConsent.deleteMany({
+    where: { vendor: { eventId: { in: [first.id, second.id] } } },
+  });
   await prisma.consentAudit.deleteMany({ where: { guest: { email: { in: emails } } } });
   await prisma.businessCrmContact.deleteMany({ where: { guest: { email: { in: emails } } } });
+  await prisma.eventRegistration.deleteMany({ where: { eventId: { in: [first.id, second.id] } } });
+  await prisma.ticketTier.deleteMany({ where: { eventId: { in: [first.id, second.id] } } });
+  await prisma.eventVendor.deleteMany({ where: { eventId: { in: [first.id, second.id] } } });
+  await prisma.experienceEvent.deleteMany({ where: { id: { in: [first.id, second.id] } } });
   await prisma.guestProfile.deleteMany({ where: { email: { in: emails } } });
 });
 

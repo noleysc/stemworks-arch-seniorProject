@@ -8,15 +8,35 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/experiences", label: "Invites" },
-  { href: "/experiences/new", label: "Create invite" },
-  { href: "/experiences/calendar", label: "Calendar" },
-  { href: "/experiences/bookings", label: "Bookings" },
-  { href: "/experiences/guests", label: "Guests" },
-  { href: "/experiences/crm", label: "Private CRM" },
-  { href: "/experiences/scorecard", label: "Scorecard" },
-  { href: "/dashboard?tenant=pampered_soul", label: "Dashboard" },
+  { href: "/experiences", label: "Today", match: "exact" as const },
+  { href: "/experiences/events", label: "Events", match: "events" as const },
+  { href: "/experiences/new", label: "Create invite", match: "prefix" as const },
+  { href: "/experiences/calendar", label: "Calendar", match: "prefix" as const },
+  { href: "/experiences/bookings", label: "Bookings", match: "prefix" as const },
+  { href: "/experiences/guests", label: "Guests", match: "prefix" as const },
+  { href: "/experiences/crm", label: "CRM", match: "prefix" as const },
+  { href: "/experiences/scorecard", label: "Scorecard", match: "prefix" as const },
+  { href: "/dashboard?tenant=pampered_soul", label: "Dashboard", match: "dashboard" as const },
 ];
+
+function isActive(pathname: string, link: (typeof links)[number]) {
+  if (link.match === "dashboard") return pathname.startsWith("/dashboard");
+  if (link.match === "exact") return pathname === "/experiences";
+  if (link.match === "events") {
+    return (
+      pathname === "/experiences/events" ||
+      pathname === "/experiences/new" ||
+      (pathname.startsWith("/experiences/") &&
+        !pathname.startsWith("/experiences/calendar") &&
+        !pathname.startsWith("/experiences/bookings") &&
+        !pathname.startsWith("/experiences/guests") &&
+        !pathname.startsWith("/experiences/crm") &&
+        !pathname.startsWith("/experiences/scorecard") &&
+        pathname !== "/experiences")
+    );
+  }
+  return pathname === link.href || pathname.startsWith(`${link.href}/`);
+}
 
 export function ExperiencesNav() {
   const pathname = usePathname();
@@ -26,17 +46,13 @@ export function ExperiencesNav() {
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
         <Link href="/experiences" className="block">
           <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-slate-600">
-            Stemworks · Ticketed invite creator
+            Stemworks · Business desk
           </p>
           <p className="font-display text-[1.7rem] leading-none text-slate-950">The Pampered Soul</p>
         </Link>
         <nav className="flex gap-1 overflow-x-auto">
           {links.map((link) => {
-            const active = link.href.startsWith("/dashboard")
-              ? pathname.startsWith("/dashboard")
-              : link.href === "/experiences"
-                ? pathname === "/experiences"
-                : pathname === link.href || pathname.startsWith(`${link.href}/`);
+            const active = isActive(pathname, link);
             return (
               <Link
                 key={link.href}

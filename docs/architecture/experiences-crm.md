@@ -2,7 +2,7 @@
 
 Confidential. Diaz Ventures LLC · Stemworks LLC · 2026.
 
-Source: Event Management & Customer Relationship Platform PRD v1.0 (Nov–Dec 2026), initial pilot Spa Operations + December 18 Holiday Experience. This document places that PRD inside the Stemworks modular monolith. It does not replace [modules.md](modules.md) or [security.md](security.md).
+Source: Event Management & Customer Relationship Platform PRD v1.0 (Nov–Dec 2026), initial pilot Spa Operations + December 18 Holiday Experience. This document places that PRD inside the Stemworks modular monolith. It does not replace [modules.md](modules.md) or [security.md](security.md). Desk map: [pampered-soul.md](pampered-soul.md) · [ventures.md](ventures.md).
 
 Questions that remain open: [architecture-questions.md](architecture-questions.md). Competitive posture: [competitive-differentiation.md](competitive-differentiation.md).
 

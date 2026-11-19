@@ -53,7 +53,7 @@ export const TENANT_REGISTRY: Record<string, TenantDefinition> = {
     ventures: [
       {
         key: "pampered_events",
-        name: "Pampered Soul Events",
+        name: "The Pampered Soul",
         colorToken: "experiences",
         module: "experiences",
       },
