@@ -23,12 +23,14 @@ const kindStyles: Record<CalendarItem["kind"], string> = {
 export function CalendarBoard() {
   const searchParams = useSearchParams();
   const now = new Date();
-  const queryYear = Number(searchParams.get("year"));
-  const queryMonth = Number(searchParams.get("month"));
+  const yearParam = searchParams.get("year");
+  const monthParam = searchParams.get("month");
+  const queryYear = yearParam?.trim() ? Number(yearParam) : NaN;
+  const queryMonth = monthParam?.trim() ? Number(monthParam) : NaN;
   const startYear =
-    Number.isFinite(queryYear) && queryYear >= 2000 ? queryYear : now.getUTCFullYear();
+    Number.isInteger(queryYear) && queryYear >= 2000 ? queryYear : now.getUTCFullYear();
   const startMonth =
-    Number.isFinite(queryMonth) && queryMonth >= 0 && queryMonth <= 11
+    Number.isInteger(queryMonth) && queryMonth >= 0 && queryMonth <= 11
       ? queryMonth
       : now.getUTCMonth();
   const [year, setYear] = useState(startYear);
