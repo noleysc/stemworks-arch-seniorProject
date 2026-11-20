@@ -3,8 +3,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import { DashboardTodoList } from "@/components/dashboard/todo-list";
 import { Button } from "@/components/ui/button";
@@ -30,15 +30,16 @@ export function DashboardBoard({
   tenantKey: string;
   ventureOptions: { key: string; name: string }[];
 }) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const venture = searchParams.get("venture") ?? "";
   const horizon = searchParams.get("horizon") === "12m" ? "12m" : "90d";
   const [payload, setPayload] = useState<DashboardPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(true);
+  const requestId = useRef(0);
 
   async function load() {
+    const currentRequest = ++requestId.current;
     setPending(true);
     setError(null);
     const query = new URLSearchParams({ tenant: tenantKey });
@@ -47,12 +48,14 @@ export function DashboardBoard({
     try {
       const body = await requestJson<DashboardPayload>(`/api/v1/dashboard?${query.toString()}`, {}, "We couldn’t load the dashboard. Refresh the page or choose another section.");
       if (!body.header || !Array.isArray(body.ventures)) throw new RequestError("We couldn’t load the dashboard. Please try again.");
+      if (currentRequest !== requestId.current) return;
       setPayload(body);
     } catch (error) {
+      if (currentRequest !== requestId.current) return;
       setPayload(null);
       setError(requestErrorMessage(error, "We couldn’t load the dashboard. Please try again."));
     } finally {
-      setPending(false);
+      if (currentRequest === requestId.current) setPending(false);
     }
   }
 
@@ -72,7 +75,7 @@ export function DashboardBoard({
       if (next.horizon === "12m") params.set("horizon", "12m");
       else params.delete("horizon");
     }
-    router.replace(`?${params.toString()}`);
+    window.history.replaceState(null, "", `?${params.toString()}${window.location.hash}`);
   }
 
   if (pending && !payload) {

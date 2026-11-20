@@ -2,8 +2,7 @@
 
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 
 import type { AppRole } from "@/lib/auth/roles";
 import { listVentures, type VentureKey } from "@/lib/auth/ventures";
@@ -22,24 +21,32 @@ export function SessionPanel({
   persona: string;
   ventureName: string;
 }) {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const ventures = listVentures();
 
+  useEffect(() => {
+    const restore = () => setPending(false);
+    window.addEventListener("pageshow", restore);
+    return () => window.removeEventListener("pageshow", restore);
+  }, []);
+
   async function post(body: Record<string, unknown>, fallbackHref = "/login") {
     setError(null);
-    const response = await fetch("/api/v1/session/role", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const payload = (await response.json()) as { homeHref?: string; error?: string };
-    if (!response.ok) throw new Error(payload.error || "Could not update session.");
-    startTransition(() => {
-      router.push(body.action === "logout" ? "/login" : payload.homeHref || fallbackHref);
-      router.refresh();
-    });
+    setPending(true);
+    try {
+      const response = await fetch("/api/v1/session/role", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const payload = (await response.json()) as { homeHref?: string; error?: string };
+      if (!response.ok) throw new Error(payload.error || "Could not update session.");
+      window.location.assign(body.action === "logout" ? "/login" : payload.homeHref || fallbackHref);
+    } catch (error) {
+      setPending(false);
+      throw error;
+    }
   }
 
   return (

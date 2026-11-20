@@ -3,20 +3,25 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 
 import { listVentures, type VentureKey } from "@/lib/auth/ventures";
 import { cn } from "@/lib/utils";
 
 export function AppOwnerHub({ activeVenture }: { activeVenture: VentureKey }) {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const ventures = listVentures();
 
+  useEffect(() => {
+    const restore = () => setPending(false);
+    window.addEventListener("pageshow", restore);
+    return () => window.removeEventListener("pageshow", restore);
+  }, []);
+
   async function openVenture(venture: VentureKey, href: string) {
     setError(null);
+    setPending(true);
     try {
       const response = await fetch("/api/v1/session/role", {
         method: "POST",
@@ -25,11 +30,9 @@ export function AppOwnerHub({ activeVenture }: { activeVenture: VentureKey }) {
       });
       const payload = (await response.json()) as { error?: string };
       if (!response.ok) throw new Error(payload.error || "Could not open venture.");
-      startTransition(() => {
-        router.push(href);
-        router.refresh();
-      });
+      window.location.assign(href);
     } catch (err) {
+      setPending(false);
       setError(err instanceof Error ? err.message : "Could not open venture.");
     }
   }
