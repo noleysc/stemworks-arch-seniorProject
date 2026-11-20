@@ -75,6 +75,7 @@ function ownerNav(venture: VentureKey): NavItem[] {
   return [
     { href: meta.dashboardHref, label: "Command board", description: `${meta.shortName} money + attention` },
     { href: meta.deskHref, label: `${meta.shortName} desk`, description: "Operating surface" },
+    { href: "/organize", label: "Organize ventures", description: "Metrics + features" },
   ];
 }
 
@@ -220,6 +221,7 @@ export function getAppOwnerDefinition(venture: VentureKey = DEFAULT_VENTURE): Ro
     homeHref: "/",
     nav: [
       { href: "/", label: "All desks", description: "Pick any venture" },
+      { href: "/organize", label: "Organize ventures", description: "Create · metrics · features" },
       ...desks,
       { href: meta.dashboardHref, label: "Command board", description: `${meta.shortName} money + attention` },
     ],
@@ -247,6 +249,7 @@ export function usesAppShell(pathname: string): boolean {
   if (pathname === "/book" || pathname.startsWith("/book/")) return false;
   return (
     pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/organize") ||
     pathname.startsWith("/portal") ||
     pathname.startsWith("/vendor") ||
     pathname.startsWith("/luminary") ||
@@ -282,6 +285,7 @@ export function roleAllowsPath(role: AppRole, pathname: string, venture: Venture
     return (
       pathname.startsWith(getVenture(venture).deskHref) ||
       pathname.startsWith("/dashboard") ||
+      pathname.startsWith("/organize") ||
       pathname.startsWith("/portal") ||
       pathname.startsWith("/vendor")
     );
@@ -316,6 +320,7 @@ export function appOwnerAllowsPath(pathname: string): boolean {
   if (isPublicPath(pathname)) return true;
   return (
     pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/organize") ||
     pathname.startsWith("/portal") ||
     pathname.startsWith("/vendor") ||
     pathname.startsWith("/luminary") ||

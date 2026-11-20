@@ -42,6 +42,13 @@ export function AppOwnerHub({ activeVenture }: { activeVenture: VentureKey }) {
       <div className="max-w-2xl">
         <p className="text-xs uppercase tracking-[0.22em] text-stone-500">Stemworks · App ownership</p>
         <h1 className="mt-2 font-display text-5xl text-stone-950">Every venture</h1>
+        <p className="mt-3 text-sm leading-6 text-stone-600">
+          Open a desk, or{" "}
+          <Link href="/organize" className="underline underline-offset-4">
+            organize ventures
+          </Link>{" "}
+          — drag board metrics and check features for each business.
+        </p>
       </div>
 
       <div className="mt-10 grid gap-4 md:grid-cols-3">
