@@ -99,8 +99,8 @@ export function DashboardBoard({
 
   return (
     <div className="space-y-6">
-      <header className="sticky top-[4.5rem] z-10 space-y-4 border-b border-stone-200 bg-stone-50/95 pb-4 backdrop-blur md:top-16">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <header className="space-y-5 rounded-2xl border border-stone-200 bg-white p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-stone-500">{payload.tenant.name}</p>
             <h1 className="mt-1 font-display text-4xl text-stone-950">Command board</h1>
@@ -108,7 +108,7 @@ export function DashboardBoard({
               Business date {payload.businessDate} · {payload.timezone}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 lg:justify-end">
             <FilterChip active={!venture} onClick={() => setQuery({ venture: "" })}>
               All ventures
             </FilterChip>
@@ -130,7 +130,7 @@ export function DashboardBoard({
           <Metric label="Gap" value={formatMoney(gap)} detail="execution target" />
         </div>
 
-        <div className="flex flex-col gap-2 text-sm text-stone-700 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2 text-sm text-stone-700">
           <p>
             {payload.header.nextMilestone ? (
               <>
@@ -247,9 +247,9 @@ export function DashboardBoard({
 
 function Metric({ label, value, detail }: { label: string; value: string; detail?: string }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4">
+    <div className="min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-4">
       <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{label}</p>
-      <p className="mt-2 font-display text-3xl">{value}</p>
+      <p className="mt-2 break-words font-display text-3xl">{value}</p>
       {detail ? <p className="text-sm text-stone-500">{detail}</p> : null}
     </div>
   );
@@ -270,7 +270,7 @@ function FilterChip({
       onClick={onClick}
       className={cn(
         "rounded-full px-3 py-1.5 text-sm",
-        active ? "bg-stone-950 text-white" : "bg-white text-stone-600 ring-1 ring-stone-200",
+        active ? "bg-stone-950 text-white" : "bg-stone-50 text-stone-600 ring-1 ring-stone-200",
       )}
     >
       {children}
