@@ -54,7 +54,13 @@ function TimeSegment({ id, label, value, onChange, min, max, padded = false }: {
   });
 
   useEffect(() => {
-    if (open) listRef.current?.children[active]?.scrollIntoView({ block: "nearest" });
+    const list = listRef.current;
+    const option = list?.children[active] as HTMLElement | undefined;
+    if (!open || !list || !option) return;
+    const listRect = list.getBoundingClientRect();
+    const optionRect = option.getBoundingClientRect();
+    if (optionRect.top < listRect.top) list.scrollTop -= listRect.top - optionRect.top;
+    else if (optionRect.bottom > listRect.bottom) list.scrollTop += optionRect.bottom - listRect.bottom;
   }, [open, active]);
 
   function choose(index: number) {
