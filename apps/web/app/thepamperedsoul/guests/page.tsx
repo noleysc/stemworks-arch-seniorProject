@@ -28,12 +28,12 @@ export default async function GuestsPage() {
         <p className="text-sm text-slate-600">{event.title}</p>
         <h1 className="mt-2 font-display text-4xl text-slate-950">Guest list & check-in</h1>
         <p className="mt-3 text-sm leading-6 text-slate-700">
-          Tickets and check-in are operational. Marketing consent only comes from the invite checkboxes —
+          Tickets and check-in are operational. Marketing consent only comes from the event registration checkboxes —
           never from buying a ticket or scanning in.
         </p>
         {(event.status === "open" || event.status === "full") && (
           <p className="mt-2 text-sm">
-            Guest invite:{" "}
+            Event page:{" "}
             <Link className="underline underline-offset-4" href={`/e/${event.slug}`}>
               /e/{event.slug}
             </Link>

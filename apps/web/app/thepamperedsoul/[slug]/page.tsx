@@ -20,9 +20,9 @@ export default async function ExperienceEditorPage({ params }: { params: { slug:
       <div className="max-w-2xl">
         <p className="text-sm text-slate-600">
           <Link href="/thepamperedsoul/events" className="underline">
-            Invites
+            Events
           </Link>{" "}
-          · ticketed invite creator · {event.statusLabel}
+          · {event.statusLabel}
         </p>
         <h1 className="mt-2 font-display text-4xl leading-tight text-slate-950">{event.title}</h1>
         <p className="mt-3 text-sm leading-6 text-slate-700">

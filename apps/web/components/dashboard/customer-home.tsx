@@ -80,8 +80,8 @@ export async function CustomerHome() {
           <p className="font-display text-2xl text-stone-950">Open ticket nights</p>
           <p className="mt-2 text-sm leading-6 text-stone-800">
             {openInvites.length === 0
-              ? "No public invites are open right now."
-              : `${openInvites.length} invite${openInvites.length === 1 ? "" : "s"} you can join.`}
+              ? "No events are open right now."
+              : `${openInvites.length} event${openInvites.length === 1 ? "" : "s"} you can join.`}
           </p>
         </div>
       </div>

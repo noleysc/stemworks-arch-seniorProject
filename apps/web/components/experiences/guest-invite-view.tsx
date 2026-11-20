@@ -35,7 +35,7 @@ export function GuestInviteView({ event, wall, preview = false }: GuestInviteVie
 
           <div className="space-y-4">
             <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-amber-100/80">
-              {event.hostDisplayName} invites you
+              Hosted by {event.hostDisplayName}
             </p>
             <h1 className="max-w-xl font-display text-5xl leading-[0.95] text-white sm:text-7xl">
               {event.title}
@@ -171,8 +171,8 @@ export function GuestInviteView({ event, wall, preview = false }: GuestInviteVie
             <h2 className="mt-1 font-display text-3xl text-white">Checkout locked</h2>
             <p className="mt-3 text-sm leading-6 text-slate-300">
               {preview
-                ? "This is how guests will see the invite. Publishing unlocks ticket purchase on the public link."
-                : "Tickets are not available for this invite right now."}
+                ? "Publishing makes tickets available on the public event page."
+                : "Tickets are not available for this event right now."}
             </p>
             <ul className="mt-5 space-y-3">
               {event.tiers.map((tier) => (

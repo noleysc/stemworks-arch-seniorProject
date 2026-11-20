@@ -28,15 +28,15 @@ async function PamperedEmployee({ persona }: { persona: string }) {
         persona={persona}
       />
       <div className="grid gap-3 sm:grid-cols-3">
-        <OpsCard href="/thepamperedsoul/guests" title="Check-in" meta={`${openEvents.length} open invites`} />
+        <OpsCard href="/thepamperedsoul/guests" title="Check-in" meta={`${openEvents.length} open events`} />
         <OpsCard href="/thepamperedsoul/calendar" title="Schedule" />
         <OpsCard href="/thepamperedsoul/bookings" title="Bookings" meta={`${appointments.length} on file`} />
       </div>
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-2xl border border-stone-900/10 bg-white/90 p-5">
-          <h2 className="font-display text-2xl">Open invites</h2>
+          <h2 className="font-display text-2xl">Open events</h2>
           {openEvents.length === 0 ? (
-            <p className="mt-3 text-sm text-stone-600">No published invites need floor coverage.</p>
+            <p className="mt-3 text-sm text-stone-600">No published events need floor coverage.</p>
           ) : (
             <ul className="mt-4 space-y-3 text-sm">
               {openEvents.map((event) => (

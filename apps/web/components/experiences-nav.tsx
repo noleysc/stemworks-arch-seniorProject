@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 const allLinks = [
   { href: "/thepamperedsoul", label: "Today", match: "exact" as const, roles: ["owner", "employee"] as AppRole[] },
   { href: "/thepamperedsoul/events", label: "Events", match: "events" as const, roles: ["owner", "employee"] as AppRole[] },
-  { href: "/thepamperedsoul/new", label: "Create invite", match: "prefix" as const, roles: ["owner"] as AppRole[] },
+  { href: "/thepamperedsoul/new", label: "Create event", match: "prefix" as const, roles: ["owner"] as AppRole[] },
   { href: "/thepamperedsoul/calendar", label: "Calendar", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
   { href: "/thepamperedsoul/bookings", label: "Bookings", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
   { href: "/thepamperedsoul/guests", label: "Guests", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
@@ -25,8 +25,9 @@ function isActive(pathname: string, link: (typeof allLinks)[number]) {
   if (link.match === "events") {
     return (
       pathname === "/thepamperedsoul/events" ||
-      pathname === "/thepamperedsoul/new" ||
       (pathname.startsWith("/thepamperedsoul/") &&
+        pathname !== "/thepamperedsoul/new" &&
+        !pathname.startsWith("/thepamperedsoul/new/") &&
         !pathname.startsWith("/thepamperedsoul/calendar") &&
         !pathname.startsWith("/thepamperedsoul/bookings") &&
         !pathname.startsWith("/thepamperedsoul/guests") &&

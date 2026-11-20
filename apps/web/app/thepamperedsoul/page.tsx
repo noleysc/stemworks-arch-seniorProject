@@ -69,7 +69,7 @@ export default async function PamperedSoulHomePage() {
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-3xl border border-slate-900/10 bg-white/90 p-6">
           <div className="flex items-end justify-between gap-3">
-            <h2 className="font-display text-2xl">Next invite</h2>
+            <h2 className="font-display text-2xl">Next event</h2>
             <Link href="/thepamperedsoul/events" className="text-sm underline underline-offset-4">
               All events
             </Link>
@@ -86,21 +86,21 @@ export default async function PamperedSoulHomePage() {
                   href={`/thepamperedsoul/${nextEvent.slug}`}
                   className="rounded-full bg-slate-950 px-3 py-1.5 text-sm text-[#eef2f6]"
                 >
-                  Open invite
+                  Open event
                 </Link>
                 <Link
                   href="/thepamperedsoul/new"
                   className="rounded-full border border-slate-900/15 px-3 py-1.5 text-sm"
                 >
-                  Create invite
+                  Create event
                 </Link>
               </div>
             </div>
           ) : (
             <p className="mt-4 text-sm text-slate-600">
-              No invites yet.{" "}
+              No events yet.{" "}
               <Link href="/thepamperedsoul/new" className="underline underline-offset-4">
-                Create a ticketed invite
+                Create an event
               </Link>{" "}
               when you need an event night.
             </p>
