@@ -13,14 +13,12 @@ export function SessionPanel({
   role,
   venture,
   appOwner,
-  locked,
   persona,
   ventureName,
 }: {
   role: AppRole;
   venture: VentureKey;
   appOwner: boolean;
-  locked: boolean;
   persona: string;
   ventureName: string;
 }) {
@@ -48,7 +46,7 @@ export function SessionPanel({
     <div className="space-y-3">
       <div className="rounded-xl bg-stone-50/90 px-3 py-2.5 ring-1 ring-stone-200">
         <p className="text-[11px] uppercase tracking-[0.16em] text-stone-500">
-          {appOwner ? "App ownership" : "Locked venture"}
+          {appOwner ? "App owner" : "Signed in"}
         </p>
         <p className="mt-1 text-sm font-medium text-stone-900">{persona}</p>
         <p className="text-xs text-stone-600">
@@ -84,10 +82,6 @@ export function SessionPanel({
             ))}
           </div>
         </div>
-      ) : locked ? (
-        <p className="text-[11px] leading-4 text-stone-500">
-          You are locked into this venture. Sign out to pick a different desk or role.
-        </p>
       ) : null}
 
       <button

@@ -5,7 +5,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-import { APP_ROLES, listRoles, type AppRole } from "@/lib/auth/roles";
+import { listRoles, type AppRole } from "@/lib/auth/roles";
 import { listVentures, type VentureKey } from "@/lib/auth/ventures";
 import { cn } from "@/lib/utils";
 
@@ -38,10 +38,6 @@ export function LoginGate() {
       <div className="max-w-xl">
         <p className="text-xs uppercase tracking-[0.22em] text-stone-500">Stemworks</p>
         <h1 className="mt-2 font-display text-5xl text-stone-950">Sign in</h1>
-        <p className="mt-3 text-sm leading-6 text-stone-600">
-          Pick a venture, then a role. After you enter, you stay locked in that venture until you sign out. Stemworks
-          app ownership is the only way to browse every desk.
-        </p>
       </div>
 
       <section className="mt-10 space-y-3">
@@ -64,9 +60,6 @@ export function LoginGate() {
               )}
             >
               <span className="block font-display text-2xl leading-none">{item.shortName}</span>
-              <span className={cn("mt-2 block text-xs leading-5", venture === item.key ? "text-stone-300" : "text-stone-500")}>
-                {item.name}
-              </span>
             </button>
           ))}
         </div>
@@ -75,7 +68,7 @@ export function LoginGate() {
       <section className="mt-8 space-y-3">
         <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500">2 · Role</p>
         {!venture ? (
-          <p className="text-sm text-stone-500">Select a venture to see its owner, staff, guests, and vendors.</p>
+          <p className="text-sm text-stone-500">Select a venture first.</p>
         ) : (
           <div className="grid gap-2 sm:grid-cols-2">
             {roles.map((item) => (
@@ -115,18 +108,10 @@ export function LoginGate() {
         >
           {pending ? "Signing in…" : "Enter this venture"}
         </button>
-        <p className="text-xs text-stone-500">
-          {venture && role
-            ? `Locks you into ${ventures.find((v) => v.key === venture)?.shortName} as ${role}.`
-            : "You cannot change venture after entering."}
-        </p>
       </div>
 
       <div className="mt-12 border-t border-stone-200 pt-8">
         <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500">App ownership</p>
-        <p className="mt-2 max-w-xl text-sm leading-6 text-stone-600">
-          Stemworks app ownership can open every venture desk and board. Venture roles stay locked to one tenant.
-        </p>
         <button
           type="button"
           disabled={pending}
@@ -147,7 +132,6 @@ export function LoginGate() {
         </p>
       ) : null}
 
-      <p className="mt-10 text-[11px] text-stone-400">Demo roles: {APP_ROLES.join(" · ")}</p>
     </div>
   );
 }
