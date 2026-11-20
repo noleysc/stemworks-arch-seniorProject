@@ -3,7 +3,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { DashboardTodoList } from "@/components/dashboard/todo-list";
@@ -30,6 +30,7 @@ export function DashboardBoard({
   tenantKey: string;
   ventureOptions: { key: string; name: string }[];
 }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const venture = searchParams.get("venture") ?? "";
   const horizon = searchParams.get("horizon") === "12m" ? "12m" : "90d";
@@ -75,7 +76,7 @@ export function DashboardBoard({
       if (next.horizon === "12m") params.set("horizon", "12m");
       else params.delete("horizon");
     }
-    window.history.replaceState(null, "", `?${params.toString()}${window.location.hash}`);
+    router.replace(`?${params.toString()}`, { scroll: false });
   }
 
   if (pending && !payload) {
