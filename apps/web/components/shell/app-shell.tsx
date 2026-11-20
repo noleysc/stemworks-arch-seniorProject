@@ -16,14 +16,12 @@ export function AppShell({
   venture,
   definition,
   appOwner,
-  locked,
   children,
 }: {
   role: AppRole;
   venture: VentureKey;
   definition: RoleDefinition;
   appOwner: boolean;
-  locked: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -42,14 +40,6 @@ export function AppShell({
               {appOwner ? "All ventures" : definition.ventureName}
             </p>
           </Link>
-          <div className="mt-5 rounded-2xl border border-stone-900/10 bg-stone-50/80 p-3">
-            <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Signed in as</p>
-            <p className="mt-1 font-display text-xl text-stone-950">{definition.persona}</p>
-            <p className="mt-1 text-sm font-medium text-stone-800">
-              {definition.label} · {definition.ventureName}
-            </p>
-            <p className="mt-1 text-xs leading-5 text-stone-600">{definition.summary}</p>
-          </div>
           <nav className="mt-5 flex-1 space-y-1 overflow-y-auto">
             {definition.nav.map((item) => {
               const pathOnly = item.href.split("?")[0];
@@ -67,9 +57,6 @@ export function AppShell({
                   )}
                 >
                   <span className="block text-sm font-medium">{item.label}</span>
-                  <span className={cn("block text-[11px]", active ? "text-stone-300" : "text-stone-500")}>
-                    {item.description}
-                  </span>
                 </Link>
               );
             })}
@@ -79,7 +66,6 @@ export function AppShell({
               role={role}
               venture={venture}
               appOwner={appOwner}
-              locked={locked}
               persona={definition.persona}
               ventureName={definition.ventureName}
             />
@@ -127,7 +113,6 @@ export function AppShell({
                 role={role}
                 venture={venture}
                 appOwner={appOwner}
-                locked={locked}
                 persona={definition.persona}
                 ventureName={definition.ventureName}
               />

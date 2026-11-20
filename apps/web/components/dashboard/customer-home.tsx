@@ -18,7 +18,6 @@ export async function CustomerHome() {
         <Header
           venture={ventureName}
           persona={persona}
-          summary="Your stay and dining at Luminary. Spa tickets and Jade orders live under other venture identities."
         />
         <div className="grid gap-3 sm:grid-cols-2">
           <Link href="/luminary" className="rounded-2xl border border-stone-900/10 bg-white/90 p-5 transition hover:border-stone-900/30">
@@ -42,12 +41,10 @@ export async function CustomerHome() {
         <Header
           venture={ventureName}
           persona={persona}
-          summary="Your Jade Flowers purchases and wholesale notes. Spa guests and hotel stays use other venture logins."
         />
         <div className="grid gap-3 sm:grid-cols-2">
           <Link href="/jade/products" className="rounded-2xl border border-stone-900/10 bg-white/90 p-5 transition hover:border-stone-900/30">
             <p className="font-display text-2xl text-stone-950">Products</p>
-            <p className="mt-2 text-sm leading-6 text-stone-800">Browse finished goods from this catalog.</p>
           </Link>
           <div className="rounded-2xl border border-stone-900/10 bg-white/90 p-5">
             <p className="font-display text-2xl text-stone-950">Your orders</p>
@@ -69,13 +66,11 @@ export async function CustomerHome() {
       <Header
         venture={ventureName}
         persona={persona}
-        summary="Book spa services and buy tickets for open nights. Owner tools and other ventures stay out of this portal."
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Link href="/book" className="rounded-2xl border border-stone-900/10 bg-white/90 p-5 transition hover:border-stone-900/30">
           <p className="font-display text-2xl text-stone-950">Book a spa service</p>
-          <p className="mt-2 text-sm leading-6 text-stone-800">Pick a treatment and time for yourself.</p>
         </Link>
         <Link href="/book?loop=1" className="rounded-2xl border border-stone-900/10 bg-white/90 p-5 transition hover:border-stone-900/30">
           <p className="font-display text-2xl text-stone-950">Lobby display</p>
@@ -85,8 +80,8 @@ export async function CustomerHome() {
           <p className="font-display text-2xl text-stone-950">Open ticket nights</p>
           <p className="mt-2 text-sm leading-6 text-stone-800">
             {openInvites.length === 0
-              ? "No public invites are open right now."
-              : `${openInvites.length} invite${openInvites.length === 1 ? "" : "s"} you can join.`}
+              ? "No events are open right now."
+              : `${openInvites.length} event${openInvites.length === 1 ? "" : "s"} you can join.`}
           </p>
         </div>
       </div>
@@ -150,17 +145,14 @@ export async function CustomerHome() {
 function Header({
   venture,
   persona,
-  summary,
 }: {
   venture: string;
   persona: string;
-  summary: string;
 }) {
   return (
     <div className="max-w-2xl">
       <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Customer · {venture}</p>
       <h1 className="mt-1 font-display text-4xl text-stone-950">Hello, {persona}</h1>
-      <p className="mt-2 text-sm leading-6 text-stone-600">{summary}</p>
     </div>
   );
 }

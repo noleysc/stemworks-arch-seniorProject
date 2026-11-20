@@ -18,7 +18,7 @@ export default async function InvitePreviewPage({ params }: { params: { slug: st
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-900/10 bg-white/90 px-4 py-3">
         <p className="text-sm text-slate-700">
-          Previewing guest invite ·{" "}
+          Previewing event page ·{" "}
           <Link href={`/thepamperedsoul/${event.slug}`} className="underline">
             Back to editor
           </Link>

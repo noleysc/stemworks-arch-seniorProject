@@ -30,6 +30,12 @@ test("demo roles map to product language per venture", () => {
   assert.equal(homeForRole("customer", "pampered_soul"), "/portal?venture=pampered_soul");
   assert.equal(homeForRole("vendor", "luminary"), "/vendor?venture=luminary");
   assert.equal(homeForRole("employee", "diaz_ventures"), "/jade");
+  assert.ok(
+    getRole("employee", "diaz_ventures").nav.some((item) => item.href === "/jade/products"),
+    "Jade employee shell nav includes Products",
+  );
+  assert.equal(getRole("employee", "pampered_soul").canEditInvites, false);
+  assert.equal(getRole("owner", "pampered_soul").canEditInvites, true);
 });
 
 test("session cookie locks a venture role or grants app ownership", () => {

@@ -32,7 +32,7 @@ export default function BookServicePage({
             Book a service
           </h1>
           <p className="max-w-md text-base leading-7 text-slate-800">
-            Reserve one massage, facial, or combo for yourself. This is separate from ticketed event invites.
+            Reserve one massage, facial, or combo for yourself. This is separate from ticketed events.
           </p>
           <p className="text-sm font-medium text-slate-700">{DEFAULT_EVENT_LOCATION}</p>
           {loop ? (

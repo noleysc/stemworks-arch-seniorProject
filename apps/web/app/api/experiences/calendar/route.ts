@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
 import { NextResponse } from "next/server";
+import { businessYearMonth } from "@/lib/dates";
 import { errorResponse } from "@/lib/experiences/api-error";
 import { PublicError } from "@/lib/experiences/errors";
 
@@ -11,8 +12,11 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
-    const year = Number(url.searchParams.get("year") ?? new Date().getUTCFullYear());
-    const month = Number(url.searchParams.get("month") ?? new Date().getUTCMonth());
+    const defaults = businessYearMonth();
+    const yearParam = url.searchParams.get("year");
+    const monthParam = url.searchParams.get("month");
+    const year = yearParam?.trim() ? Number(yearParam) : defaults.year;
+    const month = monthParam?.trim() ? Number(monthParam) : defaults.month;
     if (!Number.isInteger(year) || !Number.isInteger(month) || year < 1 || year > 9999 || month < 0 || month > 11) {
       throw new PublicError("Choose a valid calendar month and year.");
     }

@@ -4,7 +4,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 
 import type { AppRole } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
@@ -12,7 +11,7 @@ import { cn } from "@/lib/utils";
 const allLinks = [
   { href: "/thepamperedsoul", label: "Today", match: "exact" as const, roles: ["owner", "employee"] as AppRole[] },
   { href: "/thepamperedsoul/events", label: "Events", match: "events" as const, roles: ["owner", "employee"] as AppRole[] },
-  { href: "/thepamperedsoul/new", label: "Create invite", match: "prefix" as const, roles: ["owner"] as AppRole[] },
+  { href: "/thepamperedsoul/new", label: "Create event", match: "prefix" as const, roles: ["owner"] as AppRole[] },
   { href: "/thepamperedsoul/calendar", label: "Calendar", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
   { href: "/thepamperedsoul/bookings", label: "Bookings", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
   { href: "/thepamperedsoul/guests", label: "Guests", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
@@ -25,8 +24,9 @@ function isActive(pathname: string, link: (typeof allLinks)[number]) {
   if (link.match === "events") {
     return (
       pathname === "/thepamperedsoul/events" ||
-      pathname === "/thepamperedsoul/new" ||
       (pathname.startsWith("/thepamperedsoul/") &&
+        pathname !== "/thepamperedsoul/new" &&
+        !pathname.startsWith("/thepamperedsoul/new/") &&
         !pathname.startsWith("/thepamperedsoul/calendar") &&
         !pathname.startsWith("/thepamperedsoul/bookings") &&
         !pathname.startsWith("/thepamperedsoul/guests") &&
@@ -38,35 +38,8 @@ function isActive(pathname: string, link: (typeof allLinks)[number]) {
   return pathname === link.href || pathname.startsWith(`${link.href}/`);
 }
 
-function readPamperedRole(): AppRole {
-  if (typeof document === "undefined") return "owner";
-  const sessionMatch = document.cookie.match(/(?:^|; )stemworks_session=([^;]*)/);
-  if (sessionMatch?.[1]) {
-    try {
-      const parsed = JSON.parse(decodeURIComponent(sessionMatch[1])) as {
-        activeVenture?: string;
-        roles?: Record<string, string>;
-      };
-      const role = parsed.roles?.pampered_soul;
-      if (role === "employee" || role === "customer" || role === "vendor" || role === "owner") return role;
-    } catch {
-      // fall through to legacy cookie
-    }
-  }
-  const match = document.cookie.match(/(?:^|; )stemworks_role=([^;]*)/);
-  const value = match?.[1];
-  if (value === "employee" || value === "customer" || value === "vendor" || value === "owner") return value;
-  return "owner";
-}
-
-export function ExperiencesNav() {
+export function ExperiencesNav({ role }: { role: AppRole }) {
   const pathname = usePathname();
-  const [role, setRole] = useState<AppRole>("owner");
-
-  useEffect(() => {
-    setRole(readPamperedRole());
-  }, [pathname]);
-
   const links = allLinks.filter((link) => link.roles.includes(role));
 
   return (

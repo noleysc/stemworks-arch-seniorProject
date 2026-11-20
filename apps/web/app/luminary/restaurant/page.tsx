@@ -15,9 +15,6 @@ export default async function RestaurantPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="max-w-xl">
           <h1 className="font-display text-4xl">Restaurant</h1>
-          <p className="mt-2 text-sm leading-6 text-stone-600">
-            Tables for Silver King, Ella Mae&apos;s, Chips, Oxbow, Beacon, Dean Street, the pool bar, and in-room dining.
-          </p>
         </div>
         <RestaurantForm />
       </div>
@@ -26,7 +23,7 @@ export default async function RestaurantPage() {
         today={businessToday()}
         kind="restaurant"
         emptyTitle="No tables in this view"
-        emptyBody="Add a reservation, or import the outlet's list from Collect. Silver King books through OpenTable and by phone; either source can be typed or exported in."
+        emptyBody="Add a reservation or import a list from Collect."
       />
     </div>
   );

@@ -271,7 +271,7 @@ export function RsvpForm({
         ))}
         <label className="flex items-start gap-3 text-sm">
           <input type="checkbox" name="networkOptIn" className="mt-1" />
-          <span>Keep my preferences in the Stemworks guest network for future invites.</span>
+          <span>Keep my preferences in the Stemworks guest network for future events.</span>
         </label>
       </fieldset>
       </fieldset>

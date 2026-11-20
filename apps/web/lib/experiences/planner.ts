@@ -149,9 +149,9 @@ export async function publishEvent(slug: string) {
     where: { slug },
     include: { tiers: true },
   });
-  if (!event) throw new PublicError("That invite could not be found. Refresh the invite list and try again.", 404);
+  if (!event) throw new PublicError("That event could not be found. Refresh the event list and try again.", 404);
   if (event.tiers.length === 0) throw new PublicError("Add a ticket type before publishing.");
-  if (event.status === "cancelled") throw new PublicError("Cancelled invites cannot be published.");
+  if (event.status === "cancelled") throw new PublicError("Cancelled events cannot be published.");
   return prisma.experienceEvent.update({
     where: { id: event.id },
     data: { status: "open" },
@@ -160,9 +160,9 @@ export async function publishEvent(slug: string) {
 
 export async function unpublishEvent(slug: string) {
   const event = await prisma.experienceEvent.findUnique({ where: { slug } });
-  if (!event) throw new PublicError("That invite could not be found. Refresh the invite list and try again.", 404);
+  if (!event) throw new PublicError("That event could not be found. Refresh the event list and try again.", 404);
   if (event.status !== "open" && event.status !== "full") {
-    throw new PublicError("Only a published invite can be unpublished.");
+    throw new PublicError("Only a published event can be unpublished.");
   }
   return prisma.experienceEvent.update({
     where: { id: event.id },
@@ -172,7 +172,7 @@ export async function unpublishEvent(slug: string) {
 
 export async function cancelEvent(slug: string) {
   const event = await prisma.experienceEvent.findUnique({ where: { slug } });
-  if (!event) throw new PublicError("That invite could not be found. Refresh the invite list and try again.", 404);
+  if (!event) throw new PublicError("That event could not be found. Refresh the event list and try again.", 404);
   if (event.status === "cancelled") return event;
   return prisma.experienceEvent.update({
     where: { id: event.id },
@@ -211,8 +211,8 @@ export async function updateOwnerEvent(slug: string, raw: z.input<typeof updateO
       registrations: { select: { tierId: true, ticketQuantity: true, status: true } },
     },
   });
-  if (!event) throw new PublicError("That invite could not be found. Refresh the invite list and try again.", 404);
-  if (event.status === "cancelled") throw new PublicError("Cancelled invites cannot be edited.");
+  if (!event) throw new PublicError("That event could not be found. Refresh the event list and try again.", 404);
+  if (event.status === "cancelled") throw new PublicError("Cancelled events cannot be edited.");
 
   const soldByTier = new Map<string, number>();
   for (const registration of event.registrations) {

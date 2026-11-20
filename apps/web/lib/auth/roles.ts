@@ -91,13 +91,14 @@ function employeeNav(venture: VentureKey): NavItem[] {
     return [
       { href: "/jade", label: "Today", description: "Product floor" },
       { href: "/jade/materials", label: "Materials", description: "On-hand stock" },
+      { href: "/jade/products", label: "Products", description: "Finished goods" },
       { href: "/jade/batches", label: "Batches", description: "Pour and release" },
       { href: "/jade/orders", label: "Orders", description: "Open orders" },
     ];
   }
   return [
     { href: "/thepamperedsoul", label: "Today", description: "Spa desk hub" },
-    { href: "/thepamperedsoul/calendar", label: "Schedule", description: "Invites and appointments" },
+    { href: "/thepamperedsoul/calendar", label: "Schedule", description: "Events and appointments" },
     { href: "/thepamperedsoul/guests", label: "Check-in", description: "Ticketed guests" },
     { href: "/thepamperedsoul/bookings", label: "Bookings", description: "Spa appointments" },
   ];

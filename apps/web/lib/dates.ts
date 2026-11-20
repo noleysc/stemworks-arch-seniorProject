@@ -36,6 +36,12 @@ export function businessToday(now = new Date()): string {
   }).format(now);
 }
 
+/** Year and 0-based month in America/New_York (matches `businessToday`). */
+export function businessYearMonth(now = new Date()): { year: number; month: number } {
+  const [yearText, monthText] = businessToday(now).split("-");
+  return { year: Number(yearText), month: Number(monthText) - 1 };
+}
+
 export function parseBusinessDate(raw: string): string | null {
   const value = raw.trim();
   if (!value) return null;

@@ -22,8 +22,7 @@ export default async function RoomsPage({ searchParams }: { searchParams: { sour
         <div className="max-w-xl">
           <h1 className="font-display text-4xl">Rentals</h1>
           <p className="mt-2 text-sm leading-6 text-stone-600">
-            All stays for Luminary Hotel & Co. Filter by source. A confirmation code is unique per source, so the
-            website and Airbnb never collapse into one row.
+            Confirmation codes are unique per booking source.
           </p>
         </div>
         <RoomForm sources={sources} />
