@@ -43,12 +43,6 @@ export default function DashboardPage({
           <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
             {appOwner ? "App owner" : "Owner"} · {definition.persona} · {tenant.name}
           </p>
-          <h1 className="mt-1 font-display text-4xl">Command board</h1>
-          <p className="mt-2 text-sm leading-6 text-stone-600">
-            {appOwner
-              ? "Stemworks ownership can open every venture board. Switch tenants below without leaving app ownership."
-              : `Money and attention for ${definition.ventureName} only. Sign out to enter a different venture.`}
-          </p>
         </div>
         {appOwner ? (
           <div className="flex flex-wrap gap-2">

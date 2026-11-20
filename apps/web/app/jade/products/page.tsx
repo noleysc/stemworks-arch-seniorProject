@@ -20,17 +20,13 @@ export default async function ProductsPage() {
     <div className="space-y-8">
       <div className="max-w-2xl">
         <h1 className="font-display text-4xl">Products</h1>
-        <p className="mt-2 text-sm leading-6 text-emerald-950/70">
-          Finished goods and batch tracking. Order materials, pour a batch of 6 or 10, release into inventory, and keep
-          every unit tied to one batch code for recall.
-        </p>
       </div>
 
       <ol className="grid gap-3 sm:grid-cols-4">
-        <Step n="1" title="Order materials" body="Receive beeswax and other inputs on Materials." href="/jade/materials" />
-        <Step n="2" title="Pour a batch" body="Use stock to make 6 or 10 finished units." href="#pour" />
-        <Step n="3" title="Update inventory" body="Release the pour so SKU on-hand rises." href="/jade/batches" />
-        <Step n="4" title="Recall together" body="One batch code pulls every linked unit." href="/jade/batches" />
+        <Step n="1" title="Order materials" href="/jade/materials" />
+        <Step n="2" title="Pour a batch" href="#pour" />
+        <Step n="3" title="Update inventory" href="/jade/batches" />
+        <Step n="4" title="Recall a batch" href="/jade/batches" />
       </ol>
 
       <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
@@ -123,19 +119,16 @@ export default async function ProductsPage() {
 function Step({
   n,
   title,
-  body,
   href,
 }: {
   n: string;
   title: string;
-  body: string;
   href: string;
 }) {
   return (
     <Link href={href} className="rounded-2xl border border-emerald-900/10 bg-white p-4 transition hover:border-emerald-900/30">
       <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-900/50">Step {n}</p>
       <p className="mt-2 font-medium text-emerald-950">{title}</p>
-      <p className="mt-1 text-sm text-emerald-950/70">{body}</p>
     </Link>
   );
 }

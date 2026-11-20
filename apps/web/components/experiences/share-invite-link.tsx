@@ -35,11 +35,10 @@ export function ShareInviteLink({
   if (!published) {
     return (
       <div className="rounded-3xl border border-dashed border-slate-900/15 bg-white/70 p-5">
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Guest invite</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Event page</p>
         <h2 className="mt-2 font-display text-2xl">Not public yet</h2>
         <p className="mt-2 text-sm leading-6 text-slate-700">
-          Publish this ticketed invite to unlock the guest link. Guests buy tickets there — they never see the
-          creator desk.
+          Publish the event to enable its public page.
         </p>
       </div>
     );
@@ -47,7 +46,7 @@ export function ShareInviteLink({
 
   return (
     <div className="rounded-3xl border border-slate-900/10 bg-slate-950 p-5 text-[#eef2f6]">
-      <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Share this ticketed invite</p>
+      <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Share this event</p>
       <p className="mt-3 break-all font-mono text-sm text-slate-200">{absolute}</p>
       <div className="mt-4 flex flex-wrap gap-3">
         <Button type="button" variant="secondary" onClick={() => void copy()}>

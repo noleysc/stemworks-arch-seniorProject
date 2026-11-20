@@ -2,8 +2,7 @@
 
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 
 import type { AppRole } from "@/lib/auth/roles";
 import { listVentures, type VentureKey } from "@/lib/auth/ventures";
@@ -13,42 +12,48 @@ export function SessionPanel({
   role,
   venture,
   appOwner,
-  locked,
   persona,
   ventureName,
 }: {
   role: AppRole;
   venture: VentureKey;
   appOwner: boolean;
-  locked: boolean;
   persona: string;
   ventureName: string;
 }) {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const ventures = listVentures();
 
+  useEffect(() => {
+    const restore = () => setPending(false);
+    window.addEventListener("pageshow", restore);
+    return () => window.removeEventListener("pageshow", restore);
+  }, []);
+
   async function post(body: Record<string, unknown>, fallbackHref = "/login") {
     setError(null);
-    const response = await fetch("/api/v1/session/role", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const payload = (await response.json()) as { homeHref?: string; error?: string };
-    if (!response.ok) throw new Error(payload.error || "Could not update session.");
-    startTransition(() => {
-      router.push(body.action === "logout" ? "/login" : payload.homeHref || fallbackHref);
-      router.refresh();
-    });
+    setPending(true);
+    try {
+      const response = await fetch("/api/v1/session/role", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const payload = (await response.json()) as { homeHref?: string; error?: string };
+      if (!response.ok) throw new Error(payload.error || "Could not update session.");
+      window.location.assign(body.action === "logout" ? "/login" : payload.homeHref || fallbackHref);
+    } catch (error) {
+      setPending(false);
+      throw error;
+    }
   }
 
   return (
     <div className="space-y-3">
       <div className="rounded-xl bg-stone-50/90 px-3 py-2.5 ring-1 ring-stone-200">
         <p className="text-[11px] uppercase tracking-[0.16em] text-stone-500">
-          {appOwner ? "App ownership" : "Locked venture"}
+          {appOwner ? "App owner" : "Signed in"}
         </p>
         <p className="mt-1 text-sm font-medium text-stone-900">{persona}</p>
         <p className="text-xs text-stone-600">
@@ -84,10 +89,6 @@ export function SessionPanel({
             ))}
           </div>
         </div>
-      ) : locked ? (
-        <p className="text-[11px] leading-4 text-stone-500">
-          You are locked into this venture. Sign out to pick a different desk or role.
-        </p>
       ) : null}
 
       <button

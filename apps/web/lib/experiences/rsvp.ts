@@ -27,7 +27,7 @@ export async function submitRsvp(slug: string, raw: z.input<typeof rsvpInputSche
       },
     },
   });
-  if (!event) throw new PublicError("That invite is not available. Check the link with the organizer.", 404);
+  if (!event) throw new PublicError("That event is not available. Check the link with the organizer.", 404);
   return purchaseTickets(event, input);
 }
 

@@ -42,7 +42,7 @@ test("unexpected query failures produce a safe response and server-only diagnost
   try {
     const response = await listEvents();
     assert.equal(response.status, 500);
-    assert.deepEqual(await response.json(), { publicError: true, error: "We couldn’t load your invites. Please try again." });
+    assert.deepEqual(await response.json(), { publicError: true, error: "We couldn’t load your events. Please try again." });
     assert.equal(log.mock.calls.length, 1);
     assert.equal((log.mock.calls[0].arguments[1] as { code: string }).code, "P9999");
     assert.doesNotMatch(JSON.stringify(log.mock.calls[0].arguments), /GuestProfile|secret/);
@@ -58,6 +58,6 @@ test("missing guest and lifecycle targets return useful instructions without dia
   for (const action of [unpublish, cancel]) {
     const missing = await action(request({}), { params: { slug: "missing-api-error-test-invite" } });
     assert.equal(missing.status, 404);
-    assert.match((await missing.json()).error, /Refresh the invite list/);
+    assert.match((await missing.json()).error, /Refresh the event list/);
   }
 });

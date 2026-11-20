@@ -30,7 +30,7 @@ async function ownedEvent(slug: string) {
   const event = await prisma.experienceEvent.findFirst({
     where: { slug, ventureId: venture.id },
   });
-  if (!event) throw new PublicError("That invite could not be found. Refresh the invite list and try again.", 404);
+  if (!event) throw new PublicError("That event could not be found. Refresh the event list and try again.", 404);
   return event;
 }
 
@@ -94,7 +94,7 @@ export async function deleteItineraryItem(id: string) {
   const existing = await prisma.eventItineraryItem.findFirst({
     where: { id, event: { ventureId: venture.id } },
   });
-  if (!existing) throw new PublicError("That itinerary item is no longer available. Refresh the invite and try again.", 404);
+  if (!existing) throw new PublicError("That itinerary item is no longer available. Refresh the event and try again.", 404);
   await prisma.eventItineraryItem.delete({ where: { id } });
   return { ok: true };
 }

@@ -26,7 +26,7 @@ export default async function VendorEventPage({
   if (!event) {
     return (
       <div className="rounded-2xl border border-stone-200 bg-white p-6">
-        <p className="text-sm text-stone-700">That invite could not be found.</p>
+        <p className="text-sm text-stone-700">That event could not be found.</p>
         <Link href="/vendor" className="mt-3 inline-block text-sm underline underline-offset-4">
           Back to vendor desk
         </Link>
@@ -63,7 +63,7 @@ export default async function VendorEventPage({
         </p>
       ) : guests.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-stone-200 bg-white/80 p-6 text-sm text-stone-600">
-          No guests on this invite yet.
+          No guests at this event yet.
         </p>
       ) : (
         <ul className="space-y-3">

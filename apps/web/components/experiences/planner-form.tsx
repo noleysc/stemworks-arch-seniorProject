@@ -145,11 +145,11 @@ export function PlannerForm() {
               roleLabel: vendor.roleLabel,
             })),
         }),
-      }, "We couldn’t save your invite. Please try again.");
+      }, "We couldn’t save your event. Please try again.");
       router.push(`/thepamperedsoul/${payload.event.slug}`);
       router.refresh();
     } catch (err) {
-      setError(requestErrorMessage(err, "We couldn’t save your invite. Please try again."));
+      setError(requestErrorMessage(err, "We couldn’t save your event. Please try again."));
       setPending(false);
     }
   }
@@ -159,10 +159,10 @@ export function PlannerForm() {
       <div className="space-y-6">
         <section className="space-y-4 rounded-3xl border border-slate-900/10 bg-white/80 p-5">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-slate-500">Ticketed invite</p>
-            <h2 className="mt-1 font-display text-2xl">Invite copy</h2>
+            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-slate-500">Ticketed event</p>
+            <h2 className="mt-1 font-display text-2xl">Event details</h2>
           </div>
-          <Field label="Invite title" htmlFor="title">
+          <Field label="Event title" htmlFor="title">
             <Input id="title" name="title" required maxLength={160} placeholder="Holiday spa evening" />
           </Field>
           <Field label="What should guests know?" htmlFor="summary">
@@ -171,7 +171,7 @@ export function PlannerForm() {
               name="summary"
               required
               maxLength={800}
-              placeholder="A ticketed evening at The Pampered Soul. Treatments you add from the menu appear on the invite."
+              placeholder="A ticketed evening at The Pampered Soul."
             />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -187,7 +187,7 @@ export function PlannerForm() {
             <Field label="Capacity" htmlFor="capacity">
               <Input id="capacity" name="capacity" type="number" min={1} max={5000} defaultValue={24} required />
             </Field>
-            <Field label="Host name on the invite" htmlFor="hostDisplayName">
+            <Field label="Host name" htmlFor="hostDisplayName">
               <Input id="hostDisplayName" name="hostDisplayName" defaultValue={DEFAULT_HOST_NAME} required />
             </Field>
           </div>
@@ -197,7 +197,7 @@ export function PlannerForm() {
           <div>
             <h2 className="font-display text-2xl">Ticket types</h2>
             <p className="mt-1 text-sm text-slate-600">
-              Guests pick a tier and pay on the public invite. You need at least one before publishing.
+              At least one ticket type is required to publish.
             </p>
           </div>
           <ul className="space-y-3">
@@ -320,9 +320,6 @@ export function PlannerForm() {
         <section className="space-y-4 rounded-3xl border border-slate-900/10 bg-white/80 p-5">
           <div>
             <h2 className="font-display text-2xl">On this event</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              Pick massages and facials from the spa menu. Guests see only what you add here.
-            </p>
           </div>
           {itinerary.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-slate-900/15 px-4 py-6 text-sm text-slate-600">
@@ -356,7 +353,7 @@ export function PlannerForm() {
                     </button>
                   </div>
                   <Label className="mt-3 block text-xs uppercase tracking-[0.16em] text-slate-500" htmlFor={`${item.localId}-time`}>
-                    Time on the invite
+                    Time for this item
                   </Label>
                   <Input
                     id={`${item.localId}-time`}
@@ -389,10 +386,7 @@ export function PlannerForm() {
         </section>
 
         <section className="rounded-3xl border border-slate-900/10 bg-white/80 p-5">
-          <h2 className="font-display text-2xl">Spa menu</h2>
-          <p className="mt-1 mb-4 text-sm text-slate-600">
-            The Pampered Soul treatments. Click one to put it on this event.
-          </p>
+          <h2 className="mb-4 font-display text-2xl">Spa menu</h2>
           <SpaMenuPicker selectedKeys={selectedKeys} onAdd={addService} disabled={pending} />
         </section>
 
@@ -402,7 +396,7 @@ export function PlannerForm() {
             Publish guest checkout now
           </label>
           <Button type="submit" disabled={pending}>
-            {pending ? "Creating…" : "Create ticketed invite"}
+            {pending ? "Creating…" : "Create event"}
           </Button>
           {error ? <p role="alert" className="w-full text-sm text-red-700">{error}</p> : null}
         </div>

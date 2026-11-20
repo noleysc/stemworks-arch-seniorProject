@@ -97,7 +97,7 @@ function employeeNav(venture: VentureKey): NavItem[] {
   }
   return [
     { href: "/thepamperedsoul", label: "Today", description: "Spa desk hub" },
-    { href: "/thepamperedsoul/calendar", label: "Schedule", description: "Invites and appointments" },
+    { href: "/thepamperedsoul/calendar", label: "Schedule", description: "Events and appointments" },
     { href: "/thepamperedsoul/guests", label: "Check-in", description: "Ticketed guests" },
     { href: "/thepamperedsoul/bookings", label: "Bookings", description: "Spa appointments" },
   ];

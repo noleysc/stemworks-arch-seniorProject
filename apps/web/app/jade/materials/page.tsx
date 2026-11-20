@@ -14,8 +14,7 @@ export default async function MaterialsPage() {
       <div className="max-w-xl">
         <h1 className="font-display text-4xl">Materials</h1>
         <p className="mt-2 text-sm leading-6 text-emerald-950/70">
-          Catalog and purchase receipts. On-hand updates through an append-only movement. A material at or below reorder
-          point publishes an inventory alert on the Diaz Ventures dashboard.
+          Materials at or below their reorder point appear as dashboard alerts.
         </p>
       </div>
       <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
