@@ -1,6 +1,8 @@
 /* Copyright (c) 2026 Diaz Ventures LLC. All rights reserved. Confidential and proprietary. */
 
+import { pendingPaymentAttention, summarizePendingPayments } from "@/lib/dashboard/pending-payments";
 import type { VenturePortResult } from "@/lib/dashboard/types";
+import { prisma } from "@/lib/db";
 import { dayDelta } from "@/lib/dates";
 import { listCrmContacts } from "@/lib/experiences/crm";
 import { listExperienceEvents } from "@/lib/experiences/events";
@@ -58,6 +60,18 @@ export async function experiencesPort(businessDate: string): Promise<VenturePort
       venture: "pampered_events",
     });
   }
+
+  // Read-only: select payment fields only, never guest identity, so the dashboard API stays aggregate.
+  const payableEvents = events.filter((event) => event.status !== "cancelled");
+  const paymentRows = payableEvents.length
+    ? await prisma.eventRegistration.findMany({
+        where: { eventId: { in: payableEvents.map((event) => event.id) }, status: { not: "cancelled" } },
+        select: { eventId: true, status: true, paymentStatus: true, amountDueCents: true, amountPaidCents: true },
+      })
+    : [];
+  attention.push(
+    ...pendingPaymentAttention(summarizePendingPayments(payableEvents, paymentRows, businessDate), "pampered_events"),
+  );
 
   const milestones = openEvents.map((event) => ({
     id: event.id,
