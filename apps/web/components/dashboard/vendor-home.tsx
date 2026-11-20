@@ -18,10 +18,9 @@ export async function VendorHome() {
   const session = getDemoSession();
   const venture = session.activeVenture;
   const businessKey = DEMO_VENDOR_KEY[venture];
-  const { persona, ventureName, vendorLabel } = {
+  const { persona, ventureName } = {
     persona: session.definition.persona,
     ventureName: session.definition.ventureName,
-    vendorLabel: session.definition.nav[0]?.label ?? "Partner desk",
   };
 
   if (venture !== "pampered_soul") {
@@ -32,10 +31,6 @@ export async function VendorHome() {
             Vendor · {ventureName}
           </p>
           <h1 className="mt-1 font-display text-4xl text-stone-950">{persona}</h1>
-          <p className="mt-2 text-sm leading-6 text-stone-600">
-            {vendorLabel} for {ventureName} only. This partner identity does not see Pampered Soul invite nights or other
-            venture CRMs.
-          </p>
         </div>
         <div className="rounded-2xl border border-stone-900/10 bg-white/90 p-5">
           <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Demo partner key</p>
@@ -77,12 +72,10 @@ export async function VendorHome() {
         <div className="rounded-2xl border border-stone-900/10 bg-white/90 p-5">
           <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Events</p>
           <p className="mt-2 font-display text-4xl">{participating.length}</p>
-          <p className="text-sm text-stone-600">nights you are listed on</p>
         </div>
         <div className="rounded-2xl border border-stone-900/10 bg-white/90 p-5">
           <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Marketing consents</p>
           <p className="mt-2 font-display text-4xl">{contacts.length}</p>
-          <p className="text-sm text-stone-600">active contacts who opted in</p>
         </div>
       </div>
 

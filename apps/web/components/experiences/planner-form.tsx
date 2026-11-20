@@ -197,7 +197,7 @@ export function PlannerForm() {
           <div>
             <h2 className="font-display text-2xl">Ticket types</h2>
             <p className="mt-1 text-sm text-slate-600">
-              Guests pick a tier and pay on the public invite. You need at least one before publishing.
+              At least one ticket type is required to publish.
             </p>
           </div>
           <ul className="space-y-3">
@@ -320,9 +320,6 @@ export function PlannerForm() {
         <section className="space-y-4 rounded-3xl border border-slate-900/10 bg-white/80 p-5">
           <div>
             <h2 className="font-display text-2xl">On this event</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              Pick massages and facials from the spa menu. Guests see only what you add here.
-            </p>
           </div>
           {itinerary.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-slate-900/15 px-4 py-6 text-sm text-slate-600">
@@ -389,10 +386,7 @@ export function PlannerForm() {
         </section>
 
         <section className="rounded-3xl border border-slate-900/10 bg-white/80 p-5">
-          <h2 className="font-display text-2xl">Spa menu</h2>
-          <p className="mt-1 mb-4 text-sm text-slate-600">
-            The Pampered Soul treatments. Click one to put it on this event.
-          </p>
+          <h2 className="mb-4 font-display text-2xl">Spa menu</h2>
           <SpaMenuPicker selectedKeys={selectedKeys} onAdd={addService} disabled={pending} />
         </section>
 
