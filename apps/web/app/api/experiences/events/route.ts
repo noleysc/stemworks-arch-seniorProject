@@ -13,7 +13,7 @@ export async function GET() {
     const events = await listExperienceEvents();
     return NextResponse.json({ events });
   } catch (error) {
-    return errorResponse(error, "We couldn’t load your invites. Please try again.");
+    return errorResponse(error, "We couldn’t load your events. Please try again.");
   }
 }
 
@@ -25,6 +25,6 @@ export async function POST(request: Request) {
     const event = await getEventBySlug(created.slug);
     return NextResponse.json({ event }, { status: 201 });
   } catch (error) {
-    return errorResponse(error, "We couldn’t save your invite. Please try again.");
+    return errorResponse(error, "We couldn’t save your event. Please try again.");
   }
 }

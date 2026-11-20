@@ -145,10 +145,10 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
             quantityAvailable: tier.quantityAvailable,
           })),
         }),
-      }, "We couldn’t save your invite changes. Please try again.");
+      }, "We couldn’t save your event changes. Please try again.");
       router.refresh();
     } catch (err) {
-      setError(requestErrorMessage(err, "We couldn’t save your invite changes. Please try again."));
+      setError(requestErrorMessage(err, "We couldn’t save your event changes. Please try again."));
     } finally {
       setPendingKey(null);
     }
@@ -158,10 +158,10 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
     setPendingKey("publish");
     setError(null);
     try {
-      await requestJson(`/api/experiences/events/${event.slug}/publish`, { method: "POST" }, "We couldn’t publish your invite. Please try again.");
+      await requestJson(`/api/experiences/events/${event.slug}/publish`, { method: "POST" }, "We couldn’t publish your event. Please try again.");
       router.refresh();
     } catch (err) {
-      setError(requestErrorMessage(err, "We couldn’t publish your invite. Please try again."));
+      setError(requestErrorMessage(err, "We couldn’t publish your event. Please try again."));
     } finally {
       setPendingKey(null);
     }
@@ -171,24 +171,24 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
     setPendingKey("unpublish");
     setError(null);
     try {
-      await requestJson(`/api/experiences/events/${event.slug}/unpublish`, { method: "POST" }, "We couldn’t unpublish your invite. Please try again.");
+      await requestJson(`/api/experiences/events/${event.slug}/unpublish`, { method: "POST" }, "We couldn’t unpublish your event. Please try again.");
       router.refresh();
     } catch (err) {
-      setError(requestErrorMessage(err, "We couldn’t unpublish your invite. Please try again."));
+      setError(requestErrorMessage(err, "We couldn’t unpublish your event. Please try again."));
     } finally {
       setPendingKey(null);
     }
   }
 
   async function cancelInvite() {
-    if (!window.confirm("Cancel this invite? Guests will no longer be able to buy tickets.")) return;
+    if (!window.confirm("Cancel this event? Guests will no longer be able to buy tickets.")) return;
     setPendingKey("cancel");
     setError(null);
     try {
-      await requestJson(`/api/experiences/events/${event.slug}/cancel`, { method: "POST" }, "We couldn’t cancel your invite. Please try again.");
+      await requestJson(`/api/experiences/events/${event.slug}/cancel`, { method: "POST" }, "We couldn’t cancel your event. Please try again.");
       router.refresh();
     } catch (err) {
-      setError(requestErrorMessage(err, "We couldn’t cancel your invite. Please try again."));
+      setError(requestErrorMessage(err, "We couldn’t cancel your event. Please try again."));
     } finally {
       setPendingKey(null);
     }
@@ -201,7 +201,7 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
           href={`/thepamperedsoul/${event.slug}/preview`}
           className="rounded-full border border-slate-900/15 px-4 py-2 text-sm text-slate-900"
         >
-          Preview guest invite
+          Preview event page
         </Link>
         {published ? (
           <Link
@@ -218,8 +218,8 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
         <div className="space-y-6">
           <section className="space-y-4 rounded-3xl border border-slate-900/10 bg-white/80 p-5">
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Invite · {event.statusLabel}</p>
-              <h2 className="mt-1 font-display text-2xl">Invite copy</h2>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Event · {event.statusLabel}</p>
+              <h2 className="mt-1 font-display text-2xl">Event details</h2>
             </div>
             <Field label="Title" htmlFor="edit-title">
               <Input id="edit-title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={cancelled} />
@@ -378,12 +378,12 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
           <div className="flex flex-wrap items-center gap-3 rounded-3xl border border-slate-900/10 bg-white/80 p-5">
             {!cancelled ? (
               <Button type="button" disabled={pendingKey === "save"} onClick={saveDetails}>
-                {pendingKey === "save" ? "Saving…" : "Save invite details"}
+                {pendingKey === "save" ? "Saving…" : "Save event details"}
               </Button>
             ) : null}
             {event.status === "draft" ? (
               <Button type="button" disabled={pendingKey === "publish"} onClick={publish}>
-                Publish ticketed invite
+                Publish event
               </Button>
             ) : null}
             {published ? (
@@ -393,10 +393,10 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
             ) : null}
             {!cancelled ? (
               <Button type="button" variant="outline" disabled={pendingKey === "cancel"} onClick={cancelInvite}>
-                Cancel invite
+                Cancel event
               </Button>
             ) : (
-              <p className="text-sm text-slate-600">This invite is cancelled.</p>
+              <p className="text-sm text-slate-600">This event is cancelled.</p>
             )}
             {error ? <p role="alert" className="w-full text-sm text-red-700">{error}</p> : null}
           </div>
@@ -405,10 +405,10 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
         <div className="space-y-6">
           <section className="space-y-4 rounded-3xl border border-slate-900/10 bg-white/80 p-5">
             <div>
-              <h2 className="font-display text-2xl">Treatments on this invite</h2>
+              <h2 className="font-display text-2xl">Treatments at this event</h2>
             </div>
             {event.itinerary.length === 0 ? (
-              <p className="text-sm text-slate-600">Nothing on the invite yet. Add a massage or facial from the menu.</p>
+              <p className="text-sm text-slate-600">No treatments yet. Add a massage or facial from the menu.</p>
             ) : (
               <ol className="space-y-3">
                 {event.itinerary.map((item) => (

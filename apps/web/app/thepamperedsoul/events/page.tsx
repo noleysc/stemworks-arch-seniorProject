@@ -36,7 +36,7 @@ export default async function PamperedEventsPage() {
           href="/thepamperedsoul/new"
           className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-[#eef2f6]"
         >
-          Create invite
+          Create event
         </Link>
       </div>
 
@@ -44,12 +44,12 @@ export default async function PamperedEventsPage() {
         <ShareInviteLink slug={latest.slug} published={latestPublished} />
       ) : (
         <section className="rounded-3xl border border-dashed border-slate-900/15 bg-white/70 p-8">
-          <h2 className="font-display text-2xl">No invites yet</h2>
+          <h2 className="font-display text-2xl">No events yet</h2>
           <Link
             href="/thepamperedsoul/new"
             className="mt-5 inline-flex rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-[#eef2f6]"
           >
-            Create your first invite
+            Create your first event
           </Link>
         </section>
       )}
@@ -82,7 +82,7 @@ export default async function PamperedEventsPage() {
                   href={`/thepamperedsoul/${event.slug}`}
                   className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-[#eef2f6]"
                 >
-                  Edit invite
+                  Edit event
                 </Link>
                 {published ? (
                   <Link
@@ -120,7 +120,7 @@ export default async function PamperedEventsPage() {
 
       {latest ? (
         <section className="rounded-3xl border border-slate-900/10 bg-white/80 p-5">
-          <h2 className="font-display text-2xl">On the latest invite</h2>
+          <h2 className="font-display text-2xl">At the latest event</h2>
           <ul className="mt-4 grid gap-3 sm:grid-cols-3">
             {latest.itinerary
               .filter((item) => item.serviceKey)
@@ -137,7 +137,7 @@ export default async function PamperedEventsPage() {
                 </li>
               ))}
             {latest.itinerary.every((item) => !item.serviceKey) ? (
-              <li className="text-sm text-slate-600">No spa menu items on this invite yet.</li>
+              <li className="text-sm text-slate-600">No spa menu items at this event yet.</li>
             ) : null}
           </ul>
         </section>

@@ -8,7 +8,7 @@ export default function NewExperiencePage() {
   return (
     <div className="space-y-8">
       <div className="max-w-2xl">
-        <h1 className="mt-2 font-display text-4xl leading-tight text-slate-950">Create a ticketed invite</h1>
+        <h1 className="mt-2 font-display text-4xl leading-tight text-slate-950">Create an event</h1>
       </div>
       <PlannerForm />
     </div>

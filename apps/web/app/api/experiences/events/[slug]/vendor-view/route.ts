@@ -17,7 +17,7 @@ export async function GET(request: Request, context: { params: { slug: string } 
       throw new PublicError("Choose a participating business to view its guest list.");
     }
     const event = await getEventBySlug(context.params.slug);
-    if (!event) throw new PublicError("That invite could not be found. Check the link and try again.", 404);
+    if (!event) throw new PublicError("That event could not be found. Check the link and try again.", 404);
     const guests = await vendorGuestView(event.id, businessKey);
     return NextResponse.json({ event: { id: event.id, title: event.title, slug: event.slug }, guests });
   } catch (error) {

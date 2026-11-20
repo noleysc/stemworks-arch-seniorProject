@@ -14,6 +14,6 @@ export async function POST(_request: Request, context: { params: { slug: string 
     const event = await getEventBySlug(context.params.slug);
     return NextResponse.json({ event });
   } catch (error) {
-    return errorResponse(error, "We couldn’t unpublish your invite. Please try again.");
+    return errorResponse(error, "We couldn’t unpublish your event. Please try again.");
   }
 }
