@@ -15,12 +15,7 @@ export default async function ServiceBookingsPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl">
-          <p className="text-sm text-slate-600">Individual service bookings</p>
           <h1 className="mt-2 font-display text-4xl leading-tight text-slate-950">Service bookings</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-700">
-            Clients book these on the public page. Share{" "}
-            <code className="rounded bg-slate-200/70 px-1">/book</code> for one-off spa services.
-          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
@@ -42,9 +37,6 @@ export default async function ServiceBookingsPage() {
       {appointments.length === 0 ? (
         <section className="rounded-3xl border border-dashed border-slate-900/15 bg-white/70 p-8">
           <h2 className="font-display text-2xl">No service bookings yet</h2>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-slate-700">
-            When a client books a massage or facial at `/book`, it appears here and on the calendar.
-          </p>
         </section>
       ) : (
         <ul className="space-y-3">

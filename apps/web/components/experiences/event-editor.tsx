@@ -406,7 +406,6 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
           <section className="space-y-4 rounded-3xl border border-slate-900/10 bg-white/80 p-5">
             <div>
               <h2 className="font-display text-2xl">Treatments on this invite</h2>
-              <p className="mt-1 text-sm text-slate-600">Spa menu and custom moments guests see on the invite.</p>
             </div>
             {event.itinerary.length === 0 ? (
               <p className="text-sm text-slate-600">Nothing on the invite yet. Add a massage or facial from the menu.</p>
@@ -459,8 +458,7 @@ export function EventEditor({ event }: { event: ExperienceEventRecord }) {
 
           {!cancelled ? (
             <section className="rounded-3xl border border-slate-900/10 bg-white/80 p-5">
-              <h2 className="font-display text-2xl">Spa menu</h2>
-              <p className="mt-1 mb-4 text-sm text-slate-600">Add another Pampered Soul treatment to this invite.</p>
+              <h2 className="mb-4 font-display text-2xl">Spa menu</h2>
               <SpaMenuPicker selectedKeys={selectedKeys} onAdd={addService} disabled={Boolean(pendingKey)} />
             </section>
           ) : null}

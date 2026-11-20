@@ -26,12 +26,11 @@ async function PamperedEmployee({ persona }: { persona: string }) {
       <Header
         venture="The Pampered Soul"
         persona={persona}
-        summary="Operational tools only — check-in, schedule, and bookings. Confirmed and Potential stay on the owner board."
       />
       <div className="grid gap-3 sm:grid-cols-3">
-        <OpsCard href="/thepamperedsoul/guests" title="Check-in" body="Ticketed guests for tonight’s invites." meta={`${openEvents.length} open invites`} />
-        <OpsCard href="/thepamperedsoul/calendar" title="Schedule" body="Invites and spa appointments on one calendar." />
-        <OpsCard href="/thepamperedsoul/bookings" title="Bookings" body="Individual spa services on the books." meta={`${appointments.length} on file`} />
+        <OpsCard href="/thepamperedsoul/guests" title="Check-in" meta={`${openEvents.length} open invites`} />
+        <OpsCard href="/thepamperedsoul/calendar" title="Schedule" />
+        <OpsCard href="/thepamperedsoul/bookings" title="Bookings" meta={`${appointments.length} on file`} />
       </div>
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-2xl border border-stone-900/10 bg-white/90 p-5">
@@ -84,12 +83,11 @@ function LuminaryEmployee({ persona }: { persona: string }) {
       <Header
         venture="Luminary Hotel & Co."
         persona={persona}
-        summary="Front-desk and F&B floor only. Property P&L and other ventures stay out of this view."
       />
       <div className="grid gap-3 sm:grid-cols-3">
-        <OpsCard href="/luminary" title="Today" body="Arrivals, covers, and desk notes for this property." />
-        <OpsCard href="/luminary/rooms" title="Rentals" body="Open stays and room status." />
-        <OpsCard href="/luminary/restaurant" title="Restaurant" body="Tonight’s book and covers." />
+        <OpsCard href="/luminary" title="Today" />
+        <OpsCard href="/luminary/rooms" title="Rentals" />
+        <OpsCard href="/luminary/restaurant" title="Restaurant" />
       </div>
       <p className="text-sm text-stone-600">
         Collect files on{" "}
@@ -108,12 +106,11 @@ function JadeEmployee({ persona }: { persona: string }) {
       <Header
         venture="Jade Flowers"
         persona={persona}
-        summary="Pour floor and warehouse ops for Jade only. Founder board and spa desks are separate identities."
       />
       <div className="grid gap-3 sm:grid-cols-3">
-        <OpsCard href="/jade" title="Today" body="Product floor pulse for this batch week." />
-        <OpsCard href="/jade/materials" title="Materials" body="Wax, fragrance, and vessel stock." />
-        <OpsCard href="/jade/batches" title="Batches" body="Pour, release, and recall." />
+        <OpsCard href="/jade" title="Today" />
+        <OpsCard href="/jade/materials" title="Materials" />
+        <OpsCard href="/jade/batches" title="Batches" />
       </div>
       <p className="text-sm text-stone-600">
         Open orders live on{" "}
@@ -129,11 +126,9 @@ function JadeEmployee({ persona }: { persona: string }) {
 function Header({
   venture,
   persona,
-  summary,
 }: {
   venture: string;
   persona: string;
-  summary: string;
 }) {
   return (
     <div className="max-w-2xl">
@@ -141,7 +136,6 @@ function Header({
         Employee · {venture}
       </p>
       <h1 className="mt-1 font-display text-4xl text-stone-950">{persona}’s floor</h1>
-      <p className="mt-2 text-sm leading-6 text-stone-600">{summary}</p>
     </div>
   );
 }
@@ -149,18 +143,15 @@ function Header({
 function OpsCard({
   href,
   title,
-  body,
   meta,
 }: {
   href: string;
   title: string;
-  body: string;
   meta?: string;
 }) {
   return (
     <Link href={href} className="rounded-2xl border border-stone-900/10 bg-white/90 p-5 transition hover:border-stone-900/30">
       <p className="font-display text-2xl text-stone-950">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-stone-600">{body}</p>
       {meta ? <p className="mt-3 text-xs uppercase tracking-[0.16em] text-stone-500">{meta}</p> : null}
     </Link>
   );

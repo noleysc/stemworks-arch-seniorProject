@@ -31,49 +31,38 @@ export default async function PamperedSoulHomePage() {
           {venture.statusLabel} · prefix {venture.prefixCode}
         </p>
         <h1 className="mt-2 font-display text-4xl leading-tight text-slate-950">{venture.name}</h1>
-        <p className="mt-3 text-sm leading-6 text-slate-700">
-          Business desk for the spa: services, schedule, guests, and CRM. Ticketed events are one line of business
-          inside this desk—not the whole product.
-        </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <HubCard
           href="/thepamperedsoul/events"
           title="Events"
-          body="Ticketed invites, publish, and guest checkout links."
           meta={`${openInvites.length} open`}
         />
         <HubCard
           href="/thepamperedsoul/bookings"
           title="Spa bookings"
-          body="Individual services clients book for themselves."
           meta={`${appointments.length} on file`}
         />
         <HubCard
           href="/thepamperedsoul/calendar"
           title="Schedule"
-          body="Invites, appointments, and booked guests on one calendar."
         />
         <HubCard
           href="/thepamperedsoul/crm"
           title="CRM & guests"
-          body="Check-in, consented contacts, and scorecard."
-          meta="Guests · CRM · Scorecard"
         />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Stat label="Tickets sold" value={String(scorecard?.ticketsSold ?? 0)} detail="across invites" />
+        <Stat label="Tickets sold" value={String(scorecard?.ticketsSold ?? 0)} />
         <Stat
           label="Ticket revenue"
           value={formatMoney(scorecard?.ticketRevenueCents ?? 0)}
-          detail="confirmed sales"
         />
         <Stat
           label="Spa appointments"
           value={String(appointments.length)}
-          detail="individual service bookings"
         />
       </div>
 
@@ -165,12 +154,10 @@ export default async function PamperedSoulHomePage() {
 function HubCard({
   href,
   title,
-  body,
   meta,
 }: {
   href: string;
   title: string;
-  body: string;
   meta?: string;
 }) {
   return (
@@ -179,18 +166,16 @@ function HubCard({
       className="rounded-3xl border border-slate-900/10 bg-white/90 p-5 transition hover:border-slate-900/30"
     >
       <p className="font-display text-2xl text-slate-950">{title}</p>
-      <p className="mt-2 text-sm leading-6 text-slate-600">{body}</p>
       {meta ? <p className="mt-3 text-xs uppercase tracking-[0.16em] text-slate-500">{meta}</p> : null}
     </Link>
   );
 }
 
-function Stat({ label, value, detail }: { label: string; value: string; detail: string }) {
+function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-slate-900/10 bg-white/80 p-5">
       <p className="text-xs uppercase tracking-[0.16em] text-slate-500">{label}</p>
       <p className="mt-2 font-display text-4xl">{value}</p>
-      <p className="text-sm text-slate-600">{detail}</p>
     </div>
   );
 }
