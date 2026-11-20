@@ -63,7 +63,8 @@ Open **http://localhost:43123**
 | --- | --- |
 | `/login` | Sign-in gate (venture + role, or Stemworks app owner). Use `/login?logout=1` to clear a stuck session. |
 | `/` | App-owner desk hub (or redirects to `/login`) |
-| `/organize` | Owner venture builder — create ventures, drag-and-drop board metrics, check features |
+| `/organize` | Owner venture builder — create ventures, drag metrics, check features (unchecked = live route off) |
+| `/v/{id}` | Desk for an owner-created venture (not linked to Luminary / Jade / Pampered Soul) |
 | `/dashboard` | Founder board (`?tenant=luminary`, `diaz_ventures`, or `pampered_soul`) |
 | `/luminary` | Luminary rentals desk |
 | `/luminary/rooms` | Rental list |

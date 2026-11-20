@@ -5,9 +5,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import type { FeatureKey } from "@/lib/ventures/blueprint";
+import { hasFeature, jadeLinkFeature } from "@/lib/ventures/live-features";
 import { cn } from "@/lib/utils";
 
-const links = [
+const allLinks = [
   { href: "/jade", label: "Today" },
   { href: "/jade/materials", label: "Materials" },
   { href: "/jade/products", label: "Products" },
@@ -15,8 +17,9 @@ const links = [
   { href: "/jade/orders", label: "Orders" },
 ];
 
-export function JadeNav() {
+export function JadeNav({ features }: { features: FeatureKey[] }) {
   const pathname = usePathname();
+  const links = allLinks.filter((link) => hasFeature(features, jadeLinkFeature(link.href)));
 
   return (
     <div className="rounded-2xl border border-emerald-900/10 bg-white/80 p-3">

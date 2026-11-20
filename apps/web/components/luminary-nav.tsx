@@ -5,17 +5,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import type { FeatureKey } from "@/lib/ventures/blueprint";
+import { hasFeature, luminaryLinkFeature } from "@/lib/ventures/live-features";
 import { cn } from "@/lib/utils";
 
-const links = [
+const allLinks = [
   { href: "/luminary", label: "Today" },
   { href: "/luminary/rooms", label: "Rentals" },
   { href: "/luminary/restaurant", label: "Restaurant" },
   { href: "/luminary/import", label: "Collect" },
 ];
 
-export function LuminaryNav() {
+export function LuminaryNav({ features }: { features: FeatureKey[] }) {
   const pathname = usePathname();
+  const links = allLinks.filter((link) => hasFeature(features, luminaryLinkFeature(link.href)));
 
   return (
     <div className="rounded-2xl border border-stone-900/10 bg-white/80 p-3">

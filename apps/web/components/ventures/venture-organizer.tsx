@@ -4,6 +4,8 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 
+import Link from "next/link";
+
 import {
   FEATURE_CATALOG,
   METRIC_CATALOG,
@@ -17,10 +19,13 @@ import {
   type VentureBlueprint,
   type VentureType,
 } from "@/lib/ventures/blueprint";
+import { deskHrefForBlueprint } from "@/lib/ventures/live-features";
 import { cn } from "@/lib/utils";
 
+type BlueprintRow = VentureBlueprint & { deskHref?: string };
+
 export function VentureOrganizer({ canCreate }: { canCreate: boolean }) {
-  const [blueprints, setBlueprints] = useState<VentureBlueprint[]>([]);
+  const [blueprints, setBlueprints] = useState<BlueprintRow[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +47,7 @@ export function VentureOrganizer({ canCreate }: { canCreate: boolean }) {
     setError(null);
     try {
       const response = await fetch("/api/v1/venture-blueprints");
-      const body = (await response.json()) as { blueprints?: VentureBlueprint[]; error?: string };
+      const body = (await response.json()) as { blueprints?: BlueprintRow[]; error?: string };
       if (!response.ok) throw new Error(body.error || "Could not load ventures.");
       const list = body.blueprints ?? [];
       setBlueprints(list);
@@ -62,11 +67,11 @@ export function VentureOrganizer({ canCreate }: { canCreate: boolean }) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify(patch),
     });
-    const body = (await response.json()) as { blueprint?: VentureBlueprint; error?: string };
+    const body = (await response.json()) as { blueprint?: BlueprintRow; error?: string };
     if (!response.ok) throw new Error(body.error || "Could not save.");
     const next = body.blueprint!;
     setBlueprints((list) => list.map((item) => (item.id === next.id ? next : item)));
-    setMessage("Saved.");
+    setMessage("Saved — live desks now follow these features.");
   }
 
   async function createVenture() {
@@ -82,12 +87,12 @@ export function VentureOrganizer({ canCreate }: { canCreate: boolean }) {
         features: ["product"],
       }),
     });
-    const body = (await response.json()) as { blueprint?: VentureBlueprint; error?: string };
+    const body = (await response.json()) as { blueprint?: BlueprintRow; error?: string };
     if (!response.ok) throw new Error(body.error || "Could not create venture.");
     const next = body.blueprint!;
     setBlueprints((list) => [...list, next]);
     setSelectedId(next.id);
-    setMessage("Venture created — arrange metrics and features.");
+    setMessage("Venture created — arrange metrics and features, then open its desk.");
   }
 
   function applyLocal(patch: Partial<VentureBlueprint>) {
@@ -126,7 +131,7 @@ export function VentureOrganizer({ canCreate }: { canCreate: boolean }) {
           <h1 className="mt-1 font-display text-4xl text-stone-950">Venture builder</h1>
           <p className="mt-2 text-sm leading-6 text-stone-600">
             Create and shape each business: drag metrics into the board order you want, then check the features that
-            desk should run.
+            desk should run. Unchecking a feature turns that live route off.
           </p>
         </div>
         {canCreate ? (
@@ -172,6 +177,20 @@ export function VentureOrganizer({ canCreate }: { canCreate: boolean }) {
 
         {selected ? (
           <div className="space-y-8 rounded-3xl border border-stone-900/10 bg-white/90 p-5 sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-stone-600">
+                Live desk:{" "}
+                <Link
+                  href={selected.deskHref || deskHrefForBlueprint(selected)}
+                  className="font-medium text-stone-950 underline underline-offset-4"
+                >
+                  {selected.deskHref || deskHrefForBlueprint(selected)}
+                </Link>
+              </p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-stone-500">
+                {selected.features.length} feature{selected.features.length === 1 ? "" : "s"} on
+              </p>
+            </div>
             <section className="grid gap-4 sm:grid-cols-2">
               <Field label="Name">
                 <input

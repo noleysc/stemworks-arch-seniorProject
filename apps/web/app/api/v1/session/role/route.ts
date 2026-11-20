@@ -13,6 +13,7 @@ import {
   type DemoSessionState,
 } from "@/lib/auth/session";
 import { isVentureKey, listVentures, type VentureKey } from "@/lib/auth/ventures";
+import { attachFeaturesCookie, clearFeaturesCookie } from "@/lib/ventures/attach-features-cookie";
 
 export const dynamic = "force-dynamic";
 
@@ -101,6 +102,7 @@ export async function POST(request: Request) {
   if (action === "logout") {
     const response = NextResponse.json({ ok: true, homeHref: "/login" });
     clearSession(response);
+    clearFeaturesCookie(response);
     return response;
   }
 
@@ -116,7 +118,7 @@ export async function POST(request: Request) {
     };
     const response = NextResponse.json(sessionPayload(next));
     writeSession(response, next);
-    return response;
+    return attachFeaturesCookie(response);
   }
 
   if (action === "switch_venture") {
@@ -137,7 +139,7 @@ export async function POST(request: Request) {
       homeHref: listVentures().find((item) => item.key === nextVenture)?.deskHref ?? "/",
     });
     writeSession(response, next);
-    return response;
+    return attachFeaturesCookie(response);
   }
 
   if (action === "login") {
@@ -160,7 +162,7 @@ export async function POST(request: Request) {
       homeHref: homeForRole(role, venture),
     });
     writeSession(response, next);
-    return response;
+    return attachFeaturesCookie(response);
   }
 
   return NextResponse.json(
@@ -172,5 +174,6 @@ export async function POST(request: Request) {
 export async function DELETE() {
   const response = NextResponse.json({ ok: true, homeHref: "/login" });
   clearSession(response);
+  clearFeaturesCookie(response);
   return response;
 }

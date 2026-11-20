@@ -9,9 +9,20 @@ import {
   type BlueprintStore,
   type VentureBlueprint,
 } from "@/lib/ventures/blueprint";
+import { snapshotFromBlueprints, type FeaturesSnapshot } from "@/lib/ventures/live-features";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const STORE_PATH = path.join(DATA_DIR, "venture-blueprints.json");
+
+function migrateBlueprints(blueprints: VentureBlueprint[]): VentureBlueprint[] {
+  return blueprints.map((item) => {
+    if (item.linkedVentureKey) return item;
+    if (item.id === "bp_luminary") return { ...item, linkedVentureKey: "luminary" };
+    if (item.id === "bp_jade") return { ...item, linkedVentureKey: "diaz_ventures" };
+    if (item.id === "bp_pampered") return { ...item, linkedVentureKey: "pampered_soul" };
+    return { ...item, linkedVentureKey: item.linkedVentureKey ?? null };
+  });
+}
 
 async function ensureStore(): Promise<BlueprintStore> {
   try {
@@ -20,13 +31,18 @@ async function ensureStore(): Promise<BlueprintStore> {
     if (!parsed?.blueprints || !Array.isArray(parsed.blueprints) || parsed.blueprints.length === 0) {
       throw new Error("empty");
     }
-    return parsed;
+    return { blueprints: migrateBlueprints(parsed.blueprints) };
   } catch {
     const store: BlueprintStore = { blueprints: seedBlueprints() };
     await fs.mkdir(DATA_DIR, { recursive: true });
     await fs.writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
     return store;
   }
+}
+
+export async function featuresSnapshot(): Promise<FeaturesSnapshot> {
+  const store = await ensureStore();
+  return snapshotFromBlueprints(store.blueprints);
 }
 
 async function writeStore(store: BlueprintStore): Promise<void> {

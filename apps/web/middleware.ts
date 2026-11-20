@@ -4,6 +4,12 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { appOwnerAllowsPath, homeForRole, isPublicPath, roleAllowsPath } from "@/lib/auth/roles";
 import { homeForSession, parseSessionCookie } from "@/lib/auth/session";
+import { ventureFromPathname } from "@/lib/auth/ventures";
+import {
+  FEATURES_COOKIE,
+  parseFeaturesCookie,
+  pathAllowedByFeatures,
+} from "@/lib/ventures/live-features";
 
 /** Old paths → three named desks. */
 const LEGACY_REWRITES: Array<{ from: RegExp; to: (match: RegExpMatchArray) => string }> = [
@@ -35,7 +41,6 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Explicit logout URL clears demo cookies and opens the Sign in gate.
   if (pathname === "/login" && request.nextUrl.searchParams.get("logout") === "1") {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -43,6 +48,7 @@ export function middleware(request: NextRequest) {
     const response = NextResponse.redirect(url);
     response.cookies.set("stemworks_session", "", { path: "/", maxAge: 0 });
     response.cookies.set("stemworks_role", "", { path: "/", maxAge: 0 });
+    response.cookies.set(FEATURES_COOKIE, "", { path: "/", maxAge: 0 });
     return response;
   }
 
@@ -55,13 +61,27 @@ export function middleware(request: NextRequest) {
     return redirectTo(request, "/login");
   }
 
-  // Locked venture users: `/` is the app-owner hub only — send them home. Use /login?logout=1 to leave.
   if (!state.appOwner && (pathname === "/" || pathname === "/login")) {
     return redirectTo(request, homeForRole(state.role, state.activeVenture));
   }
 
+  const features = parseFeaturesCookie(request.cookies.get(FEATURES_COOKIE)?.value);
+  const pathVenture = ventureFromPathname(pathname);
+
+  // Feature gates — organizer toggles turn desk routes on/off for everyone.
+  if (pathVenture) {
+    const allowed = pathAllowedByFeatures(pathname, pathVenture, features);
+    if (!allowed) {
+      const fallback =
+        state.appOwner || state.role === "owner"
+          ? "/organize?disabled=1"
+          : homeForRole(state.role, state.activeVenture);
+      return redirectTo(request, fallback);
+    }
+  }
+
   if (state.appOwner) {
-    if (appOwnerAllowsPath(pathname)) return NextResponse.next();
+    if (appOwnerAllowsPath(pathname) || pathname.startsWith("/v/")) return NextResponse.next();
     return redirectTo(request, homeForSession(state));
   }
 

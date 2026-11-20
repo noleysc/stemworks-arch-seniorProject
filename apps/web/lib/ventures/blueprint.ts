@@ -52,6 +52,8 @@ export type VentureBlueprint = {
   type: VentureType;
   statusLabel: string;
   colorToken: string;
+  /** When set, this blueprint drives an existing Stemworks desk */
+  linkedVentureKey?: "luminary" | "diaz_ventures" | "pampered_soul" | null;
   /** Ordered metrics shown on this venture’s command header / cards */
   metricOrder: MetricKey[];
   /** Enabled product features / modules */
@@ -89,6 +91,7 @@ export function emptyBlueprint(partial?: Partial<VentureBlueprint>): VentureBlue
     type: partial?.type ?? "product_brand",
     statusLabel: partial?.statusLabel ?? "Draft · organizing",
     colorToken: partial?.colorToken ?? "stemworks",
+    linkedVentureKey: partial?.linkedVentureKey ?? null,
     metricOrder: partial?.metricOrder ?? defaultMetricOrder(),
     features: partial?.features ?? ["product"],
     createdAt: partial?.createdAt ?? now,
@@ -106,6 +109,7 @@ export function seedBlueprints(): VentureBlueprint[] {
       type: "boutique_hotel",
       statusLabel: "243 keys · operational",
       colorToken: "rooms",
+      linkedVentureKey: "luminary",
       metricOrder: ["confirmed", "potential", "gap", "open_count", "attention", "next_milestone"],
       features: ["hotel", "connect"],
       createdAt: now,
@@ -118,6 +122,7 @@ export function seedBlueprints(): VentureBlueprint[] {
       type: "product_brand",
       statusLabel: "Product floor · active",
       colorToken: "jade",
+      linkedVentureKey: "diaz_ventures",
       metricOrder: ["confirmed", "potential", "inventory", "open_count", "attention"],
       features: ["product", "atelier", "connect"],
       createdAt: now,
@@ -130,6 +135,7 @@ export function seedBlueprints(): VentureBlueprint[] {
       type: "wellness_hospitality",
       statusLabel: "Spa desk · live",
       colorToken: "experiences",
+      linkedVentureKey: "pampered_soul",
       metricOrder: ["confirmed", "potential", "bookings_today", "events_open", "retention", "attention"],
       features: ["spa_bookings", "ticketed_events", "crm_consent"],
       createdAt: now,

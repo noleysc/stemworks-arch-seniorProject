@@ -4,7 +4,9 @@ import { NextResponse } from "next/server";
 
 import { getDemoSession } from "@/lib/auth/session";
 import { validateBlueprintInput } from "@/lib/ventures/blueprint";
+import { attachFeaturesCookie } from "@/lib/ventures/attach-features-cookie";
 import { createBlueprint, listBlueprints } from "@/lib/ventures/blueprint-store";
+import { deskHrefForBlueprint } from "@/lib/ventures/live-features";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +23,13 @@ export async function GET() {
   if (!session.signedIn) return unauthorized();
   if (!session.appOwner && session.role !== "owner") return forbidden();
   const blueprints = await listBlueprints();
-  return NextResponse.json({ blueprints });
+  const response = NextResponse.json({
+    blueprints: blueprints.map((item) => ({
+      ...item,
+      deskHref: deskHrefForBlueprint(item),
+    })),
+  });
+  return attachFeaturesCookie(response);
 }
 
 export async function POST(request: Request) {
@@ -40,5 +48,9 @@ export async function POST(request: Request) {
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
   const blueprint = await createBlueprint(parsed.value);
-  return NextResponse.json({ blueprint }, { status: 201 });
+  const response = NextResponse.json(
+    { blueprint: { ...blueprint, deskHref: deskHrefForBlueprint(blueprint) } },
+    { status: 201 },
+  );
+  return attachFeaturesCookie(response);
 }

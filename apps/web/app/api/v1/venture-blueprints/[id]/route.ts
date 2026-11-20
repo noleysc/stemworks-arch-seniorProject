@@ -3,8 +3,10 @@
 import { NextResponse } from "next/server";
 
 import { getDemoSession } from "@/lib/auth/session";
+import { attachFeaturesCookie } from "@/lib/ventures/attach-features-cookie";
 import { validateBlueprintInput } from "@/lib/ventures/blueprint";
 import { deleteBlueprint, getBlueprint, updateBlueprint } from "@/lib/ventures/blueprint-store";
+import { deskHrefForBlueprint } from "@/lib/ventures/live-features";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +24,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   if (!session.appOwner && session.role !== "owner") return forbidden();
   const blueprint = await getBlueprint(params.id);
   if (!blueprint) return NextResponse.json({ error: "Venture blueprint not found." }, { status: 404 });
-  return NextResponse.json({ blueprint });
+  return NextResponse.json({ blueprint: { ...blueprint, deskHref: deskHrefForBlueprint(blueprint) } });
 }
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
@@ -42,7 +44,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
   const blueprint = await updateBlueprint(params.id, parsed.value);
   if (!blueprint) return NextResponse.json({ error: "Venture blueprint not found." }, { status: 404 });
-  return NextResponse.json({ blueprint });
+  const response = NextResponse.json({
+    blueprint: { ...blueprint, deskHref: deskHrefForBlueprint(blueprint) },
+  });
+  return attachFeaturesCookie(response);
 }
 
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
@@ -53,5 +58,6 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
   }
   const ok = await deleteBlueprint(params.id);
   if (!ok) return NextResponse.json({ error: "Venture blueprint not found." }, { status: 404 });
-  return NextResponse.json({ ok: true });
+  const response = NextResponse.json({ ok: true });
+  return attachFeaturesCookie(response);
 }

@@ -254,7 +254,8 @@ export function usesAppShell(pathname: string): boolean {
     pathname.startsWith("/vendor") ||
     pathname.startsWith("/luminary") ||
     pathname.startsWith("/jade") ||
-    pathname.startsWith("/thepamperedsoul")
+    pathname.startsWith("/thepamperedsoul") ||
+    pathname.startsWith("/v/")
   );
 }
 
@@ -286,6 +287,7 @@ export function roleAllowsPath(role: AppRole, pathname: string, venture: Venture
       pathname.startsWith(getVenture(venture).deskHref) ||
       pathname.startsWith("/dashboard") ||
       pathname.startsWith("/organize") ||
+      pathname.startsWith("/v/") ||
       pathname.startsWith("/portal") ||
       pathname.startsWith("/vendor")
     );
@@ -325,7 +327,8 @@ export function appOwnerAllowsPath(pathname: string): boolean {
     pathname.startsWith("/vendor") ||
     pathname.startsWith("/luminary") ||
     pathname.startsWith("/jade") ||
-    pathname.startsWith("/thepamperedsoul")
+    pathname.startsWith("/thepamperedsoul") ||
+    pathname.startsWith("/v/")
   );
 }
 

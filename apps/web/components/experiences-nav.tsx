@@ -6,6 +6,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import type { AppRole } from "@/lib/auth/roles";
+import type { FeatureKey } from "@/lib/ventures/blueprint";
+import { hasFeature, pamperedLinkFeature } from "@/lib/ventures/live-features";
 import { cn } from "@/lib/utils";
 
 const allLinks = [
@@ -38,9 +40,14 @@ function isActive(pathname: string, link: (typeof allLinks)[number]) {
   return pathname === link.href || pathname.startsWith(`${link.href}/`);
 }
 
-export function ExperiencesNav({ role }: { role: AppRole }) {
+export function ExperiencesNav({ role, features }: { role: AppRole; features: FeatureKey[] }) {
   const pathname = usePathname();
-  const links = allLinks.filter((link) => link.roles.includes(role));
+  const links = allLinks.filter((link) => {
+    if (!link.roles.includes(role)) return false;
+    const required = pamperedLinkFeature(link.href);
+    if (!required) return true;
+    return hasFeature(features, required);
+  });
 
   return (
     <div className="rounded-2xl border border-slate-900/10 bg-white/80 p-3">

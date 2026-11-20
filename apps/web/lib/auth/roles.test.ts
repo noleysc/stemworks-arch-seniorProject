@@ -81,6 +81,8 @@ test("path gates lock venture roles and open all desks for app ownership", () =>
   assert.equal(usesAppShell("/e/consent-test-night"), false);
   assert.equal(usesAppShell("/book"), false);
   assert.equal(usesAppShell("/dashboard"), true);
+  assert.equal(usesAppShell("/organize"), true);
+  assert.equal(usesAppShell("/v/bp_custom"), true);
   assert.equal(isPublicPath("/"), true);
   assert.equal(isPublicPath("/luminary"), false);
 
