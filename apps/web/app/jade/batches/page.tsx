@@ -21,10 +21,6 @@ export default async function BatchesPage() {
           · batch ledger
         </p>
         <h1 className="mt-2 font-display text-4xl">Batches</h1>
-        <p className="mt-2 text-sm leading-6 text-emerald-950/70">
-          Every pour keeps its materials and finished units under one code. Release updates product inventory. Recall
-          pulls remaining stock from that same code.
-        </p>
       </div>
 
       {batches.length === 0 ? (

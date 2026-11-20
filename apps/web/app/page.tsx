@@ -24,7 +24,6 @@ export default function RootPage() {
               role={session.role}
               venture={session.activeVenture}
               appOwner
-              locked={false}
               persona={session.definition.persona}
               ventureName={session.definition.ventureName}
             />

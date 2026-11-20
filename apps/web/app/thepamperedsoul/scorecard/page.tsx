@@ -25,26 +25,21 @@ export default async function ScorecardPage() {
     <div className="space-y-8">
       <div className="max-w-2xl">
         <h1 className="font-display text-4xl text-slate-950">Event scorecard</h1>
-        <p className="mt-3 text-sm leading-6 text-slate-700">
-          Ticket revenue plus Partiful-style engagement and permission-based marketing consents.
-        </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <Metric label="Tickets sold" value={String(scorecard.ticketsSold)} detail="paid seats" />
+        <Metric label="Tickets sold" value={String(scorecard.ticketsSold)} />
         <Metric
           label="Ticket revenue"
           value={formatMoney(scorecard.ticketRevenueCents)}
-          detail="confirmed purchases"
         />
-        <Metric label="Attendance" value={String(scorecard.attendance)} detail="checked in" />
-        <Metric label="Check-in completion" value={checkInPct} detail="operational usability" />
+        <Metric label="Attendance" value={String(scorecard.attendance)} />
+        <Metric label="Check-in completion" value={checkInPct} />
         <Metric
           label="Follow-ups queued"
           value={String(scorecard.followUpQueued)}
-          detail="marketing consent queue"
         />
-        <Metric label="Consent audits" value={String(scorecard.consentAudits)} detail="grant / decline / revoke" />
+        <Metric label="Consent audits" value={String(scorecard.consentAudits)} />
       </div>
 
       <section className="rounded-3xl border border-slate-900/10 bg-white/90 p-5">
@@ -83,12 +78,11 @@ export default async function ScorecardPage() {
   );
 }
 
-function Metric({ label, value, detail }: { label: string; value: string; detail: string }) {
+function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-slate-900/10 bg-white/90 p-5">
       <p className="text-xs uppercase tracking-[0.16em] text-slate-500">{label}</p>
       <p className="mt-2 font-display text-4xl">{value}</p>
-      <p className="text-sm text-slate-600">{detail}</p>
     </div>
   );
 }
