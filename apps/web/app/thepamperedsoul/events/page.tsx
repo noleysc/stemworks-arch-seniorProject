@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { ShareInviteLink } from "@/components/experiences/share-invite-link";
+import { getDemoSession } from "@/lib/auth/session";
 import { formatDate } from "@/lib/dates";
 import { formatTicketPrice } from "@/lib/experiences/catalog";
 import { formatMoney } from "@/lib/money";
@@ -15,6 +16,8 @@ export const dynamic = "force-dynamic";
 /** Ticketed events line of business inside the Pampered Soul desk. */
 export default async function PamperedEventsPage() {
   const venture = await ensurePamperedSoul();
+  const { definition } = getDemoSession();
+  const canCreate = definition.canEditInvites;
   const events = await listExperienceEvents();
   const scorecard = events[0] ? await eventScorecard(events[0].slug) : null;
   const latest = events[0] ?? null;
@@ -32,12 +35,14 @@ export default async function PamperedEventsPage() {
           </p>
           <h1 className="mt-2 font-display text-4xl leading-tight text-slate-950">Events</h1>
         </div>
-        <Link
-          href="/thepamperedsoul/new"
-          className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-[#eef2f6]"
-        >
-          Create event
-        </Link>
+        {canCreate ? (
+          <Link
+            href="/thepamperedsoul/new"
+            className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-[#eef2f6]"
+          >
+            Create event
+          </Link>
+        ) : null}
       </div>
 
       {latest ? (
@@ -45,12 +50,16 @@ export default async function PamperedEventsPage() {
       ) : (
         <section className="rounded-3xl border border-dashed border-slate-900/15 bg-white/70 p-8">
           <h2 className="font-display text-2xl">No events yet</h2>
-          <Link
-            href="/thepamperedsoul/new"
-            className="mt-5 inline-flex rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-[#eef2f6]"
-          >
-            Create your first event
-          </Link>
+          {canCreate ? (
+            <Link
+              href="/thepamperedsoul/new"
+              className="mt-5 inline-flex rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-[#eef2f6]"
+            >
+              Create your first event
+            </Link>
+          ) : (
+            <p className="mt-3 text-sm text-slate-600">Ask an owner to create the first event.</p>
+          )}
         </section>
       )}
 

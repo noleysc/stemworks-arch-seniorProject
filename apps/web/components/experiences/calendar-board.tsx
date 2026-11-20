@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { businessYearMonth } from "@/lib/dates";
 import { buildMonthGrid } from "@/lib/experiences/calendar";
 import type { CalendarItem } from "@/lib/experiences/calendar";
 import { cn } from "@/lib/utils";
@@ -22,17 +23,17 @@ const kindStyles: Record<CalendarItem["kind"], string> = {
 
 export function CalendarBoard() {
   const searchParams = useSearchParams();
-  const now = new Date();
+  const businessNow = businessYearMonth();
   const yearParam = searchParams.get("year");
   const monthParam = searchParams.get("month");
   const queryYear = yearParam?.trim() ? Number(yearParam) : NaN;
   const queryMonth = monthParam?.trim() ? Number(monthParam) : NaN;
   const startYear =
-    Number.isInteger(queryYear) && queryYear >= 2000 ? queryYear : now.getUTCFullYear();
+    Number.isInteger(queryYear) && queryYear >= 2000 ? queryYear : businessNow.year;
   const startMonth =
     Number.isInteger(queryMonth) && queryMonth >= 0 && queryMonth <= 11
       ? queryMonth
-      : now.getUTCMonth();
+      : businessNow.month;
   const [year, setYear] = useState(startYear);
   const [month, setMonth] = useState(startMonth);
   const [items, setItems] = useState<CalendarItem[]>([]);

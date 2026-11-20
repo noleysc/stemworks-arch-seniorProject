@@ -22,7 +22,6 @@ export function AppShell({
   venture: VentureKey;
   definition: RoleDefinition;
   appOwner: boolean;
-  locked: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();

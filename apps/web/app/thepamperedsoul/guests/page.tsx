@@ -3,20 +3,28 @@
 import Link from "next/link";
 
 import { CheckInBoard } from "@/components/experiences/check-in-board";
+import { getDemoSession } from "@/lib/auth/session";
 import { getPrimaryEvent, listRegistrations } from "@/lib/experiences/events";
 
 export const dynamic = "force-dynamic";
 
 export default async function GuestsPage() {
+  const { definition } = getDemoSession();
   const event = await getPrimaryEvent();
   if (!event) {
     return (
       <p className="text-sm text-slate-600">
-        No event yet.{" "}
-        <Link className="underline" href="/thepamperedsoul/new">
-          Plan one
-        </Link>{" "}
-        and publish it first.
+        {definition.canEditInvites ? (
+          <>
+            No event yet.{" "}
+            <Link className="underline" href="/thepamperedsoul/new">
+              Plan one
+            </Link>{" "}
+            and publish it first.
+          </>
+        ) : (
+          <>No event yet. Ask an owner to plan and publish one first.</>
+        )}
       </p>
     );
   }

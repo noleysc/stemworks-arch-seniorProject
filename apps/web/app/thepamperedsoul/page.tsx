@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { getDemoSession } from "@/lib/auth/session";
 import { formatDate } from "@/lib/dates";
 import { listAppointments } from "@/lib/experiences/appointments";
 import { listExperienceEvents } from "@/lib/experiences/events";
@@ -14,6 +15,8 @@ export const dynamic = "force-dynamic";
 /** Pampered Soul business hub — events are one area of the spa desk. */
 export default async function PamperedSoulHomePage() {
   const venture = await ensurePamperedSoul();
+  const { definition } = getDemoSession();
+  const canCreate = definition.canEditInvites;
   const [events, appointments, scorecard] = await Promise.all([
     listExperienceEvents(),
     listAppointments(),
@@ -49,8 +52,8 @@ export default async function PamperedSoulHomePage() {
           title="Schedule"
         />
         <HubCard
-          href="/thepamperedsoul/crm"
-          title="CRM & guests"
+          href={canCreate ? "/thepamperedsoul/crm" : "/thepamperedsoul/guests"}
+          title={canCreate ? "CRM & guests" : "Guests"}
         />
       </div>
 
@@ -88,21 +91,29 @@ export default async function PamperedSoulHomePage() {
                 >
                   Open event
                 </Link>
-                <Link
-                  href="/thepamperedsoul/new"
-                  className="rounded-full border border-slate-900/15 px-3 py-1.5 text-sm"
-                >
-                  Create event
-                </Link>
+                {canCreate ? (
+                  <Link
+                    href="/thepamperedsoul/new"
+                    className="rounded-full border border-slate-900/15 px-3 py-1.5 text-sm"
+                  >
+                    Create event
+                  </Link>
+                ) : null}
               </div>
             </div>
           ) : (
             <p className="mt-4 text-sm text-slate-600">
-              No events yet.{" "}
-              <Link href="/thepamperedsoul/new" className="underline underline-offset-4">
-                Create an event
-              </Link>{" "}
-              when you need an event night.
+              {canCreate ? (
+                <>
+                  No events yet.{" "}
+                  <Link href="/thepamperedsoul/new" className="underline underline-offset-4">
+                    Create an event
+                  </Link>{" "}
+                  when you need an event night.
+                </>
+              ) : (
+                <>No events yet. Ask an owner to create one when you need an event night.</>
+              )}
             </p>
           )}
         </div>

@@ -4,7 +4,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 
 import type { AppRole } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
@@ -39,35 +38,8 @@ function isActive(pathname: string, link: (typeof allLinks)[number]) {
   return pathname === link.href || pathname.startsWith(`${link.href}/`);
 }
 
-function readPamperedRole(): AppRole {
-  if (typeof document === "undefined") return "owner";
-  const sessionMatch = document.cookie.match(/(?:^|; )stemworks_session=([^;]*)/);
-  if (sessionMatch?.[1]) {
-    try {
-      const parsed = JSON.parse(decodeURIComponent(sessionMatch[1])) as {
-        activeVenture?: string;
-        roles?: Record<string, string>;
-      };
-      const role = parsed.roles?.pampered_soul;
-      if (role === "employee" || role === "customer" || role === "vendor" || role === "owner") return role;
-    } catch {
-      // fall through to legacy cookie
-    }
-  }
-  const match = document.cookie.match(/(?:^|; )stemworks_role=([^;]*)/);
-  const value = match?.[1];
-  if (value === "employee" || value === "customer" || value === "vendor" || value === "owner") return value;
-  return "owner";
-}
-
-export function ExperiencesNav() {
+export function ExperiencesNav({ role }: { role: AppRole }) {
   const pathname = usePathname();
-  const [role, setRole] = useState<AppRole>("owner");
-
-  useEffect(() => {
-    setRole(readPamperedRole());
-  }, [pathname]);
-
   const links = allLinks.filter((link) => link.roles.includes(role));
 
   return (

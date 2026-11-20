@@ -14,7 +14,6 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
       venture={session.activeVenture}
       definition={session.definition}
       appOwner={session.appOwner}
-      locked={session.locked}
     >
       {children}
     </AppShell>

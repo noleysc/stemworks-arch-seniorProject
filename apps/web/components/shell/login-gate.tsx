@@ -2,35 +2,42 @@
 
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 
 import { listRoles, type AppRole } from "@/lib/auth/roles";
 import { listVentures, type VentureKey } from "@/lib/auth/ventures";
 import { cn } from "@/lib/utils";
 
 export function LoginGate() {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [venture, setVenture] = useState<VentureKey | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const ventures = listVentures();
   const roles = venture ? listRoles(venture) : [];
 
+  useEffect(() => {
+    const restore = () => setPending(false);
+    window.addEventListener("pageshow", restore);
+    return () => window.removeEventListener("pageshow", restore);
+  }, []);
+
   async function post(body: Record<string, unknown>) {
     setError(null);
-    const response = await fetch("/api/v1/session/role", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const payload = (await response.json()) as { homeHref?: string; error?: string };
-    if (!response.ok) throw new Error(payload.error || "Could not sign in.");
-    startTransition(() => {
-      router.push(payload.homeHref || "/");
-      router.refresh();
-    });
+    setPending(true);
+    try {
+      const response = await fetch("/api/v1/session/role", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const payload = (await response.json()) as { homeHref?: string; error?: string };
+      if (!response.ok) throw new Error(payload.error || "Could not sign in.");
+      window.location.assign(payload.homeHref || "/");
+    } catch (err) {
+      setPending(false);
+      throw err;
+    }
   }
 
   return (

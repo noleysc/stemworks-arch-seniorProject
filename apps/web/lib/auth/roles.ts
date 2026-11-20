@@ -91,6 +91,7 @@ function employeeNav(venture: VentureKey): NavItem[] {
     return [
       { href: "/jade", label: "Today", description: "Product floor" },
       { href: "/jade/materials", label: "Materials", description: "On-hand stock" },
+      { href: "/jade/products", label: "Products", description: "Finished goods" },
       { href: "/jade/batches", label: "Batches", description: "Pour and release" },
       { href: "/jade/orders", label: "Orders", description: "Open orders" },
     ];

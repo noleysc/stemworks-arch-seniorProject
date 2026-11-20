@@ -6,7 +6,6 @@ import { getAppOwnerDefinition, getRole, homeForRole, isAppRole, listRoles, type
 import {
   ROLE_COOKIE,
   SESSION_COOKIE,
-  anonymousSession,
   homeForSession,
   parseSessionCookie,
   roleCookieOptions,
