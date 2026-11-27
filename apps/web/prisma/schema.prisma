@@ -280,6 +280,10 @@ model GuestProfile {
   email        String   @unique
   fullName     String
   phone        String?
+  /// Client preferences staff reuse across visits (pressure, focus areas, scent).
+  preferences  String?
+  /// Staff-only spa client file notes (not shown on public booking).
+  spaNotes     String?
   networkOptIn Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -292,28 +296,43 @@ model GuestProfile {
 
 /// Individual spa/service booking (not a ticketed invite).
 model ServiceAppointment {
-  id               String        @id @default(cuid())
-  ventureId        String
-  venture          Venture       @relation(fields: [ventureId], references: [id])
-  guestId          String?
-  guest            GuestProfile? @relation(fields: [guestId], references: [id])
-  clientName       String
-  clientEmail      String?
-  clientPhone      String?
-  serviceKey       String
-  serviceTitle     String
-  durationMinutes  Int?
-  priceCents       Int           @default(0)
-  appointmentOn    String
-  startsAtLabel    String
-  status           String        @default("booked")
-  notes            String?
-  confirmationCode String?       @unique
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id                 String        @id @default(cuid())
+  ventureId          String
+  venture            Venture       @relation(fields: [ventureId], references: [id])
+  guestId            String?
+  guest              GuestProfile? @relation(fields: [guestId], references: [id])
+  clientName         String
+  clientEmail        String?
+  clientPhone        String?
+  serviceKey         String
+  serviceTitle       String
+  durationMinutes    Int?
+  priceCents         Int           @default(0)
+  /// unpaid | deposit | paid | refunded
+  paymentStatus      String        @default("unpaid")
+  depositCents       Int           @default(0)
+  amountPaidCents    Int           @default(0)
+  paymentRef         String?
+  paymentBrand       String?
+  paymentLast4       String?
+  appointmentOn      String
+  startsAtLabel      String
+  /// booked | confirmed | completed | no_show | cancelled
+  status             String        @default("booked")
+  therapistLabel     String?
+  notes              String?
+  preferences        String?
+  staffNotes         String?
+  confirmationCode   String?       @unique
+  confirmationSentAt DateTime?
+  cancelledAt        DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   @@index([ventureId, appointmentOn])
   @@index([appointmentOn, status])
+  @@index([ventureId, paymentStatus])
+  @@index([clientEmail])
 }
 
 model DashboardTodo {

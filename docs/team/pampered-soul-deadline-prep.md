@@ -64,15 +64,15 @@ Use this on Dec 1. Update the **Dec 1 scope** column in the meeting (In / Out / 
 
 | # | Area | Stemworks today | Gap | Cutover risk | Dec 1 scope |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Appointment lifecycle | `POST/GET /api/experiences/appointments`; public `/book`; owner list read-only | No spa reschedule, cancel, complete, no-show, checkout; no conflict checks | **High** | |
-| 2 | Staff schedule & availability | Month calendar mixes events + appointments; hardcoded menu + 9–6 time chips | No provider calendars, working hours, rooms, buffers, multi-therapist | **High** | |
+| 1 | Appointment lifecycle | Staff board: reschedule, cancel, complete, no-show; overlap checks; public `/book` | Email/SMS-driven client self-service cancel still missing | **Med** | |
+| 2 | Staff schedule & availability | Month calendar + therapist label on bookings; fixed 9–6 slots | No provider calendars, working hours, rooms, buffers as first-class resources | **Med** | |
 | 3 | Services & pricing | `lib/experiences/spa-menu.ts` | Not staff-editable; day rules (e.g. Throwback Thursday) not enforced | **Med** | |
-| 4 | Client records | `GuestProfile` + appointment notes; event CRM separate | No spa client file, preferences, history UI, merge, or import | **High** | |
-| 5 | Spa payments | `priceCents` on appointment; Stripe only on ticket RSVP | No deposits, refunds, reconciliation, or spa payment portal | **High** | |
-| 6 | Comms | Confirmation codes on screen | No email/SMS confirmations or reminders | **High** | |
-| 7 | Reports / exports | Event scorecard; hub appointment counts | No spa financial/appointment reports or CSV export | **High** | |
+| 4 | Client records | `/thepamperedsoul/clients` with preferences, spa notes, history | No merge UI; limited vs full MassageBook chart | **Med** | |
+| 5 | Spa payments | Deposit / balance / full / refund on appointment; optional card charge | No separate client payment portal; merchant production review still required | **Med** | |
+| 6 | Comms | Confirmation codes + staff “log confirmation” | No email/SMS confirmations or reminders | **High** | |
+| 7 | Reports / exports | Spa scorecard metrics + appointments CSV export | No PDF; limited vs MassageBook canned reports | **Med** | |
 | 8 | Prod auth / DB / backup | Demo session cookies; SQLite locally; Supabase wired but not spa cutover | No real auth on experiences APIs; no Postgres+RLS live; no tested restore | **High** | |
-| 9 | MassageBook migration | None | No export→import path, mapping, rehearsal, or rollback | **High** | |
+| 9 | MassageBook migration | CSV import + template at `/api/experiences/appointments/import` | Needs real export sample, reconciliation ownership, cutover rehearsal | **Med** | |
 | 10 | Ticketed events | Planner + `/e/{slug}` + Stripe/demo | Keep unless walkthrough says otherwise | **Low** | Keep |
 
 **Dec 1 recommended default if many High rows stay “must replace”:** limited launch (events + optional `/book` alongside MassageBook) and a revised spa cutover date — per contingency in the parent launch doc.

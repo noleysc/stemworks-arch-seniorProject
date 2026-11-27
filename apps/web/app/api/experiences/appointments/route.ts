@@ -12,7 +12,9 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const from = url.searchParams.get("from") ?? undefined;
     const to = url.searchParams.get("to") ?? undefined;
-    const appointments = await listAppointments({ from, to });
+    const status = url.searchParams.get("status") ?? undefined;
+    const includeCancelled = url.searchParams.get("includeCancelled") === "1";
+    const appointments = await listAppointments({ from, to, status, includeCancelled });
     return NextResponse.json({ appointments });
   } catch (error) {
     return errorResponse(error, "We couldn’t load your appointments. Please try again.");

@@ -14,6 +14,7 @@ const allLinks = [
   { href: "/thepamperedsoul/new", label: "Create event", match: "prefix" as const, roles: ["owner"] as AppRole[] },
   { href: "/thepamperedsoul/calendar", label: "Calendar", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
   { href: "/thepamperedsoul/bookings", label: "Bookings", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
+  { href: "/thepamperedsoul/clients", label: "Clients", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
   { href: "/thepamperedsoul/guests", label: "Guests", match: "prefix" as const, roles: ["owner", "employee"] as AppRole[] },
   { href: "/thepamperedsoul/crm", label: "CRM", match: "prefix" as const, roles: ["owner"] as AppRole[] },
   { href: "/thepamperedsoul/scorecard", label: "Scorecard", match: "prefix" as const, roles: ["owner"] as AppRole[] },
@@ -29,6 +30,7 @@ function isActive(pathname: string, link: (typeof allLinks)[number]) {
         !pathname.startsWith("/thepamperedsoul/new/") &&
         !pathname.startsWith("/thepamperedsoul/calendar") &&
         !pathname.startsWith("/thepamperedsoul/bookings") &&
+        !pathname.startsWith("/thepamperedsoul/clients") &&
         !pathname.startsWith("/thepamperedsoul/guests") &&
         !pathname.startsWith("/thepamperedsoul/crm") &&
         !pathname.startsWith("/thepamperedsoul/scorecard") &&

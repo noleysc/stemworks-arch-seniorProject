@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { requestErrorMessage, requestJson } from "@/lib/http";
+import { APPOINTMENT_TIME_OPTIONS } from "@/lib/experiences/appointment-times";
 import {
   formatDuration,
   formatMenuPrice,
@@ -16,18 +17,7 @@ import {
   type SpaService,
 } from "@/lib/experiences/spa-menu";
 
-const TIME_OPTIONS = [
-  "9:00 AM",
-  "10:00 AM",
-  "11:00 AM",
-  "12:00 PM",
-  "1:00 PM",
-  "2:00 PM",
-  "3:00 PM",
-  "4:00 PM",
-  "5:00 PM",
-  "6:00 PM",
-];
+const TIME_OPTIONS = APPOINTMENT_TIME_OPTIONS;
 
 const LOOP_ROTATE_MS = 7000;
 const LOOP_RESET_MS = 12000;

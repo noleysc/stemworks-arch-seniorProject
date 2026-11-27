@@ -69,14 +69,15 @@ Snapshot of what the Pampered Soul desk already covers in-repo. Use this as the 
 | Area | In Stemworks today | Likely gap vs MassageBook |
 | --- | --- | --- |
 | Spa services & pricing | Hardcoded live menu in `apps/web/lib/experiences/spa-menu.ts` | Staff-editable services, specials, and business rules |
-| Client booking | Public `/book` creates `ServiceAppointment` rows | Reschedule / cancel / checkout flows staff use in MassageBook |
-| Owner schedule | `/thepamperedsoul/bookings`, `/thepamperedsoul/calendar` | Staff calendars, availability windows, multi-provider scheduling |
-| Clients / CRM | Guest profiles + consented CRM at `/thepamperedsoul/crm` | Full client history, preferences, and migration import |
-| Payments | Stripe/demo for **ticketed events**; spa appointments store `priceCents` without card capture | Spa deposits, refunds, reconciliation, payment portal |
-| Reports | `/thepamperedsoul/scorecard` (ticket revenue / consent) | Financial and appointment reports staff expect from MassageBook |
+| Client booking | Public `/book` + staff book form; overlap checks | Client self-serve reschedule links; stricter availability rules |
+| Owner schedule | Bookings board with lifecycle actions; calendar; therapist label | First-class provider calendars / rooms / buffers |
+| Clients / CRM | `/thepamperedsoul/clients` files + event CRM at `/thepamperedsoul/crm` | Merge tools; richer intake vs MassageBook |
+| Payments | Spa deposit/balance/refund recording (+ optional card charge); ticket Stripe/demo | Production merchant approval; dedicated client payment portal |
+| Reports | Spa + event scorecard; appointments CSV export | PDF / richer MassageBook-style canned reports |
 | Auth & tenancy | Demo venture/role login; architecture for JWT/RLS in [../architecture/security.md](../architecture/security.md) | Production auth, server-enforced permissions, production DB |
-| Data migration | No MassageBook export/import path yet | Export access, mapping, reconciliation, cutover rehearsal |
+| Data migration | MassageBook CSV import + template | Real export sample, reconciliation ownership, cutover rehearsal |
 | Ticketed events | Owner planner + guest `/e/{slug}` checkout | Keep as-is unless walkthrough says otherwise; not a MassageBook substitute |
+| Comms | On-screen confirmation + staff log | Email/SMS confirmations and reminders |
 
 Update this table after the Dec 1 decision with owners and in/out-of-scope rows for the December 11 freeze. Detailed risk ratings and Dec 1 scope columns: [pampered-soul-deadline-prep.md](pampered-soul-deadline-prep.md).
 

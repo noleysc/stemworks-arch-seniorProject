@@ -13,10 +13,11 @@ Tenant: `pampered_soul`. Database venture key: `pampered_events` (kept for stabl
 | Today | See open invites, upcoming bookings, and shortcuts | `/thepamperedsoul` |
 | Events | Create and publish ticketed invites | `/thepamperedsoul/events`, `/thepamperedsoul/new`, `/thepamperedsoul/[slug]` |
 | Schedule | Month view of invites, spa bookings, and guests | `/thepamperedsoul/calendar` |
-| Spa services | Individual appointments booked by clients | `/thepamperedsoul/bookings`, public `/book` |
+| Spa services | Individual appointments booked by clients or staff | `/thepamperedsoul/bookings`, public `/book` |
+| Spa clients | Preferences, staff notes, appointment history | `/thepamperedsoul/clients` |
 | Guests | Check-in for ticketed nights | `/thepamperedsoul/guests` |
 | CRM | Consented marketing contacts only | `/thepamperedsoul/crm` |
-| Scorecard | Ticket revenue and consent counts | `/thepamperedsoul/scorecard` |
+| Scorecard | Spa appointment financials plus ticket revenue / consent | `/thepamperedsoul/scorecard` |
 | Dashboard | Founder board for this tenant | `/dashboard?tenant=pampered_soul` |
 
 Guest surfaces stay chrome-free:
