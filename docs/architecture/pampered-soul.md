@@ -33,8 +33,13 @@ Guest surfaces stay chrome-free:
 - CRM and scorecard are spa-business tools that also serve event nights.
 - The founder dashboard shows Pampered Soul as its own tenant, never mixed into Luminary or Diaz Ventures totals.
 
+## MassageBook replacement
+
+Commercial cutover plan (readiness Dec 11, launch Dec 12, 2026): [../team/pampered-soul-massagebook-launch.md](../team/pampered-soul-massagebook-launch.md). That schedule is conditional on the Nov 30 walkthrough and Dec 1 gap assessment. MassageBook stays active until required workflows are accepted and data is reconciled.
+
 ## Related docs
 
 - Teammate map of all ventures: [ventures.md](ventures.md)
 - Invite creator vs guest invite: [invite-page.md](invite-page.md)
 - Consent and CRM rules: [experiences-crm.md](experiences-crm.md)
+- MassageBook replacement & launch timeline: [../team/pampered-soul-massagebook-launch.md](../team/pampered-soul-massagebook-launch.md)

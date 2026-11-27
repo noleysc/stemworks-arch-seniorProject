@@ -40,6 +40,7 @@ Pampered Soul business rules use `PublicError` from `apps/web/lib/experiences/er
 | [docs/architecture/luminary.md](docs/architecture/luminary.md) | Luminary Hotel & Co. property contract |
 | [docs/architecture/jade-flowers.md](docs/architecture/jade-flowers.md) | Jade Flowers product slice |
 | [docs/architecture/pampered-soul.md](docs/architecture/pampered-soul.md) | Pampered Soul spa business desk |
+| [docs/team/pampered-soul-massagebook-launch.md](docs/team/pampered-soul-massagebook-launch.md) | Pampered Soul MassageBook replacement & Dec 12 launch |
 | [docs/architecture/invite-page.md](docs/architecture/invite-page.md) | Owner planner vs guest invite |
 | [docs/architecture/experiences-crm.md](docs/architecture/experiences-crm.md) | Consent + CRM rules |
 | [docs/architecture/modules.md](docs/architecture/modules.md) | Aggregates and ports |
