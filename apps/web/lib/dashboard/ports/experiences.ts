@@ -4,27 +4,59 @@ import { pendingPaymentAttention, summarizePendingPayments } from "@/lib/dashboa
 import type { VenturePortResult } from "@/lib/dashboard/types";
 import { prisma } from "@/lib/db";
 import { dayDelta } from "@/lib/dates";
+import { formatMoney } from "@/lib/money";
+import { listAppointments } from "@/lib/experiences/appointments";
 import { listCrmContacts } from "@/lib/experiences/crm";
 import { listExperienceEvents } from "@/lib/experiences/events";
 import { eventScorecard, projectExperienceCents } from "@/lib/experiences/scorecard";
 
 export async function experiencesPort(businessDate: string): Promise<VenturePortResult> {
-  const [events, scorecard, contacts] = await Promise.all([
+  const [events, scorecard, contacts, spaAppointments] = await Promise.all([
     listExperienceEvents(),
     eventScorecard(),
     listCrmContacts(),
+    listAppointments({ includeCancelled: true }),
   ]);
+
+  const spaActive = spaAppointments.filter((row) => row.status !== "cancelled");
+  const spaCollected = spaActive
+    .filter((row) => row.paymentStatus !== "refunded")
+    .reduce((sum, row) => sum + row.amountPaidCents, 0);
+  const spaBooked = spaActive.reduce((sum, row) => sum + row.priceCents, 0);
+  const spaUnpaid = spaActive.filter(
+    (row) =>
+      row.appointmentOn >= businessDate &&
+      row.paymentStatus !== "paid" &&
+      row.paymentStatus !== "refunded" &&
+      row.balanceDueCents > 0,
+  );
+  const spaOutstanding = spaUnpaid.reduce((sum, row) => sum + row.balanceDueCents, 0);
+
   if (!scorecard) {
     return {
-      confirmedCents: 0,
-      potentialCents: 0,
-      openCount: 0,
-      hasCurrentActivity: false,
+      confirmedCents: spaCollected,
+      potentialCents: Math.max(spaBooked, spaCollected),
+      openCount: spaActive.filter((row) => row.status === "booked" || row.status === "confirmed").length,
+      hasCurrentActivity: spaActive.length > 0,
       statusLabel: "Spa & experiences desk",
-      topItems: [],
-      attention: [],
+      topItems: spaActive.slice(0, 3).map((row) => ({
+        label: row.serviceTitle,
+        stage: row.paymentStatus,
+        valueCents: row.amountPaidCents || row.priceCents,
+        kind: "spa_appointment",
+      })),
+      attention:
+        spaUnpaid.length > 0
+          ? [
+              {
+                type: "pipeline_stalled" as const,
+                body: `${spaUnpaid.length} spa ${spaUnpaid.length === 1 ? "appointment is" : "appointments are"} awaiting payment · ${formatMoney(spaOutstanding)} outstanding`,
+                venture: "pampered_events",
+              },
+            ]
+          : [],
       milestones: [],
-      detailHref: "/thepamperedsoul",
+      detailHref: "/thepamperedsoul/bookings",
     };
   }
   const cents = projectExperienceCents(scorecard);
@@ -72,6 +104,13 @@ export async function experiencesPort(businessDate: string): Promise<VenturePort
   attention.push(
     ...pendingPaymentAttention(summarizePendingPayments(payableEvents, paymentRows, businessDate), "pampered_events"),
   );
+  if (spaUnpaid.length > 0) {
+    attention.push({
+      type: "pipeline_stalled",
+      body: `${spaUnpaid.length} spa ${spaUnpaid.length === 1 ? "appointment is" : "appointments are"} awaiting payment · ${formatMoney(spaOutstanding)} outstanding`,
+      venture: "pampered_events",
+    });
+  }
 
   const milestones = openEvents.map((event) => ({
     id: event.id,
@@ -83,11 +122,11 @@ export async function experiencesPort(businessDate: string): Promise<VenturePort
   }));
 
   return {
-    confirmedCents: cents.confirmedCents,
-    potentialCents: cents.potentialCents,
-    openCount: cents.openCount,
-    hasCurrentActivity: openEvents.length > 0 || followUpQueued > 0,
-    statusLabel: `${scorecard.ticketsSold} tickets · ${marketingConsents} consents · spa desk`,
+    confirmedCents: cents.confirmedCents + spaCollected,
+    potentialCents: Math.max(cents.potentialCents + spaBooked, cents.confirmedCents + spaCollected),
+    openCount: cents.openCount + spaActive.filter((row) => row.status === "booked" || row.status === "confirmed").length,
+    hasCurrentActivity: openEvents.length > 0 || followUpQueued > 0 || spaActive.length > 0,
+    statusLabel: `${scorecard.ticketsSold} tickets · ${spaActive.length} spa · ${marketingConsents} consents`,
     topItems,
     attention,
     milestones,

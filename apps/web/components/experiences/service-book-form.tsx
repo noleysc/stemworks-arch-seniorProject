@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { requestErrorMessage, requestJson } from "@/lib/http";
+import { APPOINTMENT_TIME_OPTIONS } from "@/lib/experiences/appointment-times";
 import {
   formatDuration,
   formatMenuPrice,
@@ -16,18 +17,7 @@ import {
   type SpaService,
 } from "@/lib/experiences/spa-menu";
 
-const TIME_OPTIONS = [
-  "9:00 AM",
-  "10:00 AM",
-  "11:00 AM",
-  "12:00 PM",
-  "1:00 PM",
-  "2:00 PM",
-  "3:00 PM",
-  "4:00 PM",
-  "5:00 PM",
-  "6:00 PM",
-];
+const TIME_OPTIONS = APPOINTMENT_TIME_OPTIONS;
 
 const LOOP_ROTATE_MS = 7000;
 const LOOP_RESET_MS = 12000;
@@ -48,6 +38,9 @@ export function ServiceBookForm({ loop = false }: { loop?: boolean }) {
     serviceTitle: string;
     appointmentOn: string;
     startsAtLabel: string;
+    paymentStatus?: string;
+    paymentLast4?: string | null;
+    paymentBrand?: string | null;
   } | null>(null);
 
   const selected = bookable.find((service) => service.key === serviceKey) ?? bookable[0];
@@ -91,7 +84,14 @@ export function ServiceBookForm({ loop = false }: { loop?: boolean }) {
     setError(null);
     setPauseRotate(true);
     try {
-      const payload = await requestJson<{ appointment: NonNullable<typeof receipt> }>(
+      const priceCents = selected?.menuPriceCents ?? 0;
+      const payload = await requestJson<{
+        appointment: NonNullable<typeof receipt> & {
+          paymentStatus?: string;
+          paymentLast4?: string | null;
+          paymentBrand?: string | null;
+        };
+      }>(
         "/api/experiences/appointments",
         {
           method: "POST",
@@ -104,24 +104,39 @@ export function ServiceBookForm({ loop = false }: { loop?: boolean }) {
             clientEmail: form.get("clientEmail"),
             clientPhone: form.get("clientPhone"),
             notes: form.get("notes"),
+            ...(priceCents > 0
+              ? {
+                  payment: {
+                    cardholderName: form.get("cardholderName"),
+                    cardNumber: form.get("cardNumber"),
+                    expMonth: form.get("expMonth"),
+                    expYear: form.get("expYear"),
+                    cvc: form.get("cvc"),
+                  },
+                }
+              : {}),
           }),
         },
-        "We couldn’t confirm your appointment. Check your bookings or contact the spa before trying again.",
+        "We couldn’t confirm your appointment. Check your payment status or contact the spa before trying again.",
       );
       setReceipt({
         confirmationCode: payload.appointment.confirmationCode,
         serviceTitle: payload.appointment.serviceTitle,
         appointmentOn: payload.appointment.appointmentOn,
         startsAtLabel: payload.appointment.startsAtLabel,
+        paymentStatus: payload.appointment.paymentStatus,
+        paymentLast4: payload.appointment.paymentLast4,
+        paymentBrand: payload.appointment.paymentBrand,
       });
       formElement.reset();
     } catch (err) {
       setError(
         err instanceof TypeError
-          ? "We lost the connection while booking. Check your bookings or contact the spa before trying again."
+          ? "We lost the connection while booking. Check your payment status or contact the spa before trying again."
           : requestErrorMessage(
               err,
-              "We couldn’t confirm your appointment. Check your bookings or contact the spa before trying again.",
+              "We couldn’t confirm your appointment. Check your payment status or contact the spa before trying again.",
+              true,
             ),
       );
       setPauseRotate(false);
@@ -137,6 +152,9 @@ export function ServiceBookForm({ loop = false }: { loop?: boolean }) {
         <h2 className="mt-2 font-display text-3xl text-slate-950">You’re on the book</h2>
         <p className="mt-3 text-sm leading-6 text-slate-800">
           {receipt.serviceTitle} · {receipt.appointmentOn} · {receipt.startsAtLabel}
+          {receipt.paymentStatus === "paid" && receipt.paymentLast4
+            ? ` · charged ${receipt.paymentBrand ?? "card"} ···· ${receipt.paymentLast4}`
+            : ""}
         </p>
         {receipt.confirmationCode ? (
           <p className="mt-4 font-mono text-lg font-semibold text-slate-950">{receipt.confirmationCode}</p>
@@ -231,9 +249,54 @@ export function ServiceBookForm({ loop = false }: { loop?: boolean }) {
         </div>
       </section>
 
+      {selected && (selected.menuPriceCents ?? 0) > 0 ? (
+        <section className="space-y-3 rounded-[1.5rem] border border-slate-900/10 bg-slate-50 p-5">
+          <div>
+            <h2 className="font-display text-xl text-slate-950">Pay now</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Card is charged when you book. Demo accepts Visa{" "}
+              <span className="font-mono">4242 4242 4242 4242</span>.
+            </p>
+          </div>
+          <Field label="Name on card" htmlFor="cardholderName">
+            <Input id="cardholderName" name="cardholderName" required autoComplete="cc-name" className="bg-white" />
+          </Field>
+          <Field label="Card number" htmlFor="cardNumber">
+            <Input
+              id="cardNumber"
+              name="cardNumber"
+              required
+              autoComplete="cc-number"
+              inputMode="numeric"
+              placeholder="4242 4242 4242 4242"
+              className="bg-white"
+            />
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Exp month" htmlFor="expMonth">
+              <Input id="expMonth" name="expMonth" required inputMode="numeric" placeholder="12" className="bg-white" />
+            </Field>
+            <Field label="Exp year" htmlFor="expYear">
+              <Input id="expYear" name="expYear" required inputMode="numeric" placeholder="2030" className="bg-white" />
+            </Field>
+            <Field label="CVC" htmlFor="cvc">
+              <Input id="cvc" name="cvc" required inputMode="numeric" placeholder="123" autoComplete="cc-csc" className="bg-white" />
+            </Field>
+          </div>
+        </section>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" disabled={pending || !selected}>
-          {pending ? "Booking…" : selected ? `Book · ${formatMenuPrice(selected.menuPriceCents)}` : "Book"}
+          {pending
+            ? (selected?.menuPriceCents ?? 0) > 0
+              ? "Charging card…"
+              : "Booking…"
+            : selected
+              ? (selected.menuPriceCents ?? 0) > 0
+                ? `Pay ${formatMenuPrice(selected.menuPriceCents)} · book`
+                : "Book"
+              : "Book"}
         </Button>
         {selected ? (
           <p className="text-sm font-medium text-slate-800">

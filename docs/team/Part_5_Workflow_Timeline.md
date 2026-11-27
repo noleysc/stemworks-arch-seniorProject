@@ -37,3 +37,7 @@ This workflow timeline represents an initial baseline draft. Sprint durations, s
 | Sprint 6 | Weeks 13–14 | Delivery hardening | Supabase Postgres cutover path, auth/RLS plan, partner demo script and runbook on Vercel-ready build |
 
 Sprints 1–5 already have working evidence on GitHub `main` (rentals desk through free-ticket checkout). Sprint 6 remains the delivery-focused closeout and may shift if the sponsor prioritizes a different venture next.
+
+## Pampered Soul commercial cutover (conditional)
+
+Separately from the semester sprint table, The Pampered Soul has a proposed MassageBook replacement schedule targeting readiness on **December 11, 2026** and commercial launch on **December 12, 2026**. That plan is conditional on the Nov 30 walkthrough and Dec 1 gap assessment. Full checklist, dependencies, contingency, and current-app baseline: [pampered-soul-massagebook-launch.md](pampered-soul-massagebook-launch.md).

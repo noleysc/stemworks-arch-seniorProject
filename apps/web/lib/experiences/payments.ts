@@ -28,7 +28,7 @@ export function paymentMode(): "stripe" | "demo" {
   return process.env.STRIPE_SECRET_KEY?.trim() ? "stripe" : "demo";
 }
 
-/** Charge for tickets. Never persists the full card number. $0 tickets need no card. */
+/** Charge for tickets or spa services. Never persists the full card number. $0 needs no card. */
 export async function chargeTicketPayment(input: {
   amountCents: number;
   email: string;
@@ -38,7 +38,7 @@ export async function chargeTicketPayment(input: {
   card?: CardPaymentInput | null;
 }): Promise<ChargeResult> {
   if (input.amountCents < 0) {
-    throw new PublicError("The ticket price is invalid. Contact the organizer for help.");
+    throw new PublicError("The amount is invalid. Contact the spa for help.");
   }
   if (input.amountCents === 0) {
     return {
@@ -55,7 +55,7 @@ export async function chargeTicketPayment(input: {
   }
 
   if (!input.card) {
-    throw new PublicError("Payment is required for paid tickets. Enter your card details.");
+    throw new PublicError("Payment is required. Enter your card details.");
   }
 
   const card = cardPaymentSchema.parse(input.card);
@@ -207,4 +207,28 @@ function detectBrand(number: string) {
   if (/^5[1-5]/.test(number)) return "mastercard";
   if (/^3[47]/.test(number)) return "amex";
   return "card";
+}
+
+/**
+ * Refund a prior charge when possible.
+ * Stripe PaymentIntents (`pi_…`) are refunded via the API.
+ * Demo / manual refs are recorded as refunded locally only.
+ */
+export async function refundPayment(paymentRef: string | null | undefined): Promise<{ mode: "stripe" | "local" }> {
+  const ref = paymentRef?.trim() ?? "";
+  if (!ref) return { mode: "local" };
+  if (!ref.startsWith("pi_") || paymentMode() !== "stripe") {
+    return { mode: "local" };
+  }
+
+  const Stripe = (await import("stripe")).default;
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  try {
+    await stripe.refunds.create({ payment_intent: ref });
+  } catch {
+    throw new PublicError(
+      "We couldn’t refund that card charge. Check Stripe or record the refund manually after it clears.",
+    );
+  }
+  return { mode: "stripe" };
 }
