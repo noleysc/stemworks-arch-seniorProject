@@ -48,6 +48,7 @@ export function StaffBookForm() {
             preferences: form.get("preferences"),
             therapistLabel: form.get("therapistLabel"),
             staffNotes: form.get("staffNotes"),
+            payLater: true,
           }),
         },
         "We couldn’t book that appointment. Check the time and try again.",

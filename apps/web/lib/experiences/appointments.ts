@@ -10,7 +10,12 @@ import {
 import { getSpaService, requireSpaService } from "@/lib/experiences/spa-menu";
 import { ensurePamperedEvents } from "@/lib/tenancy";
 import { PublicError } from "@/lib/experiences/errors";
-import { chargeTicketPayment, type CardPaymentInput } from "@/lib/experiences/payments";
+import {
+  cardPaymentSchema,
+  chargeTicketPayment,
+  refundPayment,
+  type CardPaymentInput,
+} from "@/lib/experiences/payments";
 import type {
   AppointmentStatus,
   PaymentStatus,
@@ -53,6 +58,10 @@ export const bookAppointmentSchema = z.object({
   preferences: z.string().trim().max(1000).optional().or(z.literal("")),
   therapistLabel: z.string().trim().max(120).optional().or(z.literal("")),
   staffNotes: z.string().trim().max(2000).optional().or(z.literal("")),
+  /** When set, charge the full service price at booking (same helper as tickets). */
+  payment: cardPaymentSchema.optional(),
+  /** Staff-only: skip card and leave unpaid (default for staff desk). */
+  payLater: z.boolean().optional(),
 });
 
 export const rescheduleAppointmentSchema = z.object({
@@ -132,6 +141,24 @@ export async function bookServiceAppointment(raw: z.input<typeof bookAppointment
   });
 
   const confirmationCode = await nextAppointmentCode();
+  const priceCents = service.menuPriceCents;
+  if (priceCents > 0 && !input.payLater && !input.payment) {
+    throw new PublicError("Payment is required to book this service. Enter your card details.");
+  }
+  const shouldCharge = Boolean(input.payment) && !input.payLater && priceCents > 0;
+
+  let charge: Awaited<ReturnType<typeof chargeTicketPayment>> | null = null;
+  if (shouldCharge) {
+    charge = await chargeTicketPayment({
+      amountCents: priceCents,
+      email,
+      phone: input.clientPhone.trim(),
+      fullName: input.clientName,
+      description: `Spa ${service.title} (${input.appointmentOn} ${input.startsAtLabel})`,
+      card: input.payment,
+    });
+  }
+
   const appointment = await prisma.serviceAppointment.create({
     data: {
       ventureId: venture.id,
@@ -142,11 +169,15 @@ export async function bookServiceAppointment(raw: z.input<typeof bookAppointment
       serviceKey: service.key,
       serviceTitle: service.title,
       durationMinutes: service.durationMinutes,
-      priceCents: service.menuPriceCents,
-      paymentStatus: "unpaid",
+      priceCents,
+      paymentStatus: charge ? "paid" : "unpaid",
+      amountPaidCents: charge?.amountCents ?? 0,
+      paymentRef: charge?.paymentRef ?? null,
+      paymentBrand: charge?.brand ?? null,
+      paymentLast4: charge?.last4 || null,
       appointmentOn: input.appointmentOn,
       startsAtLabel: input.startsAtLabel,
-      status: "booked",
+      status: charge ? "confirmed" : "booked",
       therapistLabel: emptyToNull(input.therapistLabel),
       notes: emptyToNull(input.notes),
       preferences: emptyToNull(input.preferences) ?? guest.preferences,
@@ -384,6 +415,7 @@ export async function markAppointmentRefunded(id: string) {
   if (existing.amountPaidCents <= 0 && existing.paymentStatus === "unpaid") {
     throw new PublicError("Nothing was collected on this appointment to refund.");
   }
+  await refundPayment(existing.paymentRef);
   const updated = await prisma.serviceAppointment.update({
     where: { id },
     data: {
@@ -682,6 +714,7 @@ export async function importMassageBookCsv(csv: string) {
         notes,
         preferences,
         therapistLabel,
+        payLater: true,
       });
 
       const statusRaw = (col.status >= 0 ? cells[col.status] : "").trim().toLowerCase();

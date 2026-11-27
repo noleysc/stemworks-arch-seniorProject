@@ -35,6 +35,7 @@ test("clients can book an individual spa service", async () => {
     clientEmail: email,
     clientPhone: "239-555-0300",
     notes: "Focus on shoulders",
+    payLater: true,
   });
 
   assert.equal(appointment.serviceTitle, "50 min Swedish Massage");
@@ -45,6 +46,35 @@ test("clients can book an individual spa service", async () => {
 
   const listed = await listAppointments({ from: "2026-12-22", to: "2026-12-22" });
   assert.ok(listed.some((row) => row.id === appointment.id));
+
+  await cleanupEmail(email);
+});
+
+test("paid public booking charges the card and marks the appointment paid", async () => {
+  const email = "casey-pay@example.com";
+  await cleanupEmail(email);
+
+  const appointment = await bookServiceAppointment({
+    serviceKey: "swedish-50",
+    appointmentOn: "2026-12-28",
+    startsAtLabel: "4:00 PM",
+    clientName: "Casey Pay",
+    clientEmail: email,
+    clientPhone: "239-555-0310",
+    payment: {
+      cardholderName: "Casey Pay",
+      cardNumber: "4242424242424242",
+      expMonth: 12,
+      expYear: 2030,
+      cvc: "123",
+    },
+  });
+
+  assert.equal(appointment.paymentStatus, "paid");
+  assert.equal(appointment.amountPaidCents, 9000);
+  assert.equal(appointment.status, "confirmed");
+  assert.equal(appointment.paymentLast4, "4242");
+  assert.match(appointment.paymentRef ?? "", /^pay_demo_/);
 
   await cleanupEmail(email);
 });
@@ -62,6 +92,7 @@ test("staff can reschedule, collect payment, complete, and cancel spa appointmen
     clientPhone: "239-555-0400",
     preferences: "Medium pressure",
     therapistLabel: "Tabatha",
+    payLater: true,
   });
 
   const moved = await rescheduleAppointment(booked.id, {
@@ -112,6 +143,7 @@ test("booking rejects overlapping active appointments", async () => {
     clientName: "First Client",
     clientEmail: emailA,
     clientPhone: "239-555-0500",
+    payLater: true,
   });
 
   await assert.rejects(
@@ -123,6 +155,7 @@ test("booking rejects overlapping active appointments", async () => {
         clientName: "Second Client",
         clientEmail: emailB,
         clientPhone: "239-555-0501",
+        payLater: true,
       }),
     /overlaps/i,
   );

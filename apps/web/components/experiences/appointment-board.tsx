@@ -26,6 +26,7 @@ export function AppointmentBoard({ appointments }: { appointments: ServiceAppoin
   const [filter, setFilter] = useState<"upcoming" | "all" | "cancelled">("upcoming");
   const [rescheduleId, setRescheduleId] = useState<string | null>(null);
   const [payId, setPayId] = useState<string | null>(null);
+  const [payMethod, setPayMethod] = useState<"manual" | "card">("manual");
 
   const services = useMemo(
     () => spaServicesByCategory().flatMap((group) => group.services.filter((s) => s.menuPriceCents != null)),
@@ -61,19 +62,49 @@ export function AppointmentBoard({ appointments }: { appointments: ServiceAppoin
     }
   }
 
-  async function collect(id: string, kind: "deposit" | "balance" | "full" | "refund") {
+  async function collect(
+    id: string,
+    kind: "deposit" | "balance" | "full" | "refund",
+    form?: HTMLFormElement | null,
+  ) {
     setPendingId(id);
     setError(null);
     try {
-      await requestJson(`/api/experiences/appointments/${id}/payment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(kind === "refund" ? { action: "refund" } : { kind, method: "manual" }),
-      }, "We couldn’t record that payment. Check the amount and try again.");
+      let body: Record<string, unknown>;
+      if (kind === "refund") {
+        body = { action: "refund" };
+      } else if (payMethod === "card" && form) {
+        const data = new FormData(form);
+        body = {
+          kind,
+          method: "card",
+          card: {
+            cardholderName: data.get("cardholderName"),
+            cardNumber: data.get("cardNumber"),
+            expMonth: data.get("expMonth"),
+            expYear: data.get("expYear"),
+            cvc: data.get("cvc"),
+          },
+        };
+      } else {
+        body = { kind, method: "manual" };
+      }
+      await requestJson(
+        `/api/experiences/appointments/${id}/payment`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        },
+        "We couldn’t record that payment. Check the amount and try again.",
+      );
       setPayId(null);
+      setPayMethod("manual");
       router.refresh();
     } catch (err) {
-      setError(requestErrorMessage(err, "We couldn’t record that payment. Check the amount and try again."));
+      setError(
+        requestErrorMessage(err, "We couldn’t record that payment. Check the amount and try again.", true),
+      );
     } finally {
       setPendingId(null);
     }
@@ -297,26 +328,81 @@ export function AppointmentBoard({ appointments }: { appointments: ServiceAppoin
                 ) : null}
 
                 {payId === appointment.id ? (
-                  <div className="mt-4 flex flex-wrap gap-2 rounded-2xl border border-slate-900/10 bg-slate-50/80 p-4">
-                    <Button type="button" size="sm" disabled={busy} onClick={() => collect(appointment.id, "deposit")}>
-                      Record deposit
-                    </Button>
-                    <Button type="button" size="sm" disabled={busy} onClick={() => collect(appointment.id, "balance")}>
-                      Record balance / checkout
-                    </Button>
-                    <Button type="button" size="sm" disabled={busy} onClick={() => collect(appointment.id, "full")}>
-                      Record full payment
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      disabled={busy || appointment.amountPaidCents <= 0}
-                      onClick={() => collect(appointment.id, "refund")}
-                    >
-                      Mark refunded
-                    </Button>
-                  </div>
+                  <form
+                    className="mt-4 space-y-3 rounded-2xl border border-slate-900/10 bg-slate-50/80 p-4"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      collect(appointment.id, "balance", event.currentTarget);
+                    }}
+                  >
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPayMethod("manual")}
+                        className={`rounded-full px-3 py-1.5 text-sm ${
+                          payMethod === "manual"
+                            ? "bg-slate-950 text-[#eef2f6]"
+                            : "border border-slate-900/15 text-slate-700"
+                        }`}
+                      >
+                        Cash / terminal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPayMethod("card")}
+                        className={`rounded-full px-3 py-1.5 text-sm ${
+                          payMethod === "card"
+                            ? "bg-slate-950 text-[#eef2f6]"
+                            : "border border-slate-900/15 text-slate-700"
+                        }`}
+                      >
+                        Card charge
+                      </button>
+                    </div>
+                    {payMethod === "card" ? (
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <Input name="cardholderName" required placeholder="Name on card" defaultValue={appointment.clientName} />
+                        <Input name="cardNumber" required placeholder="4242 4242 4242 4242" inputMode="numeric" />
+                        <Input name="expMonth" required placeholder="MM" inputMode="numeric" />
+                        <Input name="expYear" required placeholder="YYYY" inputMode="numeric" />
+                        <Input name="cvc" required placeholder="CVC" inputMode="numeric" />
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-600">Records payment without charging a card.</p>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={busy}
+                        onClick={(event) =>
+                          collect(appointment.id, "deposit", event.currentTarget.form)
+                        }
+                      >
+                        {payMethod === "card" ? "Charge deposit" : "Record deposit"}
+                      </Button>
+                      <Button type="submit" size="sm" disabled={busy}>
+                        {payMethod === "card" ? "Charge balance" : "Record balance / checkout"}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={busy}
+                        onClick={(event) => collect(appointment.id, "full", event.currentTarget.form)}
+                      >
+                        {payMethod === "card" ? "Charge full" : "Record full payment"}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={busy || appointment.amountPaidCents <= 0}
+                        onClick={() => collect(appointment.id, "refund")}
+                      >
+                        Refund
+                      </Button>
+                    </div>
+                  </form>
                 ) : null}
               </li>
             );

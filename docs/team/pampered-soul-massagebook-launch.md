@@ -72,7 +72,7 @@ Snapshot of what the Pampered Soul desk already covers in-repo. Use this as the 
 | Client booking | Public `/book` + staff book form; overlap checks | Client self-serve reschedule links; stricter availability rules |
 | Owner schedule | Bookings board with lifecycle actions; calendar; therapist label | First-class provider calendars / rooms / buffers |
 | Clients / CRM | `/thepamperedsoul/clients` files + event CRM at `/thepamperedsoul/crm` | Merge tools; richer intake vs MassageBook |
-| Payments | Spa deposit/balance/refund recording (+ optional card charge); ticket Stripe/demo | Production merchant approval; dedicated client payment portal |
+| Payments | Public `/book` charges full price; staff cash/card deposit·balance·refund; ticket Stripe/demo; spa cents on founder dashboard | Production merchant approval; Stripe Elements / PCI hardening |
 | Reports | Spa + event scorecard; appointments CSV export | PDF / richer MassageBook-style canned reports |
 | Auth & tenancy | Demo venture/role login; architecture for JWT/RLS in [../architecture/security.md](../architecture/security.md) | Production auth, server-enforced permissions, production DB |
 | Data migration | MassageBook CSV import + template | Real export sample, reconciliation ownership, cutover rehearsal |
