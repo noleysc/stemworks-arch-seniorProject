@@ -35,7 +35,7 @@ Guest surfaces stay chrome-free:
 
 ## MassageBook replacement
 
-Commercial cutover plan (readiness Dec 11, launch Dec 12, 2026): [../team/pampered-soul-massagebook-launch.md](../team/pampered-soul-massagebook-launch.md). That schedule is conditional on the Nov 30 walkthrough and Dec 1 gap assessment. MassageBook stays active until required workflows are accepted and data is reconciled.
+Commercial cutover plan (readiness Dec 11, launch Dec 12, 2026): [../team/pampered-soul-massagebook-launch.md](../team/pampered-soul-massagebook-launch.md). Deadline prep (walkthrough agenda, gap matrix, Dec 1 decision pack): [../team/pampered-soul-deadline-prep.md](../team/pampered-soul-deadline-prep.md). That schedule is conditional on the Nov 30 walkthrough and Dec 1 gap assessment. MassageBook stays active until required workflows are accepted and data is reconciled.
 
 ## Related docs
 

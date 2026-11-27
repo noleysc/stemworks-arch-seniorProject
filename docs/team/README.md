@@ -9,6 +9,7 @@ Confidential. Diaz Ventures LLC · Stemworks LLC · 2026.
 3. [TODO.md](TODO.md) — named tasks for Nolan, Esmir, Ryan, and Henry
 4. [next-steps.md](next-steps.md) — slice roles (frontend / backend / dashboard)
 5. [pampered-soul-massagebook-launch.md](pampered-soul-massagebook-launch.md) — Pampered Soul MassageBook replacement & Dec 12 commercial launch
+6. [pampered-soul-deadline-prep.md](pampered-soul-deadline-prep.md) — Nov 30 / Dec 1 agenda, gap matrix, owners, acceptance templates
 
 ## Venture contracts
 

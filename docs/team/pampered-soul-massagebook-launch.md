@@ -13,6 +13,8 @@ This is a **proposed, conditional** schedule. The goal is to replace the Massage
 
 Scope for the December 11 cutover is decided on December 1 after the walkthrough and gap assessment. Keep MassageBook active until required workflows are accepted and the necessary data has been migrated and reconciled.
 
+**Deadline prep (Nov 27–Dec 1):** walkthrough agenda, this-week owner actions, gap matrix, Dec 1 decision pack, and acceptance templates live in [pampered-soul-deadline-prep.md](pampered-soul-deadline-prep.md).
+
 Related desk contract: [../architecture/pampered-soul.md](../architecture/pampered-soul.md).
 
 ## Timeline
@@ -76,10 +78,11 @@ Snapshot of what the Pampered Soul desk already covers in-repo. Use this as the 
 | Data migration | No MassageBook export/import path yet | Export access, mapping, reconciliation, cutover rehearsal |
 | Ticketed events | Owner planner + guest `/e/{slug}` checkout | Keep as-is unless walkthrough says otherwise; not a MassageBook substitute |
 
-Update this table after the Dec 1 decision with owners and in/out-of-scope rows for the December 11 freeze.
+Update this table after the Dec 1 decision with owners and in/out-of-scope rows for the December 11 freeze. Detailed risk ratings and Dec 1 scope columns: [pampered-soul-deadline-prep.md](pampered-soul-deadline-prep.md).
 
 ## Decision log
 
 | Date | Decision | Notes |
 | --- | --- | --- |
-| — | — | Fill after Nov 30 walkthrough and Dec 1 feasibility meeting. |
+| 2026-11-27 | Prep pack opened; full spa cutover not assumed until Dec 1 | See [pampered-soul-deadline-prep.md](pampered-soul-deadline-prep.md) |
+| | | Fill after Nov 30 walkthrough and Dec 1 feasibility meeting. |
